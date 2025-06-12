@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package expense.v1;
+
+option go_package = "expenses-backend/pkg/expense/v1;expensev1";
+
+service ExpenseService {
+  rpc CreateExpense(CreateExpenseRequest) returns (CreateExpenseResponse);
+  rpc GetExpense(GetExpenseRequest) returns (GetExpenseResponse);
+  rpc UpdateExpense(UpdateExpenseRequest) returns (UpdateExpenseResponse);
+  rpc DeleteExpense(DeleteExpenseRequest) returns (DeleteExpenseResponse);
+  rpc ListExpenses(ListExpensesRequest) returns (ListExpensesResponse);
+}
+
+message Expense {
+  string id = 1;
+  string name = 2;
+  double amount = 3;
+  int32 day_of_month_due = 4;
+  bool is_autopay = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message CreateExpenseRequest {
+  string name = 1;
+  double amount = 2;
+  int32 day_of_month_due = 3;
+  bool is_autopay = 4;
+}
+
+message CreateExpenseResponse {
+  Expense expense = 1;
+}
+
+message GetExpenseRequest {
+  string id = 1;
+}
+
+message GetExpenseResponse {
+  Expense expense = 1;
+}
+
+message UpdateExpenseRequest {
+  string id = 1;
+  string name = 2;
+  double amount = 3;
+  int32 day_of_month_due = 4;
+  bool is_autopay = 5;
+}
+
+message UpdateExpenseResponse {
+  Expense expense = 1;
+}
+
+message DeleteExpenseRequest {
+  string id = 1;
+}
+
+message DeleteExpenseResponse {
+  bool success = 1;
+}
+
+message ListExpensesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListExpensesResponse {
+  repeated Expense expenses = 1;
+  string next_page_token = 2;
+}

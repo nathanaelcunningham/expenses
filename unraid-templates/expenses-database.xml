@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>expenses-database</Name>
+  <Repository>postgres:15-alpine</Repository>
+  <Registry>https://hub.docker.com/_/postgres</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/nathanaelcunningham/expenses</Support>
+  <Project>https://github.com/nathanaelcunningham/expenses</Project>
+  <Overview>PostgreSQL database for Expenses application</Overview>
+  <Category>Productivity:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/nathanaelcunningham/expenses/main/unraid-templates/expenses-database.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/A75G/docker-templates/master/templates/icons/postgresql.png</Icon>
+  <ExtraParams>--network=expenses-network</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>Create custom network 'expenses-network' first: docker network create expenses-network</Requires>
+  <Config Name="Database Data" Target="/var/lib/postgresql/data" Default="/mnt/user/appdata/expenses/database" Mode="rw" Description="Database storage path" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/expenses/database</Config>
+  <Config Name="POSTGRES_USER" Target="POSTGRES_USER" Default="expenses" Mode="" Description="Database username" Type="Variable" Display="always" Required="true" Mask="false">expenses</Config>
+  <Config Name="POSTGRES_PASSWORD" Target="POSTGRES_PASSWORD" Default="expenses123" Mode="" Description="Database password" Type="Variable" Display="always" Required="true" Mask="true">expenses123</Config>
+  <Config Name="POSTGRES_DB" Target="POSTGRES_DB" Default="expenses" Mode="" Description="Database name" Type="Variable" Display="always" Required="true" Mask="false">expenses</Config>
+</Container>

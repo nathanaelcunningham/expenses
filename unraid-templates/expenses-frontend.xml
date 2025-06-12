@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>expenses-frontend</Name>
+  <Repository>ghcr.io/nathanaelcunningham/expenses/frontend:latest</Repository>
+  <Registry>https://github.com/nathanaelcunningham/expenses/pkgs/container/expenses%2Ffrontend</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/nathanaelcunningham/expenses</Support>
+  <Project>https://github.com/nathanaelcunningham/expenses</Project>
+  <Overview>React frontend for Expenses application with nginx proxy to backend</Overview>
+  <Category>Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/nathanaelcunningham/expenses/main/unraid-templates/expenses-frontend.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/A75G/docker-templates/master/templates/icons/react.png</Icon>
+  <ExtraParams>--network=expenses-network</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>expenses-backend container must be running first</Requires>
+  <Config Name="Web UI Port" Target="80" Default="3000" Mode="tcp" Description="Port for web interface" Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+</Container>

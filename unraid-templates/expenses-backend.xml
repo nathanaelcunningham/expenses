@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>expenses-backend</Name>
+  <Repository>ghcr.io/nathanaelcunningham/expenses/backend:latest</Repository>
+  <Registry>https://github.com/nathanaelcunningham/expenses/pkgs/container/expenses%2Fbackend</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/nathanaelcunningham/expenses</Support>
+  <Project>https://github.com/nathanaelcunningham/expenses</Project>
+  <Overview>Go backend service for Expenses application using Connect RPC</Overview>
+  <Category>Productivity:</Category>
+  <WebUI/>
+  <TemplateURL>https://raw.githubusercontent.com/nathanaelcunningham/expenses/main/unraid-templates/expenses-backend.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/A75G/docker-templates/master/templates/icons/golang.png</Icon>
+  <ExtraParams>--network=expenses-network</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>expenses-database container must be running first</Requires>
+  <Config Name="DB_HOST" Target="DB_HOST" Default="expenses-database" Mode="" Description="Database host (container name)" Type="Variable" Display="always" Required="true" Mask="false">expenses-database</Config>
+  <Config Name="DB_PORT" Target="DB_PORT" Default="5432" Mode="" Description="Database port" Type="Variable" Display="always" Required="true" Mask="false">5432</Config>
+  <Config Name="DB_USER" Target="DB_USER" Default="expenses" Mode="" Description="Database username" Type="Variable" Display="always" Required="true" Mask="false">expenses</Config>
+  <Config Name="DB_PASSWORD" Target="DB_PASSWORD" Default="expenses123" Mode="" Description="Database password" Type="Variable" Display="always" Required="true" Mask="true">expenses123</Config>
+  <Config Name="DB_NAME" Target="DB_NAME" Default="expenses" Mode="" Description="Database name" Type="Variable" Display="always" Required="true" Mask="false">expenses</Config>
+</Container>

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<Compose version="2">
+  <Name>expenses-stack</Name>
+  <Repository>https://raw.githubusercontent.com/nathanaelcunningham/expenses/main/docker-compose.yml</Repository>
+  <Support>https://github.com/nathanaelcunningham/expenses</Support>
+  <Project>https://github.com/nathanaelcunningham/expenses</Project>
+  <Overview>Complete Expenses application stack with Go backend, React frontend, and PostgreSQL database</Overview>
+  <Category>Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:3000]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/nathanaelcunningham/expenses/main/unraid-templates/expenses-stack.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/A75G/docker-templates/master/templates/icons/productivity.png</Icon>
+  <Description>
+    Expenses tracking application with:
+    - React frontend with nginx
+    - Go backend with Connect RPC
+    - PostgreSQL database
+    
+    All services deployed as a single stack with automatic networking.
+  </Description>
+  <Config Name="Frontend Port" Target="FRONTEND_PORT" Default="3000" Mode="" Description="Port for web interface access" Type="Variable" Display="always" Required="true" Mask="false">3000</Config>
+  <Config Name="Database Password" Target="DB_PASSWORD" Default="expenses123" Mode="" Description="PostgreSQL database password" Type="Variable" Display="always" Required="true" Mask="true">expenses123</Config>
+  <Config Name="Database Data" Target="DB_DATA_PATH" Default="/mnt/user/appdata/expenses/database" Mode="" Description="Database storage path" Type="Variable" Display="always" Required="true" Mask="false">/mnt/user/appdata/expenses/database</Config>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <MinVer>6.9.0</MinVer>
+</Compose>
