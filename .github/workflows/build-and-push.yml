@@ -30,10 +30,13 @@ jobs:
         id: meta
         run: |
           # Extract version from tag (v1.2.3 -> 1.2.3)
-          VERSION=${GITHUB_REF#refs/tags/v}
+          VERSION="${{ github.ref_name }}"
+          if [[ $VERSION == v* ]]; then
+            VERSION="${VERSION#v}"
+          fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "backend_tags=${{ env.IMAGE_PREFIX }}/backend:${VERSION},${{ env.IMAGE_PREFIX }}/backend:latest" >> $GITHUB_OUTPUT
-          echo "frontend_tags=${{ env.IMAGE_PREFIX }}/frontend:${VERSION},${{ env.IMAGE_PREFIX }}/frontend:latest" >> $GITHUB_OUTPUT
+          echo "backend_tags=ghcr.io/${{ github.repository }}/backend:${VERSION},ghcr.io/${{ github.repository }}/backend:latest" >> $GITHUB_OUTPUT
+          echo "frontend_tags=ghcr.io/${{ github.repository }}/frontend:${VERSION},ghcr.io/${{ github.repository }}/frontend:latest" >> $GITHUB_OUTPUT
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
