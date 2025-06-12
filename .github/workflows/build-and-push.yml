@@ -26,46 +26,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from tag
+      - name: Extract metadata
         id: meta
-        run: |
-          # Extract version from tag (v1.2.3 -> 1.2.3)
-          VERSION="${{ github.ref_name }}"
-          if [[ $VERSION == v* ]]; then
-            VERSION="${VERSION#v}"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "backend_tags=ghcr.io/${{ github.repository }}/backend:${VERSION},ghcr.io/${{ github.repository }}/backend:latest" >> $GITHUB_OUTPUT
-          echo "frontend_tags=ghcr.io/${{ github.repository }}/frontend:${VERSION},ghcr.io/${{ github.repository }}/frontend:latest" >> $GITHUB_OUTPUT
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}/backend
+            ghcr.io/${{ github.repository }}/frontend
+          tags: |
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push backend image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
           push: true
-          tags: ${{ steps.meta.outputs.backend_tags }}
-          labels: |
-            org.opencontainers.image.title=Expenses Backend
-            org.opencontainers.image.description=Go backend for expenses application
-            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}/backend:${{ github.ref_name }},ghcr.io/${{ github.repository }}/backend:latest
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
           push: true
-          tags: ${{ steps.meta.outputs.frontend_tags }}
-          labels: |
-            org.opencontainers.image.title=Expenses Frontend
-            org.opencontainers.image.description=React frontend for expenses application
-            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.revision=${{ github.sha }}
+          tags: ghcr.io/${{ github.repository }}/frontend:${{ github.ref_name }},ghcr.io/${{ github.repository }}/frontend:latest
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Output image information
         run: |
-          echo "✅ Built and pushed version: ${{ steps.meta.outputs.version }}"
-          echo "Backend: ${{ steps.meta.outputs.backend_tags }}"
-          echo "Frontend: ${{ steps.meta.outputs.frontend_tags }}"
+          echo "✅ Built and pushed version: ${{ github.ref_name }}"
+          echo "Backend: ghcr.io/${{ github.repository }}/backend:${{ github.ref_name }}"
+          echo "Frontend: ghcr.io/${{ github.repository }}/frontend:${{ github.ref_name }}"
