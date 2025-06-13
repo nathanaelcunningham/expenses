@@ -1,22 +1,16 @@
+terraform {
+  required_providers {
+    railway = {
+      source = "terraform-community-providers/railway"
+    }
+  }
+}
+
 resource "railway_service" "backend" {
   project_id = var.project_id
   name       = "backend-${var.environment}"
 }
 
-resource "railway_deployment" "backend" {
-  service_id = railway_service.backend.id
-  
-  # Use the pre-built Docker image
-  image = var.backend_image
-  
-  variables = {
-    DB_HOST     = var.db_host
-    DB_PORT     = var.db_port
-    DB_USER     = var.db_user
-    DB_PASSWORD = var.db_password
-    DB_NAME     = var.db_name
-  }
-}
 
 resource "railway_variable" "db_host" {
   service_id = railway_service.backend.id

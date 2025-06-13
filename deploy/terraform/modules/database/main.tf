@@ -1,17 +1,16 @@
+terraform {
+  required_providers {
+    railway = {
+      source = "terraform-community-providers/railway"
+    }
+  }
+}
+
 resource "railway_service" "database" {
   project_id = var.project_id
   name       = "database-${var.environment}"
 }
 
-resource "railway_deployment" "database" {
-  service_id = railway_service.database.id
-  
-  variables = {
-    POSTGRES_USER     = var.db_user
-    POSTGRES_PASSWORD = var.db_password
-    POSTGRES_DB       = var.db_name
-  }
-}
 
 resource "railway_variable" "postgres_user" {
   service_id = railway_service.database.id
