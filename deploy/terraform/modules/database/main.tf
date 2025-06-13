@@ -13,19 +13,22 @@ resource "railway_service" "database" {
 
 
 resource "railway_variable" "postgres_user" {
-  service_id = railway_service.database.id
-  name       = "POSTGRES_USER"
-  value      = var.db_user
+  environment_id = var.environment_id
+  service_id     = railway_service.database.id
+  name           = "POSTGRES_USER"
+  value          = var.db_user
 }
 
 resource "railway_variable" "postgres_password" {
-  service_id = railway_service.database.id
-  name       = "POSTGRES_PASSWORD"
-  value      = var.db_password
+  environment_id = var.environment_id
+  service_id     = railway_service.database.id
+  name           = "POSTGRES_PASSWORD"
+  value          = var.db_password
 }
 
 resource "railway_variable" "postgres_db" {
-  service_id = railway_service.database.id
-  name       = "POSTGRES_DB"
-  value      = var.db_name
+  environment_id = var.environment_id
+  service_id     = railway_service.database.id
+  name           = "POSTGRES_DB"
+  value          = var.db_name
 }

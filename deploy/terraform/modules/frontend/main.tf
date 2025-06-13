@@ -13,7 +13,8 @@ resource "railway_service" "frontend" {
 
 
 resource "railway_variable" "api_url" {
-  service_id = railway_service.frontend.id
-  name       = "REACT_APP_API_URL"
-  value      = var.backend_url
+  environment_id = var.environment_id
+  service_id     = railway_service.frontend.id
+  name           = "REACT_APP_API_URL"
+  value          = var.backend_url
 }

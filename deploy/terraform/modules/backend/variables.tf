@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "environment_id" {
+  description = "Railway environment ID"
+  type        = string
+}
+
 variable "environment" {
   description = "Environment name"
   type        = string
