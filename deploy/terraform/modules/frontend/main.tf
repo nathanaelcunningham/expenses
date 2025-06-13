@@ -9,6 +9,11 @@ terraform {
 resource "railway_service" "frontend" {
   project_id = var.project_id
   name       = "frontend-${var.environment}"
+  
+  # Use source-based deployment with GitHub repo
+  source_repo      = var.github_repo
+  source_repo_branch = var.github_branch
+  root_directory   = "frontend"
 }
 
 

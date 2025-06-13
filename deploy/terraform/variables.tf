@@ -13,16 +13,16 @@ variable "environment" {
   }
 }
 
-variable "backend_image" {
-  description = "Backend Docker image"
+variable "github_repo" {
+  description = "GitHub repository URL"
   type        = string
-  default     = "ghcr.io/nathanaelcunningham/expenses/backend:latest"
+  default     = "https://github.com/nathanaelcunningham/expenses"
 }
 
-variable "frontend_image" {
-  description = "Frontend Docker image"
+variable "github_branch" {
+  description = "GitHub branch to deploy from"
   type        = string
-  default     = "ghcr.io/nathanaelcunningham/expenses/frontend:latest"
+  default     = "main"
 }
 
 variable "db_user" {

@@ -1,9 +1,9 @@
 environment = "prod"
 railway_project_name = "expenses-app"
 
-# Docker images (use :latest tag for production)
-backend_image = "ghcr.io/nathanaelcunningham/expenses/backend:latest"
-frontend_image = "ghcr.io/nathanaelcunningham/expenses/frontend:latest"
+# GitHub repository configuration
+github_repo = "https://github.com/nathanaelcunningham/expenses"
+github_branch = "main"
 
 # Database configuration
 db_user = "expenses"

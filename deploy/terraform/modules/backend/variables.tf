@@ -13,9 +13,15 @@ variable "environment" {
   type        = string
 }
 
-variable "backend_image" {
-  description = "Backend Docker image"
+variable "github_repo" {
+  description = "GitHub repository URL"
   type        = string
+}
+
+variable "github_branch" {
+  description = "GitHub branch to deploy from"
+  type        = string
+  default     = "main"
 }
 
 variable "db_host" {

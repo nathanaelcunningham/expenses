@@ -1,0 +1,20 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "go build -o main cmd/server/main.go",
+    "watchPatterns": [
+      "cmd/**",
+      "internal/**",
+      "pkg/**",
+      "go.mod",
+      "go.sum"
+    ]
+  },
+  "deploy": {
+    "startCommand": "./main",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 30,
+    "restartPolicyType": "on_failure"
+  }
+}

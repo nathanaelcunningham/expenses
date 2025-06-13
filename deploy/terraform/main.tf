@@ -24,9 +24,11 @@ module "backend" {
   project_id     = railway_project.expenses.id
   environment_id = railway_environment.expenses.id
   environment    = var.environment
-  backend_image  = var.backend_image
+  github_repo    = var.github_repo
+  github_branch  = var.github_branch
   
-  # Database connection
+  # Database connection - Railway will provide DATABASE_URL automatically
+  # But we can still set individual variables if the app expects them
   db_host     = module.database.db_host
   db_port     = module.database.db_port
   db_user     = var.db_user
@@ -42,7 +44,8 @@ module "frontend" {
   project_id     = railway_project.expenses.id
   environment_id = railway_environment.expenses.id
   environment    = var.environment
-  frontend_image = var.frontend_image
+  github_repo    = var.github_repo
+  github_branch  = var.github_branch
   backend_url    = module.backend.backend_url
   
   depends_on = [module.backend]

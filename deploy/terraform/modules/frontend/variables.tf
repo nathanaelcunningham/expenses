@@ -13,9 +13,15 @@ variable "environment" {
   type        = string
 }
 
-variable "frontend_image" {
-  description = "Frontend Docker image"
+variable "github_repo" {
+  description = "GitHub repository URL"
   type        = string
+}
+
+variable "github_branch" {
+  description = "GitHub branch to deploy from"
+  type        = string
+  default     = "main"
 }
 
 variable "backend_url" {
