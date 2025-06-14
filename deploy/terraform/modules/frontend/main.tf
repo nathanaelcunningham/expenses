@@ -15,7 +15,7 @@ resource "railway_variable_collection" "frontend" {
   variables = concat([
     {
       name  = "VITE_API_URL"
-      value = var.backend_url
+      value = "http://${var.backend_url}:8080"
     },
     {
       name  = "NODE_ENV"
