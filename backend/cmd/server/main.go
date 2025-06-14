@@ -26,9 +26,11 @@ func main() {
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))
 	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 
-	http.ListenAndServe(
+	if err := http.ListenAndServe(
 		"0.0.0.0:8080",
 		// Use h2c so we can serve HTTP/2 without TLS.
 		h2c.NewHandler(withCORS(mux), &http2.Server{}),
-	)
+	); err != nil {
+		panic(err)
+	}
 }
