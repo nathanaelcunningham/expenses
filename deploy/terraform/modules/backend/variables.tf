@@ -34,7 +34,7 @@ variable "root_directory" {
 variable "config_path" {
   description = "Path to Railway config file"
   type        = string
-  default     = "railway.toml"
+  default     = "backend/railway.toml"
 }
 
 variable "port" {
@@ -49,3 +49,4 @@ variable "additional_env_vars" {
   type        = map(string)
   default     = {}
 }
+
