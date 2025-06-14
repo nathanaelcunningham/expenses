@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
 function App() {
     const { data, isLoading, error } = useQuery(listExpenses);
 
+    const url = import.meta.env.VITE_API_URL;
+
     if (isLoading) {
         return <div>Loading expenses...</div>;
     }
@@ -26,6 +28,7 @@ function App() {
             {data.expenses.map((expense) => (
                 <div key={expense.id}>{expense.name}</div>
             ))}
+            <div>{url}</div>
         </div>
     );
 }

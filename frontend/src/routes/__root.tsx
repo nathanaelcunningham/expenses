@@ -5,9 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TransportProvider } from "@connectrpc/connect-query";
 
 import Header from "../components/Header";
-
+const url = import.meta.env.VITE_API_URL;
 const finalTransport = createConnectTransport({
-    baseUrl: import.meta.env.VITE_API_URL,
+    baseUrl: url,
 });
 
 const queryClient = new QueryClient();
