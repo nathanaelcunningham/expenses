@@ -59,26 +59,26 @@ module "database" {
 module "backend" {
   source = "./modules/backend"
 
-  project_id      = railway_project.expenses.id
-  environment_id  = railway_project.expenses.default_environment.id
-  github_repo     = local.repository.url
-  github_branch   = local.repository.branch
-  database_url    = module.database.database_url
-  root_directory  = local.directories.backend
+  project_id     = railway_project.expenses.id
+  environment_id = railway_project.expenses.default_environment.id
+  github_repo    = local.repository.url
+  github_branch  = local.repository.branch
+  database_url   = module.database.database_url
+  root_directory = local.directories.backend
 
   depends_on = [module.database]
 }
 
-module "frontend" {
-  source = "./modules/frontend"
-
-  project_id      = railway_project.expenses.id
-  environment_id  = railway_project.expenses.default_environment.id
-  github_repo     = local.repository.url
-  github_branch   = local.repository.branch
-  backend_url     = module.backend.service_url
-  root_directory  = local.directories.frontend
-
-  depends_on = [module.backend]
-}
-
+# module "frontend" {
+#   source = "./modules/frontend"
+#
+#   project_id      = railway_project.expenses.id
+#   environment_id  = railway_project.expenses.default_environment.id
+#   github_repo     = local.repository.url
+#   github_branch   = local.repository.branch
+#   backend_url     = module.backend.service_url
+#   root_directory  = local.directories.frontend
+#
+#   depends_on = [module.backend]
+# }
+#

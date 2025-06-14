@@ -1,5 +1,5 @@
 [build]
-builder = "nixpacks"
+builder = "NIXPACKS"
 buildCommand = "go build -o server cmd/server/"
 watchPatterns = ["cmd/**", "internal/**", "pkg/**", "go.mod", "go.sum"]
 
