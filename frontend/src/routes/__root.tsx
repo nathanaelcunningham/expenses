@@ -7,7 +7,7 @@ import { TransportProvider } from "@connectrpc/connect-query";
 import Header from "../components/Header";
 
 const finalTransport = createConnectTransport({
-    baseUrl: "http://localhost:8080",
+    baseUrl: import.meta.env.VITE_API_URL,
 });
 
 const queryClient = new QueryClient();

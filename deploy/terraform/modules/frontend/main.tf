@@ -14,7 +14,7 @@ resource "railway_variable_collection" "frontend" {
 
   variables = concat([
     {
-      name  = "REACT_APP_API_URL"
+      name  = "VITE_API_URL"
       value = var.backend_url
     },
     {
