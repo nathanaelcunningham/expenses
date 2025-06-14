@@ -10,6 +10,7 @@ function App() {
     const { data, isLoading, error } = useQuery(listExpenses);
 
     const url = import.meta.env.VITE_API_URL;
+    console.log(url);
 
     if (isLoading) {
         return <div>Loading expenses...</div>;
