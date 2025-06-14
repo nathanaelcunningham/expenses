@@ -2,79 +2,63 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+echo "⚠️  Destroying Expenses App infrastructure..."
 
-# Function to print colored output
-print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
+# Parse command line arguments
+TFVARS_FILE="terraform.tfvars"
+AUTO_APPROVE=false
 
-print_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -f|--tfvars-file)
+            TFVARS_FILE="$2"
+            shift 2
+            ;;
+        -y|--auto-approve)
+            AUTO_APPROVE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [OPTIONS]"
+            echo "Options:"
+            echo "  -f, --tfvars-file FILE    Use specific tfvars file (default: terraform.tfvars)"
+            echo "  -y, --auto-approve        Skip interactive confirmation"
+            echo "  -h, --help               Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option $1"
+            exit 1
+            ;;
+    esac
+done
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if environment is provided
-if [ $# -eq 0 ]; then
-    print_error "Please provide environment (dev or prod)"
-    echo "Usage: $0 <environment>"
-    echo "Example: $0 dev"
-    exit 1
-fi
-
-ENVIRONMENT=$1
-
-# Validate environment
-if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "prod" ]]; then
-    print_error "Environment must be 'dev' or 'prod'"
-    exit 1
-fi
-
-# Check required environment variables
-if [ -z "$RAILWAY_TOKEN" ]; then
-    print_error "RAILWAY_TOKEN environment variable is required"
-    exit 1
-fi
-
-if [ -z "$TF_VAR_db_password" ]; then
-    print_error "TF_VAR_db_password environment variable is required"
-    exit 1
-fi
-
-print_warning "WARNING: This will destroy all resources in the $ENVIRONMENT environment!"
-print_warning "This action cannot be undone!"
-
-# Ask for confirmation
-echo
-read -p "Are you sure you want to destroy the $ENVIRONMENT environment? Type 'destroy' to confirm: " -r
-echo
-if [[ "$REPLY" != "destroy" ]]; then
-    print_warning "Destruction cancelled"
-    exit 0
-fi
-
-print_status "Destroying $ENVIRONMENT environment..."
-
-# Change to terraform directory
+# Navigate to terraform directory
 cd "$(dirname "$0")/../terraform"
 
-# Initialize Terraform
-print_status "Initializing Terraform..."
-terraform init
+# Check if tfvars file exists
+if [ ! -f "$TFVARS_FILE" ]; then
+    echo "❌ Error: Terraform variables file '$TFVARS_FILE' not found"
+    echo "Please create $TFVARS_FILE or copy from terraform.tfvars.example"
+    exit 1
+fi
 
-# Plan destruction
-print_status "Planning destruction..."
-terraform plan -destroy -var-file="../environments/${ENVIRONMENT}.tfvars" -out=destroy-plan
+echo "📁 Using variables file: $TFVARS_FILE"
 
-# Apply destruction
-print_status "Destroying resources..."
-terraform apply -auto-approve destroy-plan
+echo "📋 Planning destruction..."
+terraform plan -destroy -var-file="$TFVARS_FILE"
 
-print_status "Environment destroyed successfully!"
+if [ "$AUTO_APPROVE" = false ]; then
+    echo ""
+    read -p "⚠️  Are you sure you want to destroy all infrastructure? This cannot be undone. [y/N]: " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Destruction cancelled."
+        exit 0
+    fi
+fi
+
+echo "🔥 Destroying infrastructure..."
+terraform destroy -auto-approve -var-file="$TFVARS_FILE"
+
+echo "✅ Infrastructure destroyed successfully!"

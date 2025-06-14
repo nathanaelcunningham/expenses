@@ -1,39 +1,68 @@
-terraform {
-  required_providers {
-    railway = {
-      source = "terraform-community-providers/railway"
-    }
+resource "railway_service" "postgres" {
+  name         = "postgres"
+  project_id   = var.project_id
+  source_image = "ghcr.io/railwayapp-templates/postgres-ssl:16"
+
+  volume = {
+    mount_path = "/var/lib/postgresql/data"
+    name       = var.volume_name
   }
 }
 
-# Use Railway's managed PostgreSQL template
-resource "railway_service" "database" {
-  project_id = var.project_id
-  name       = "database-${var.environment}"
-  
-  # Deploy from Railway's PostgreSQL template
-  template = "postgres"
+resource "railway_tcp_proxy" "postgres" {
+  application_port = 5432
+  environment_id   = var.environment_id
+  service_id       = railway_service.postgres.id
 }
 
-# Railway's PostgreSQL template automatically provides DATABASE_URL
-# We can still set custom environment variables if needed
-resource "railway_variable" "postgres_db_name" {
+resource "railway_variable_collection" "postgres" {
   environment_id = var.environment_id
-  service_id     = railway_service.database.id
-  name           = "POSTGRES_DB"
-  value          = var.db_name
-}
+  service_id     = railway_service.postgres.id
 
-resource "railway_variable" "postgres_user" {
-  environment_id = var.environment_id
-  service_id     = railway_service.database.id
-  name           = "POSTGRES_USER"
-  value          = var.db_user
-}
-
-resource "railway_variable" "postgres_password" {
-  environment_id = var.environment_id
-  service_id     = railway_service.database.id
-  name           = "POSTGRES_PASSWORD"
-  value          = var.db_password
+  variables = [
+    {
+      name  = "PGDATA"
+      value = "${railway_service.postgres.volume.mount_path}/pgdata"
+    },
+    {
+      name  = "PGHOST"
+      value = "$${{RAILWAY_PRIVATE_DOMAIN}}"
+    },
+    {
+      name  = "PGPORT"
+      value = 5432
+    },
+    {
+      name  = "PGUSER"
+      value = var.postgres_user
+    },
+    {
+      name  = "PGPASSWORD"
+      value = var.postgres_password
+    },
+    {
+      name  = "PGDATABASE"
+      value = var.postgres_db
+    },
+    {
+      name  = "DATABASE_URL"
+      value = "postgresql://${var.postgres_user}:${var.postgres_password}@$${{RAILWAY_PRIVATE_DOMAIN}}:5432/${var.postgres_db}"
+    },
+    {
+      name  = "DATABASE_PUBLIC_URL"
+      value = "postgresql://${var.postgres_user}:${var.postgres_password}@${railway_tcp_proxy.postgres.domain}:${railway_tcp_proxy.postgres.proxy_port}/${var.postgres_db}"
+    },
+    {
+      name  = "POSTGRES_DB"
+      value = var.postgres_db
+    },
+    {
+      name  = "POSTGRES_PASSWORD"
+      value = var.postgres_password
+    },
+    {
+      name  = "POSTGRES_USER"
+      value = var.postgres_user
+    }
+  ]
 }

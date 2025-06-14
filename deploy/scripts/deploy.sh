@@ -2,80 +2,69 @@
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+echo "🚀 Deploying Expenses App to Railway..."
 
-# Function to print colored output
-print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
+# Parse command line arguments
+TFVARS_FILE="terraform.tfvars"
+AUTO_APPROVE=false
 
-print_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
-}
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -f|--tfvars-file)
+            TFVARS_FILE="$2"
+            shift 2
+            ;;
+        -y|--auto-approve)
+            AUTO_APPROVE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Usage: $0 [OPTIONS]"
+            echo "Options:"
+            echo "  -f, --tfvars-file FILE    Use specific tfvars file (default: terraform.tfvars)"
+            echo "  -y, --auto-approve        Skip interactive approval of the Terraform plan"
+            echo "  -h, --help               Show this help message"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option $1"
+            exit 1
+            ;;
+    esac
+done
 
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if environment is provided
-if [ $# -eq 0 ]; then
-    print_error "Please provide environment (dev or prod)"
-    echo "Usage: $0 <environment>"
-    echo "Example: $0 dev"
-    exit 1
-fi
-
-ENVIRONMENT=$1
-
-# Validate environment
-if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != "prod" ]]; then
-    print_error "Environment must be 'dev' or 'prod'"
-    exit 1
-fi
-
-# Check required environment variables
-if [ -z "$RAILWAY_TOKEN" ]; then
-    print_error "RAILWAY_TOKEN environment variable is required"
-    exit 1
-fi
-
-if [ -z "$TF_VAR_db_password" ]; then
-    print_error "TF_VAR_db_password environment variable is required"
-    exit 1
-fi
-
-print_status "Deploying to $ENVIRONMENT environment..."
-
-# Change to terraform directory
+# Navigate to terraform directory
 cd "$(dirname "$0")/../terraform"
 
-# Initialize Terraform
-print_status "Initializing Terraform..."
-terraform init
-
-# Plan deployment
-print_status "Planning deployment..."
-terraform plan -var-file="../environments/${ENVIRONMENT}.tfvars" -out=tfplan
-
-# Ask for confirmation
-echo
-read -p "Do you want to apply this plan? (y/N): " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    print_warning "Deployment cancelled"
-    exit 0
+# Check if tfvars file exists
+if [ ! -f "$TFVARS_FILE" ]; then
+    echo "❌ Error: Terraform variables file '$TFVARS_FILE' not found"
+    echo "Please create $TFVARS_FILE or copy from terraform.tfvars.example"
+    echo "Example: cp terraform.tfvars.example terraform.tfvars"
+    exit 1
 fi
 
-# Apply deployment
-print_status "Applying deployment..."
-terraform apply -auto-approve tfplan
+echo "📁 Using variables file: $TFVARS_FILE"
 
-print_status "Deployment completed successfully!"
+echo "🔧 Initializing Terraform..."
+terraform init
 
-# Show outputs
-print_status "Deployment outputs:"
+echo "📋 Planning deployment..."
+terraform plan -var-file="$TFVARS_FILE"
+
+if [ "$AUTO_APPROVE" = true ]; then
+    echo "🚀 Applying configuration (auto-approved)..."
+    terraform apply -auto-approve -var-file="$TFVARS_FILE"
+else
+    echo "🚀 Applying configuration..."
+    terraform apply -var-file="$TFVARS_FILE"
+fi
+
+echo "✅ Deployment complete!"
+echo ""
+echo "📊 Outputs:"
 terraform output
+
+echo ""
+echo "🎉 Your Expenses App has been deployed to Railway!"
+echo "Check the Railway dashboard for service status: $(terraform output -raw project_url)"

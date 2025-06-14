@@ -8,23 +8,26 @@ variable "environment_id" {
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name"
+variable "postgres_user" {
+  description = "PostgreSQL username"
   type        = string
+  default     = "postgres"
 }
 
-variable "db_user" {
-  description = "Database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "Database password"
+variable "postgres_password" {
+  description = "PostgreSQL password"
   type        = string
   sensitive   = true
 }
 
-variable "db_name" {
-  description = "Database name"
+variable "postgres_db" {
+  description = "PostgreSQL database name"
   type        = string
+  default     = "expenses"
+}
+
+variable "volume_name" {
+  description = "Name of the volume for PostgreSQL data"
+  type        = string
+  default     = "postgres-data"
 }

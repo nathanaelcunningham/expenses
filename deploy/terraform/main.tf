@@ -1,52 +1,83 @@
-resource "railway_project" "expenses" {
-  name = "${var.railway_project_name}-${var.environment}"
+locals {
+  # Project configuration
+  project = {
+    name        = var.project_name
+    description = var.project_description
+    private     = true
+  }
+
+  # Database configuration
+  database = {
+    user        = var.postgres_user
+    password    = var.postgres_password
+    database    = var.postgres_db
+    volume_name = "expenses-data"
+  }
+
+  # Repository configuration
+  repository = {
+    url    = var.github_repo
+    branch = var.github_branch
+  }
+
+  # Service directories
+  directories = {
+    backend  = "backend"
+    frontend = "frontend"
+  }
+
+  # Common tags/labels
+  tags = {
+    project     = "expenses-app"
+    environment = "production"
+    managed_by  = "terraform"
+  }
 }
 
-resource "railway_environment" "expenses" {
-  project_id = railway_project.expenses.id
-  name       = var.environment
+provider "railway" {
+  token = var.railway_token
+}
+
+resource "railway_project" "expenses" {
+  name        = local.project.name
+  description = local.project.description
+  private     = local.project.private
 }
 
 module "database" {
   source = "./modules/database"
-  
-  project_id     = railway_project.expenses.id
-  environment_id = railway_environment.expenses.id
-  environment    = var.environment
-  db_user        = var.db_user
-  db_password    = var.db_password
-  db_name        = var.db_name
+
+  project_id        = railway_project.expenses.id
+  environment_id    = railway_project.expenses.default_environment.id
+  postgres_user     = local.database.user
+  postgres_password = local.database.password
+  postgres_db       = local.database.database
+  volume_name       = local.database.volume_name
 }
 
 module "backend" {
   source = "./modules/backend"
-  
-  project_id     = railway_project.expenses.id
-  environment_id = railway_environment.expenses.id
-  environment    = var.environment
-  github_repo    = var.github_repo
-  github_branch  = var.github_branch
-  
-  # Database connection - Railway will provide DATABASE_URL automatically
-  # But we can still set individual variables if the app expects them
-  db_host     = module.database.db_host
-  db_port     = module.database.db_port
-  db_user     = var.db_user
-  db_password = var.db_password
-  db_name     = var.db_name
-  
+
+  project_id      = railway_project.expenses.id
+  environment_id  = railway_project.expenses.default_environment.id
+  github_repo     = local.repository.url
+  github_branch   = local.repository.branch
+  database_url    = module.database.database_url
+  root_directory  = local.directories.backend
+
   depends_on = [module.database]
 }
 
 module "frontend" {
   source = "./modules/frontend"
-  
-  project_id     = railway_project.expenses.id
-  environment_id = railway_environment.expenses.id
-  environment    = var.environment
-  github_repo    = var.github_repo
-  github_branch  = var.github_branch
-  backend_url    = module.backend.backend_url
-  
+
+  project_id      = railway_project.expenses.id
+  environment_id  = railway_project.expenses.default_environment.id
+  github_repo     = local.repository.url
+  github_branch   = local.repository.branch
+  backend_url     = module.backend.service_url
+  root_directory  = local.directories.frontend
+
   depends_on = [module.backend]
 }
+

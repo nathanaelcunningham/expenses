@@ -8,44 +8,37 @@ variable "environment_id" {
   type        = string
 }
 
-variable "environment" {
-  description = "Environment name"
-  type        = string
-}
-
 variable "github_repo" {
   description = "GitHub repository URL"
   type        = string
 }
 
 variable "github_branch" {
-  description = "GitHub branch to deploy from"
+  description = "GitHub branch to deploy"
   type        = string
   default     = "main"
 }
 
-variable "db_host" {
-  description = "Database host"
-  type        = string
-}
-
-variable "db_port" {
-  description = "Database port"
-  type        = string
-}
-
-variable "db_user" {
-  description = "Database username"
-  type        = string
-}
-
-variable "db_password" {
-  description = "Database password"
+variable "database_url" {
+  description = "Database connection URL"
   type        = string
   sensitive   = true
 }
 
-variable "db_name" {
-  description = "Database name"
+variable "root_directory" {
+  description = "Root directory for the backend service"
   type        = string
+  default     = "backend"
+}
+
+variable "port" {
+  description = "Port for the backend service"
+  type        = number
+  default     = 8080
+}
+
+variable "additional_env_vars" {
+  description = "Additional environment variables for the backend service"
+  type        = map(string)
+  default     = {}
 }

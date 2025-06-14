@@ -3,7 +3,7 @@ output "service_id" {
   value       = railway_service.backend.id
 }
 
-output "backend_url" {
+output "service_url" {
   description = "Backend service URL"
-  value       = "https://${railway_service.backend.name}.railway.app"
+  value       = "${railway_service.backend.name}.$${{RAILWAY_PRIVATE_DOMAIN}}"
 }

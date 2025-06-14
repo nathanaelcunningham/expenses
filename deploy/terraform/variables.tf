@@ -1,44 +1,46 @@
-variable "railway_project_name" {
-  description = "Name of the Railway project"
+variable "railway_token" {
+  description = "Railway API token"
+  type        = string
+  sensitive   = true
+}
+
+variable "project_name" {
+  description = "Railway project name"
   type        = string
   default     = "expenses-app"
 }
 
-variable "environment" {
-  description = "Environment name (dev, prod)"
+variable "project_description" {
+  description = "Railway project description"
   type        = string
-  validation {
-    condition     = contains(["dev", "prod"], var.environment)
-    error_message = "Environment must be either 'dev' or 'prod'."
-  }
+  default     = "Expenses tracking application with Go backend and React frontend"
 }
 
 variable "github_repo" {
   description = "GitHub repository URL"
   type        = string
-  default     = "https://github.com/nathanaelcunningham/expenses"
 }
 
 variable "github_branch" {
-  description = "GitHub branch to deploy from"
+  description = "GitHub branch to deploy"
   type        = string
   default     = "main"
 }
 
-variable "db_user" {
-  description = "Database username"
+variable "postgres_user" {
+  description = "PostgreSQL username"
   type        = string
-  default     = "expenses"
+  default     = "postgres"
 }
 
-variable "db_password" {
-  description = "Database password"
+variable "postgres_password" {
+  description = "PostgreSQL password"
   type        = string
   sensitive   = true
 }
 
-variable "db_name" {
-  description = "Database name"
+variable "postgres_db" {
+  description = "PostgreSQL database name"
   type        = string
   default     = "expenses"
 }
