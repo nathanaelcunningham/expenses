@@ -5,6 +5,7 @@ resource "railway_service" "frontend" {
   source_repo        = var.github_repo
   source_repo_branch = var.github_branch
   root_directory     = var.root_directory
+  config_path        = var.config_path
 }
 
 resource "railway_variable_collection" "frontend" {

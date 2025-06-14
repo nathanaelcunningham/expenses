@@ -20,7 +20,7 @@ output "tcp_proxy_port" {
 
 output "database_url" {
   description = "Database URL for internal connections"
-  value       = "postgresql://${var.postgres_user}:${var.postgres_password}@$${{postgres.DATABASE_URL}}:5432/${var.postgres_db}"
+  value       = "postgresql://${var.postgres_user}:${var.postgres_password}@$${{postgres.RAILWAY_PRIVATE_DOMAIN}}/${var.postgres_db}"
   sensitive   = true
 }
 
@@ -29,4 +29,3 @@ output "database_public_url" {
   value       = "postgresql://${var.postgres_user}:${var.postgres_password}@${railway_tcp_proxy.postgres.domain}:${railway_tcp_proxy.postgres.proxy_port}/${var.postgres_db}"
   sensitive   = true
 }
-

@@ -1,0 +1,10 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+watchPatterns = ["src/**", "public/**", "package.json", "package-lock.json", "vite.config.js", "tsconfig.json"]
+
+[deploy]
+startCommand = "npx serve -s dist -l 3000"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"

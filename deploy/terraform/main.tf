@@ -26,6 +26,7 @@ locals {
     frontend = "frontend"
   }
 
+
   # Common tags/labels
   tags = {
     project     = "expenses-app"

@@ -30,6 +30,13 @@ variable "root_directory" {
   default     = "frontend"
 }
 
+variable "config_path" {
+  description = "Path to Railway config file"
+  type        = string
+  default     = "railway.toml"
+}
+
+
 variable "additional_env_vars" {
   description = "Additional environment variables for the frontend service"
   type        = map(string)

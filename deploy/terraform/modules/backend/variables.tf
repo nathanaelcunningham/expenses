@@ -31,11 +31,18 @@ variable "root_directory" {
   default     = "backend"
 }
 
+variable "config_path" {
+  description = "Path to Railway config file"
+  type        = string
+  default     = "railway.toml"
+}
+
 variable "port" {
   description = "Port for the backend service"
   type        = number
   default     = 8080
 }
+
 
 variable "additional_env_vars" {
   description = "Additional environment variables for the backend service"
