@@ -38,10 +38,10 @@ output "backend_url" {
   value       = module.backend.service_url
 }
 
-output "frontend_service_id" {
-  description = "Frontend service ID"
-  value       = module.frontend.service_id
-}
+# output "frontend_service_id" {
+#   description = "Frontend service ID"
+#   value       = module.frontend.service_id
+# }
 
 output "deployment_info" {
   description = "Summary of deployment configuration"
