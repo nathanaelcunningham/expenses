@@ -6,7 +6,7 @@ project_name        = "expenses-app"
 project_description = "Expenses tracking application with Go backend and React frontend"
 
 # Repository configuration
-github_repo   = "https://github.com/your-username/expenses"
+github_repo   = "your-username/expenses"
 github_branch = "main"
 
 # Database configuration
