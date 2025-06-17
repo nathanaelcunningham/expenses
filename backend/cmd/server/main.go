@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"expenses-backend/internal/auth"
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/database/migrations"
 	"expenses-backend/internal/database/turso"
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
 	"expenses-backend/internal/middleware"
+	"expenses-backend/internal/repositories"
 	"expenses-backend/pkg/expense/v1/expensev1connect"
 	"net/http"
 	"os"
@@ -51,20 +53,26 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to run migrations")
 	}
 
+	// Initialize repository factory
+	repoFactory := repositories.NewFactory(dbManager, logger)
+
 	// Initialize services
-	// authService := auth.NewService(dbManager.GetMasterDatabase(), logger)
-	_ = family.NewService(dbManager, logger) // Family service - will be used when we add family endpoints
-	expenseService := expense.NewService()
+	authService := auth.NewService(dbManager.GetMasterDatabase(), logger)
+	familyService := family.NewService(dbManager, logger)
+	expenseService := expense.NewService(repoFactory, logger)
 
 	// Initialize middleware
-	// authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, logger)
+	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, logger)
 	loggingInterceptor := middleware.NewLoggingInterceptor(logger)
 
 	// Create interceptor chain
 	interceptors := connect.WithInterceptors(
 		loggingInterceptor,
-		// authInterceptor,
+		authInterceptor,
 	)
+
+	// Suppress unused variable warnings for now
+	_ = familyService
 
 	mux := http.NewServeMux()
 
