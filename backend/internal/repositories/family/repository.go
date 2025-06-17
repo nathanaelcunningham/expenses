@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"expenses-backend/internal/models"
 	"fmt"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ func NewRepository(db *sql.DB, logger zerolog.Logger) Store {
 }
 
 // CreateFamily creates a new family in the master database
-func (r *Repository) CreateFamily(ctx context.Context, req *CreateFamilyRequest) (*Family, error) {
+func (r *Repository) CreateFamily(ctx context.Context, req *models.CreateFamilyRequest) (*models.Family, error) {
 	// Generate family ID and invite code
 	familyID, err := r.generateID()
 	if err != nil {
@@ -40,7 +41,7 @@ func (r *Repository) CreateFamily(ctx context.Context, req *CreateFamilyRequest)
 	}
 
 	now := time.Now()
-	family := &Family{
+	family := &models.Family{
 		ID:            familyID,
 		Name:          strings.TrimSpace(req.Name),
 		InviteCode:    inviteCode,
@@ -93,8 +94,8 @@ func (r *Repository) CreateFamily(ctx context.Context, req *CreateFamilyRequest)
 }
 
 // GetFamilyByID retrieves a family by its ID
-func (r *Repository) GetFamilyByID(ctx context.Context, familyID string) (*Family, error) {
-	family := &Family{}
+func (r *Repository) GetFamilyByID(ctx context.Context, familyID string) (*models.Family, error) {
+	family := &models.Family{}
 	query := `
 		SELECT id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at
 		FROM families WHERE id = ?`
@@ -114,8 +115,8 @@ func (r *Repository) GetFamilyByID(ctx context.Context, familyID string) (*Famil
 }
 
 // GetFamilyByInviteCode retrieves a family by its invite code
-func (r *Repository) GetFamilyByInviteCode(ctx context.Context, inviteCode string) (*Family, error) {
-	family := &Family{}
+func (r *Repository) GetFamilyByInviteCode(ctx context.Context, inviteCode string) (*models.Family, error) {
+	family := &models.Family{}
 	query := `
 		SELECT id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at
 		FROM families WHERE invite_code = ?`
@@ -135,7 +136,7 @@ func (r *Repository) GetFamilyByInviteCode(ctx context.Context, inviteCode strin
 }
 
 // UpdateFamily updates a family's information
-func (r *Repository) UpdateFamily(ctx context.Context, family *Family) error {
+func (r *Repository) UpdateFamily(ctx context.Context, family *models.Family) error {
 	family.UpdatedAt = time.Now()
 	query := `
 		UPDATE families 
@@ -161,7 +162,7 @@ func (r *Repository) UpdateFamily(ctx context.Context, family *Family) error {
 func (r *Repository) DeleteFamily(ctx context.Context, familyID string) error {
 	// The foreign key constraints will cascade delete family_memberships
 	query := `DELETE FROM families WHERE id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, familyID)
 	if err != nil {
 		return fmt.Errorf("failed to delete family: %w", err)
@@ -180,7 +181,7 @@ func (r *Repository) DeleteFamily(ctx context.Context, familyID string) error {
 }
 
 // GetFamiliesByManagerID retrieves all families managed by a user
-func (r *Repository) GetFamiliesByManagerID(ctx context.Context, managerID string) ([]*Family, error) {
+func (r *Repository) GetFamiliesByManagerID(ctx context.Context, managerID string) ([]*models.Family, error) {
 	query := `
 		SELECT id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at
 		FROM families WHERE manager_id = ? ORDER BY created_at DESC`
@@ -191,9 +192,9 @@ func (r *Repository) GetFamiliesByManagerID(ctx context.Context, managerID strin
 	}
 	defer rows.Close()
 
-	var families []*Family
+	var families []*models.Family
 	for rows.Next() {
-		family := &Family{}
+		family := &models.Family{}
 		err := rows.Scan(
 			&family.ID, &family.Name, &family.InviteCode, &family.DatabaseURL,
 			&family.ManagerID, &family.SchemaVersion, &family.CreatedAt, &family.UpdatedAt)
@@ -234,7 +235,7 @@ func (r *Repository) AddFamilyMember(ctx context.Context, familyID, userID, role
 // RemoveFamilyMember removes a user from a family
 func (r *Repository) RemoveFamilyMember(ctx context.Context, familyID, userID string) error {
 	query := `DELETE FROM family_memberships WHERE family_id = ? AND user_id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, familyID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to remove family member: %w", err)
@@ -254,7 +255,7 @@ func (r *Repository) RemoveFamilyMember(ctx context.Context, familyID, userID st
 }
 
 // GetFamilyMemberships retrieves all memberships for a family
-func (r *Repository) GetFamilyMemberships(ctx context.Context, familyID string) ([]*FamilyMembership, error) {
+func (r *Repository) GetFamilyMemberships(ctx context.Context, familyID string) ([]*models.FamilyMembership, error) {
 	query := `
 		SELECT family_id, user_id, role, joined_at
 		FROM family_memberships WHERE family_id = ? ORDER BY joined_at ASC`
@@ -265,9 +266,9 @@ func (r *Repository) GetFamilyMemberships(ctx context.Context, familyID string) 
 	}
 	defer rows.Close()
 
-	var memberships []*FamilyMembership
+	var memberships []*models.FamilyMembership
 	for rows.Next() {
-		membership := &FamilyMembership{}
+		membership := &models.FamilyMembership{}
 		err := rows.Scan(&membership.FamilyID, &membership.UserID, &membership.Role, &membership.JoinedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan membership: %w", err)
@@ -279,8 +280,8 @@ func (r *Repository) GetFamilyMemberships(ctx context.Context, familyID string) 
 }
 
 // GetUserFamilyMembership retrieves a user's family membership
-func (r *Repository) GetUserFamilyMembership(ctx context.Context, userID string) (*FamilyMembership, error) {
-	membership := &FamilyMembership{}
+func (r *Repository) GetUserFamilyMembership(ctx context.Context, userID string) (*models.FamilyMembership, error) {
+	membership := &models.FamilyMembership{}
 	query := `
 		SELECT family_id, user_id, role, joined_at
 		FROM family_memberships WHERE user_id = ?`
@@ -306,7 +307,7 @@ func (r *Repository) UpdateMemberRole(ctx context.Context, familyID, userID, new
 	}
 
 	query := `UPDATE family_memberships SET role = ? WHERE family_id = ? AND user_id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, newRole, familyID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to update member role: %w", err)
@@ -327,7 +328,7 @@ func (r *Repository) UpdateMemberRole(ctx context.Context, familyID, userID, new
 }
 
 // GetFamilyWithMembers retrieves a family along with its memberships
-func (r *Repository) GetFamilyWithMembers(ctx context.Context, familyID string) (*FamilyWithMembers, error) {
+func (r *Repository) GetFamilyWithMembers(ctx context.Context, familyID string) (*models.FamilyWithMembers, error) {
 	family, err := r.GetFamilyByID(ctx, familyID)
 	if err != nil {
 		return nil, err
@@ -338,7 +339,7 @@ func (r *Repository) GetFamilyWithMembers(ctx context.Context, familyID string) 
 		return nil, err
 	}
 
-	return &FamilyWithMembers{
+	return &models.FamilyWithMembers{
 		Family:      family,
 		Memberships: memberships,
 	}, nil
@@ -371,16 +372,16 @@ func (r *Repository) UserIsFamilyManager(ctx context.Context, familyID, userID s
 // GenerateInviteCode generates a unique invite code for a family
 func (r *Repository) GenerateInviteCode(ctx context.Context) (string, error) {
 	const maxAttempts = 10
-	
+
 	for attempt := 0; attempt < maxAttempts; attempt++ {
 		// Generate 6-character invite code
 		bytes := make([]byte, 3)
 		if _, err := rand.Read(bytes); err != nil {
 			return "", fmt.Errorf("failed to generate random bytes: %w", err)
 		}
-		
+
 		inviteCode := strings.ToUpper(hex.EncodeToString(bytes))
-		
+
 		// Check if code already exists
 		var count int
 		query := `SELECT COUNT(*) FROM families WHERE invite_code = ?`
@@ -388,12 +389,12 @@ func (r *Repository) GenerateInviteCode(ctx context.Context) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("failed to check invite code uniqueness: %w", err)
 		}
-		
+
 		if count == 0 {
 			return inviteCode, nil
 		}
 	}
-	
+
 	return "", fmt.Errorf("failed to generate unique invite code after %d attempts", maxAttempts)
 }
 
@@ -405,3 +406,4 @@ func (r *Repository) generateID() (string, error) {
 	}
 	return hex.EncodeToString(bytes), nil
 }
+

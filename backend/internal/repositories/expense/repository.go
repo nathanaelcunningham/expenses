@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"expenses-backend/internal/models"
 	"fmt"
 	"strings"
 	"time"
@@ -27,31 +28,23 @@ func NewRepository(db *sql.DB, logger zerolog.Logger) Store {
 }
 
 // CreateExpense creates a new expense in the family database
-func (r *Repository) CreateExpense(ctx context.Context, req *CreateExpenseRequest) (*Expense, error) {
+func (r *Repository) CreateExpense(ctx context.Context, req *models.CreateExpenseRequest) (*models.Expense, error) {
 	expenseID, err := r.generateID()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate expense ID: %w", err)
 	}
 
 	now := time.Now()
-	expense := &Expense{
-		ID:                expenseID,
-		MemberID:          req.MemberID,
-		CategoryID:        req.CategoryID,
-		Amount:            req.Amount,
-		Currency:          req.Currency,
-		Description:       strings.TrimSpace(req.Description),
-		Date:              req.Date,
-		ReceiptURL:        req.ReceiptURL,
-		Tags:              req.Tags,
-		IsRecurring:       req.IsRecurring,
-		RecurringInterval: req.RecurringInterval,
-		CreatedAt:         now,
-		UpdatedAt:         now,
-	}
-
-	if expense.Currency == "" {
-		expense.Currency = "USD"
+	expense := &models.Expense{
+		ID:            expenseID,
+		MemberID:      req.MemberID,
+		CategoryID:    req.CategoryID,
+		Amount:        req.Amount,
+		Name:          req.Name,
+		DayOfMonthDue: req.DayOfMonthDue,
+		IsAutopay:     req.IsAutopay,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}
 
 	// Begin transaction for atomic expense creation
@@ -63,36 +56,13 @@ func (r *Repository) CreateExpense(ctx context.Context, req *CreateExpenseReques
 
 	// Insert expense
 	query := `
-		INSERT INTO expenses (id, member_id, category_id, amount, currency, description, date, 
-		                     receipt_url, tags, is_recurring, recurring_interval, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		INSERT INTO expenses (id, member_id, category_id, amount, name, day_of_month_due, is_autopay, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	_, err = tx.ExecContext(ctx, query,
-		expense.ID, expense.MemberID, expense.CategoryID, expense.Amount, expense.Currency,
-		expense.Description, expense.Date, expense.ReceiptURL, expense.Tags,
-		expense.IsRecurring, expense.RecurringInterval, expense.CreatedAt, expense.UpdatedAt)
+		expense.ID, expense.MemberID, expense.CategoryID, expense.Amount, expense.Name, expense.DayOfMonthDue, expense.IsAutopay, expense.CreatedAt, expense.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create expense: %w", err)
-	}
-
-	// Create splits if provided
-	if len(req.Splits) > 0 {
-		for _, split := range req.Splits {
-			splitID, err := r.generateID()
-			if err != nil {
-				return nil, fmt.Errorf("failed to generate split ID: %w", err)
-			}
-
-			splitQuery := `
-				INSERT INTO expense_splits (id, expense_id, member_id, amount, percentage, created_at)
-				VALUES (?, ?, ?, ?, ?, ?)`
-
-			_, err = tx.ExecContext(ctx, splitQuery,
-				splitID, expense.ID, split.MemberID, split.Amount, split.Percentage, now)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create expense split: %w", err)
-			}
-		}
 	}
 
 	if err = tx.Commit(); err != nil {
@@ -103,15 +73,15 @@ func (r *Repository) CreateExpense(ctx context.Context, req *CreateExpenseReques
 		Str("expense_id", expense.ID).
 		Str("member_id", expense.MemberID).
 		Float64("amount", expense.Amount).
-		Str("currency", expense.Currency).
+		Int("day_of_month_due", expense.DayOfMonthDue).
 		Msg("Expense created successfully")
 
 	return expense, nil
 }
 
 // GetExpenseByID retrieves an expense by its ID
-func (r *Repository) GetExpenseByID(ctx context.Context, expenseID string) (*Expense, error) {
-	expense := &Expense{}
+func (r *Repository) GetExpenseByID(ctx context.Context, expenseID string) (*models.Expense, error) {
+	expense := &models.Expense{}
 	query := `
 		SELECT id, member_id, category_id, amount, currency, description, date,
 		       receipt_url, tags, is_recurring, recurring_interval, created_at, updated_at
@@ -134,7 +104,7 @@ func (r *Repository) GetExpenseByID(ctx context.Context, expenseID string) (*Exp
 }
 
 // GetExpenseWithSplits retrieves an expense with its splits
-func (r *Repository) GetExpenseWithSplits(ctx context.Context, expenseID string) (*ExpenseWithSplits, error) {
+func (r *Repository) GetExpenseWithSplits(ctx context.Context, expenseID string) (*models.ExpenseWithSplits, error) {
 	expense, err := r.GetExpenseByID(ctx, expenseID)
 	if err != nil {
 		return nil, err
@@ -145,14 +115,14 @@ func (r *Repository) GetExpenseWithSplits(ctx context.Context, expenseID string)
 		return nil, err
 	}
 
-	return &ExpenseWithSplits{
+	return &models.ExpenseWithSplits{
 		Expense: expense,
 		Splits:  splits,
 	}, nil
 }
 
 // UpdateExpense updates an existing expense
-func (r *Repository) UpdateExpense(ctx context.Context, expenseID string, req *UpdateExpenseRequest) (*Expense, error) {
+func (r *Repository) UpdateExpense(ctx context.Context, expenseID string, req *models.UpdateExpenseRequest) (*models.Expense, error) {
 	// First, get the current expense
 	expense, err := r.GetExpenseByID(ctx, expenseID)
 	if err != nil {
@@ -168,7 +138,7 @@ func (r *Repository) UpdateExpense(ctx context.Context, expenseID string, req *U
 
 	// Build update query dynamically based on provided fields
 	var setParts []string
-	var args []interface{}
+	var args []any
 
 	if req.CategoryID != nil {
 		setParts = append(setParts, "category_id = ?")
@@ -272,7 +242,7 @@ func (r *Repository) UpdateExpense(ctx context.Context, expenseID string, req *U
 func (r *Repository) DeleteExpense(ctx context.Context, expenseID string) error {
 	// The foreign key constraints will cascade delete expense_splits
 	query := `DELETE FROM expenses WHERE id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, expenseID)
 	if err != nil {
 		return fmt.Errorf("failed to delete expense: %w", err)
@@ -291,7 +261,7 @@ func (r *Repository) DeleteExpense(ctx context.Context, expenseID string) error 
 }
 
 // ListExpenses retrieves expenses based on filter criteria
-func (r *Repository) ListExpenses(ctx context.Context, filter *ExpenseFilter) ([]*Expense, error) {
+func (r *Repository) ListExpenses(ctx context.Context, filter *models.ExpenseFilter) ([]*models.Expense, error) {
 	query := `
 		SELECT id, member_id, category_id, amount, currency, description, date,
 		       receipt_url, tags, is_recurring, recurring_interval, created_at, updated_at
@@ -319,9 +289,9 @@ func (r *Repository) ListExpenses(ctx context.Context, filter *ExpenseFilter) ([
 	}
 	defer rows.Close()
 
-	var expenses []*Expense
+	var expenses []*models.Expense
 	for rows.Next() {
-		expense := &Expense{}
+		expense := &models.Expense{}
 		err := rows.Scan(
 			&expense.ID, &expense.MemberID, &expense.CategoryID, &expense.Amount,
 			&expense.Currency, &expense.Description, &expense.Date, &expense.ReceiptURL,
@@ -337,20 +307,20 @@ func (r *Repository) ListExpenses(ctx context.Context, filter *ExpenseFilter) ([
 }
 
 // ListExpensesWithSplits retrieves expenses with their splits based on filter criteria
-func (r *Repository) ListExpensesWithSplits(ctx context.Context, filter *ExpenseFilter) ([]*ExpenseWithSplits, error) {
+func (r *Repository) ListExpensesWithSplits(ctx context.Context, filter *models.ExpenseFilter) ([]*models.ExpenseWithSplits, error) {
 	expenses, err := r.ListExpenses(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	var expensesWithSplits []*ExpenseWithSplits
+	var expensesWithSplits []*models.ExpenseWithSplits
 	for _, expense := range expenses {
 		splits, err := r.GetExpenseSplits(ctx, expense.ID)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get splits for expense %s: %w", expense.ID, err)
 		}
 
-		expensesWithSplits = append(expensesWithSplits, &ExpenseWithSplits{
+		expensesWithSplits = append(expensesWithSplits, &models.ExpenseWithSplits{
 			Expense: expense,
 			Splits:  splits,
 		})
@@ -360,9 +330,9 @@ func (r *Repository) ListExpensesWithSplits(ctx context.Context, filter *Expense
 }
 
 // CountExpenses counts expenses based on filter criteria
-func (r *Repository) CountExpenses(ctx context.Context, filter *ExpenseFilter) (int, error) {
+func (r *Repository) CountExpenses(ctx context.Context, filter *models.ExpenseFilter) (int, error) {
 	query := "SELECT COUNT(*) FROM expenses"
-	
+
 	whereClause, args := r.buildWhereClause(filter)
 	if whereClause != "" {
 		query += " WHERE " + whereClause
@@ -378,14 +348,14 @@ func (r *Repository) CountExpenses(ctx context.Context, filter *ExpenseFilter) (
 }
 
 // CreateExpenseSplit creates a new expense split
-func (r *Repository) CreateExpenseSplit(ctx context.Context, expenseID string, req *CreateSplitRequest) (*ExpenseSplit, error) {
+func (r *Repository) CreateExpenseSplit(ctx context.Context, expenseID string, req *models.CreateSplitRequest) (*models.ExpenseSplit, error) {
 	splitID, err := r.generateID()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate split ID: %w", err)
 	}
 
 	now := time.Now()
-	split := &ExpenseSplit{
+	split := &models.ExpenseSplit{
 		ID:         splitID,
 		ExpenseID:  expenseID,
 		MemberID:   req.MemberID,
@@ -408,7 +378,7 @@ func (r *Repository) CreateExpenseSplit(ctx context.Context, expenseID string, r
 }
 
 // GetExpenseSplits retrieves all splits for an expense
-func (r *Repository) GetExpenseSplits(ctx context.Context, expenseID string) ([]*ExpenseSplit, error) {
+func (r *Repository) GetExpenseSplits(ctx context.Context, expenseID string) ([]*models.ExpenseSplit, error) {
 	query := `
 		SELECT id, expense_id, member_id, amount, percentage, created_at
 		FROM expense_splits WHERE expense_id = ? ORDER BY created_at ASC`
@@ -419,10 +389,10 @@ func (r *Repository) GetExpenseSplits(ctx context.Context, expenseID string) ([]
 	}
 	defer rows.Close()
 
-	var splits []*ExpenseSplit
+	var splits []*models.ExpenseSplit
 	for rows.Next() {
-		split := &ExpenseSplit{}
-		err := rows.Scan(&split.ID, &split.ExpenseID, &split.MemberID, 
+		split := &models.ExpenseSplit{}
+		err := rows.Scan(&split.ID, &split.ExpenseID, &split.MemberID,
 			&split.Amount, &split.Percentage, &split.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan expense split: %w", err)
@@ -434,9 +404,9 @@ func (r *Repository) GetExpenseSplits(ctx context.Context, expenseID string) ([]
 }
 
 // UpdateExpenseSplit updates an expense split
-func (r *Repository) UpdateExpenseSplit(ctx context.Context, splitID string, amount float64, percentage *float64) (*ExpenseSplit, error) {
+func (r *Repository) UpdateExpenseSplit(ctx context.Context, splitID string, amount float64, percentage *float64) (*models.ExpenseSplit, error) {
 	query := `UPDATE expense_splits SET amount = ?, percentage = ? WHERE id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, amount, percentage, splitID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update expense split: %w", err)
@@ -448,13 +418,13 @@ func (r *Repository) UpdateExpenseSplit(ctx context.Context, splitID string, amo
 	}
 
 	// Return updated split
-	split := &ExpenseSplit{}
+	split := &models.ExpenseSplit{}
 	getQuery := `
 		SELECT id, expense_id, member_id, amount, percentage, created_at
 		FROM expense_splits WHERE id = ?`
 
 	err = r.db.QueryRowContext(ctx, getQuery, splitID).Scan(
-		&split.ID, &split.ExpenseID, &split.MemberID, 
+		&split.ID, &split.ExpenseID, &split.MemberID,
 		&split.Amount, &split.Percentage, &split.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get updated split: %w", err)
@@ -466,7 +436,7 @@ func (r *Repository) UpdateExpenseSplit(ctx context.Context, splitID string, amo
 // DeleteExpenseSplit removes an expense split
 func (r *Repository) DeleteExpenseSplit(ctx context.Context, splitID string) error {
 	query := `DELETE FROM expense_splits WHERE id = ?`
-	
+
 	result, err := r.db.ExecContext(ctx, query, splitID)
 	if err != nil {
 		return fmt.Errorf("failed to delete expense split: %w", err)
@@ -491,7 +461,7 @@ func (r *Repository) DeleteAllExpenseSplits(ctx context.Context, expenseID strin
 }
 
 // GetExpenseSummary generates expense summary statistics
-func (r *Repository) GetExpenseSummary(ctx context.Context, filter *ExpenseFilter) (*ExpenseSummary, error) {
+func (r *Repository) GetExpenseSummary(ctx context.Context, filter *models.ExpenseFilter) (*models.ExpenseSummary, error) {
 	// Base query for summary
 	baseQuery := "FROM expenses"
 	whereClause, args := r.buildWhereClause(filter)
@@ -501,7 +471,7 @@ func (r *Repository) GetExpenseSummary(ctx context.Context, filter *ExpenseFilte
 
 	// Get total amount and count
 	summaryQuery := "SELECT COALESCE(SUM(amount), 0), COUNT(*), COALESCE(AVG(amount), 0) " + baseQuery
-	
+
 	var totalAmount, averageAmount float64
 	var count int
 	err := r.db.QueryRowContext(ctx, summaryQuery, args...).Scan(&totalAmount, &count, &averageAmount)
@@ -509,7 +479,7 @@ func (r *Repository) GetExpenseSummary(ctx context.Context, filter *ExpenseFilte
 		return nil, fmt.Errorf("failed to get expense summary: %w", err)
 	}
 
-	summary := &ExpenseSummary{
+	summary := &models.ExpenseSummary{
 		TotalAmount:   totalAmount,
 		ExpenseCount:  count,
 		AverageAmount: averageAmount,
@@ -556,8 +526,8 @@ func (r *Repository) GetExpenseSummary(ctx context.Context, filter *ExpenseFilte
 }
 
 // GetExpensesByDateRange retrieves expenses within a date range
-func (r *Repository) GetExpensesByDateRange(ctx context.Context, memberID *string, startDate, endDate time.Time) ([]*Expense, error) {
-	filter := &ExpenseFilter{
+func (r *Repository) GetExpensesByDateRange(ctx context.Context, memberID *string, startDate, endDate time.Time) ([]*models.Expense, error) {
+	filter := &models.ExpenseFilter{
 		DateFrom: &startDate,
 		DateTo:   &endDate,
 	}
@@ -571,7 +541,7 @@ func (r *Repository) GetExpensesByDateRange(ctx context.Context, memberID *strin
 // GetTotalSpentByMember calculates total spent by a member in a date range
 func (r *Repository) GetTotalSpentByMember(ctx context.Context, memberID string, startDate, endDate time.Time) (float64, error) {
 	query := `SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE member_id = ? AND date BETWEEN ? AND ?`
-	
+
 	var total float64
 	err := r.db.QueryRowContext(ctx, query, memberID, startDate, endDate).Scan(&total)
 	if err != nil {
@@ -584,7 +554,7 @@ func (r *Repository) GetTotalSpentByMember(ctx context.Context, memberID string,
 // GetTotalSpentByCategory calculates total spent in a category in a date range
 func (r *Repository) GetTotalSpentByCategory(ctx context.Context, categoryID string, startDate, endDate time.Time) (float64, error) {
 	query := `SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE category_id = ? AND date BETWEEN ? AND ?`
-	
+
 	var total float64
 	err := r.db.QueryRowContext(ctx, query, categoryID, startDate, endDate).Scan(&total)
 	if err != nil {
@@ -595,16 +565,16 @@ func (r *Repository) GetTotalSpentByCategory(ctx context.Context, categoryID str
 }
 
 // GetRecurringExpenses retrieves all recurring expenses
-func (r *Repository) GetRecurringExpenses(ctx context.Context) ([]*Expense, error) {
-	filter := &ExpenseFilter{
+func (r *Repository) GetRecurringExpenses(ctx context.Context) ([]*models.Expense, error) {
+	filter := &models.ExpenseFilter{
 		IsRecurring: &[]bool{true}[0],
 	}
 	return r.ListExpenses(ctx, filter)
 }
 
 // GetExpensesByMember retrieves expenses for a specific member with pagination
-func (r *Repository) GetExpensesByMember(ctx context.Context, memberID string, limit, offset int) ([]*Expense, error) {
-	filter := &ExpenseFilter{
+func (r *Repository) GetExpensesByMember(ctx context.Context, memberID string, limit, offset int) ([]*models.Expense, error) {
+	filter := &models.ExpenseFilter{
 		MemberID: &memberID,
 		Limit:    limit,
 		Offset:   offset,
@@ -626,7 +596,7 @@ func (r *Repository) UserCanAccessExpense(ctx context.Context, expenseID, userID
 		SELECT COUNT(*) FROM expenses e
 		LEFT JOIN expense_splits es ON e.id = es.expense_id
 		WHERE e.id = ? AND (e.member_id = ? OR es.member_id = ?)`
-	
+
 	var count int
 	err := r.db.QueryRowContext(ctx, query, expenseID, userID, userID).Scan(&count)
 	return count > 0, err
@@ -635,13 +605,13 @@ func (r *Repository) UserCanAccessExpense(ctx context.Context, expenseID, userID
 // Helper methods
 
 // buildWhereClause builds the WHERE clause for filtering expenses
-func (r *Repository) buildWhereClause(filter *ExpenseFilter) (string, []interface{}) {
+func (r *Repository) buildWhereClause(filter *models.ExpenseFilter) (string, []any) {
 	if filter == nil {
 		return "", nil
 	}
 
 	var conditions []string
-	var args []interface{}
+	var args []any
 
 	if filter.MemberID != nil {
 		conditions = append(conditions, "member_id = ?")
@@ -705,3 +675,4 @@ func (r *Repository) generateID() (string, error) {
 	}
 	return hex.EncodeToString(bytes), nil
 }
+
