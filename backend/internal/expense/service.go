@@ -4,6 +4,7 @@ import (
 	"context"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"fmt"
+	"slices"
 	"sync"
 	"time"
 
@@ -131,13 +132,45 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	expenses := make([]*expensev1.Expense, 0, len(s.expenses))
+	// populate sorted bills array by bill.Dayofmonthdue
+	expensesByDayMap := make(map[int32][]*expensev1.Expense)
 	for _, expense := range s.expenses {
-		expenses = append(expenses, expense)
+		expensesByDayMap[expense.DayOfMonthDue] = append(expensesByDayMap[expense.DayOfMonthDue], expense)
+	}
+
+	// 2. Extract the unique days (keys of the map)
+	var uniqueDays []int32
+	for day := range expensesByDayMap {
+		uniqueDays = append(uniqueDays, day)
+	}
+
+	// 3. Sort these unique days
+	slices.SortFunc(uniqueDays, func(a, b int32) int {
+		if a == b {
+			return 0
+		}
+
+		if a > b {
+			return 1
+		}
+
+		if a < b {
+			return -1
+		}
+		return 0
+	})
+
+	var sortedExpenses []*expensev1.SortedExpense
+
+	for _, day := range uniqueDays {
+		sortedExpenses = append(sortedExpenses, &expensev1.SortedExpense{
+			Day:      day,
+			Expenses: expensesByDayMap[day],
+		})
 	}
 
 	return connect.NewResponse(&expensev1.ListExpensesResponse{
-		Expenses:      expenses,
+		Expenses:      sortedExpenses,
 		NextPageToken: "",
 	}), nil
 }

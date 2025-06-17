@@ -12,7 +12,8 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as DemoFormAddressImport } from './routes/demo.form.address'
+import { Route as ExpenseCreateImport } from './routes/expense.create'
+import { Route as ExpenseIdEditImport } from './routes/expense.$id.edit'
 
 // Create/Update Routes
 
@@ -22,9 +23,15 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DemoFormAddressRoute = DemoFormAddressImport.update({
-  id: '/demo/form/address',
-  path: '/demo/form/address',
+const ExpenseCreateRoute = ExpenseCreateImport.update({
+  id: '/expense/create',
+  path: '/expense/create',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ExpenseIdEditRoute = ExpenseIdEditImport.update({
+  id: '/expense/$id/edit',
+  path: '/expense/$id/edit',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +46,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/demo/form/address': {
-      id: '/demo/form/address'
-      path: '/demo/form/address'
-      fullPath: '/demo/form/address'
-      preLoaderRoute: typeof DemoFormAddressImport
+    '/expense/create': {
+      id: '/expense/create'
+      path: '/expense/create'
+      fullPath: '/expense/create'
+      preLoaderRoute: typeof ExpenseCreateImport
+      parentRoute: typeof rootRoute
+    }
+    '/expense/$id/edit': {
+      id: '/expense/$id/edit'
+      path: '/expense/$id/edit'
+      fullPath: '/expense/$id/edit'
+      preLoaderRoute: typeof ExpenseIdEditImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +67,42 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/expense/create': typeof ExpenseCreateRoute
+  '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/expense/create': typeof ExpenseCreateRoute
+  '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/demo/form/address': typeof DemoFormAddressRoute
+  '/expense/create': typeof ExpenseCreateRoute
+  '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/demo/form/address'
+  fullPaths: '/' | '/expense/create' | '/expense/$id/edit'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/demo/form/address'
-  id: '__root__' | '/' | '/demo/form/address'
+  to: '/' | '/expense/create' | '/expense/$id/edit'
+  id: '__root__' | '/' | '/expense/create' | '/expense/$id/edit'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DemoFormAddressRoute: typeof DemoFormAddressRoute
+  ExpenseCreateRoute: typeof ExpenseCreateRoute
+  ExpenseIdEditRoute: typeof ExpenseIdEditRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DemoFormAddressRoute: DemoFormAddressRoute,
+  ExpenseCreateRoute: ExpenseCreateRoute,
+  ExpenseIdEditRoute: ExpenseIdEditRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +116,18 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/demo/form/address"
+        "/expense/create",
+        "/expense/$id/edit"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/demo/form/address": {
-      "filePath": "demo.form.address.tsx"
+    "/expense/create": {
+      "filePath": "expense.create.tsx"
+    },
+    "/expense/$id/edit": {
+      "filePath": "expense.$id.edit.tsx"
     }
   }
 }
