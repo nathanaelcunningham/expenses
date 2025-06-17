@@ -9,6 +9,7 @@ import (
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
 	"expenses-backend/internal/middleware"
+	"expenses-backend/internal/repository"
 	"expenses-backend/pkg/expense/v1/expensev1connect"
 	"net/http"
 	"os"
@@ -51,6 +52,9 @@ func main() {
 	if err := dbManager.RunMigrations(ctx, migrationManager); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to run migrations")
 	}
+
+	// Initialize repository factory
+	repoFactory := repository.NewRepositoryFactory(dbManager)
 
 	// Initialize services
 	authService := auth.NewService(dbManager.GetMasterDatabase(), logger)
