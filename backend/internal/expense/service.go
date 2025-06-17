@@ -2,9 +2,8 @@ package expense
 
 import (
 	"context"
+	"expenses-backend/internal/database/sql/familydb"
 	"expenses-backend/internal/middleware"
-	"expenses-backend/internal/models"
-	"expenses-backend/internal/repositories"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
 	"time"
@@ -17,15 +16,13 @@ import (
 
 // Service handles expense operations using repository pattern
 type Service struct {
-	repoFactory *repositories.Factory
-	logger      zerolog.Logger
+	logger zerolog.Logger
 }
 
 // NewService creates a new expense service
-func NewService(repoFactory *repositories.Factory, logger zerolog.Logger) *Service {
+func NewService(logger zerolog.Logger) *Service {
 	return &Service{
-		repoFactory: repoFactory,
-		logger:      logger.With().Str("component", "expense-service").Logger(),
+		logger: logger.With().Str("component", "expense-service").Logger(),
 	}
 }
 
@@ -47,17 +44,16 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 		return nil, status.Error(codes.InvalidArgument, "day_of_month_due must be between 1 and 31")
 	}
 
-	// Create expense request adapted to repository model
-	// For now, we'll map the protobuf bill model to expense model
-	// This could be improved with a proper protobuf update
-	createReq := &models.CreateExpenseRequest{
-		MemberID:          authCtx.UserID,
-		Amount:            req.Msg.Amount,
-		Currency:          "USD", // Default currency
-		Description:       req.Msg.Name,
-		Date:              s.calculateDueDate(req.Msg.DayOfMonthDue),
-		IsRecurring:       true, // Assuming bills are recurring
-		RecurringInterval: stringPtr("monthly"),
+	now := time.Now()
+
+	createReq := &familydb.CreateExpenseParams{
+		Name:          req.Msg.Name,
+		CategoryID:    new(string),
+		Amount:        req.Msg.Amount,
+		DayOfMonthDue: int64(req.Msg.DayOfMonthDue),
+		IsAutopay:     req.Msg.IsAutopay,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}
 
 	// Get expense store for the family
@@ -318,47 +314,14 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 // Helper methods
 
 // convertToProtoExpense converts repository expense model to protobuf expense
-func (s *Service) convertToProtoExpense(exp *models.Expense) *expensev1.Expense {
-	// Extract day of month from expense date
-	dayOfMonth := int32(exp.Date.Day())
-
+func (s *Service) convertToProtoExpense(exp *familydb.Expense) *expensev1.Expense {
 	return &expensev1.Expense{
 		Id:            exp.ID,
-		Name:          exp.Description,
+		Name:          exp.Name,
 		Amount:        exp.Amount,
-		DayOfMonthDue: dayOfMonth,
-		IsAutopay:     exp.IsRecurring, // Map recurring to autopay for now
+		DayOfMonthDue: int32(exp.DayOfMonthDue),
+		IsAutopay:     exp.IsAutopay,
 		CreatedAt:     exp.CreatedAt.Unix(),
 		UpdatedAt:     exp.UpdatedAt.Unix(),
 	}
-}
-
-// calculateDueDate calculates the next due date based on day of month
-func (s *Service) calculateDueDate(dayOfMonth int32) time.Time {
-	now := time.Now()
-	year := now.Year()
-	month := now.Month()
-
-	// If the day has already passed this month, move to next month
-	if int(dayOfMonth) < now.Day() {
-		month++
-		if month > 12 {
-			month = 1
-			year++
-		}
-	}
-
-	// Handle months with fewer days
-	actualDay := int(dayOfMonth)
-	lastDayOfMonth := time.Date(year, month+1, 0, 0, 0, 0, 0, now.Location()).Day()
-	if actualDay > lastDayOfMonth {
-		actualDay = lastDayOfMonth
-	}
-
-	return time.Date(year, month, actualDay, 0, 0, 0, 0, now.Location())
-}
-
-// stringPtr returns a pointer to a string
-func stringPtr(s string) *string {
-	return &s
 }
