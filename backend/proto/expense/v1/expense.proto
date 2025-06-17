@@ -22,6 +22,11 @@ message Expense {
   int64 updated_at = 7;
 }
 
+message SortedExpense {
+  int32 day = 1;
+  repeated Expense expenses = 2;
+}
+
 message CreateExpenseRequest {
   string name = 1;
   double amount = 2;
@@ -67,6 +72,6 @@ message ListExpensesRequest {
 }
 
 message ListExpensesResponse {
-  repeated Expense expenses = 1;
+  repeated SortedExpense expenses = 1;
   string next_page_token = 2;
 }

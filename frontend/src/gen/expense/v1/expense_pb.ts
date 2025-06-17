@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file expense/v1/expense.proto.
  */
 export const file_expense_v1_expense: GenFile = /*@__PURE__*/
-  fileDesc("ChhleHBlbnNlL3YxL2V4cGVuc2UucHJvdG8SCmV4cGVuc2UudjEiiQEKB0V4cGVuc2USCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIEhIKCmNyZWF0ZWRfYXQYBiABKAMSEgoKdXBkYXRlZF9hdBgHIAEoAyJiChRDcmVhdGVFeHBlbnNlUmVxdWVzdBIMCgRuYW1lGAEgASgJEg4KBmFtb3VudBgCIAEoARIYChBkYXlfb2ZfbW9udGhfZHVlGAMgASgFEhIKCmlzX2F1dG9wYXkYBCABKAgiPQoVQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UiHwoRR2V0RXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkiOgoSR2V0RXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UibgoUVXBkYXRlRXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIIj0KFVVwZGF0ZUV4cGVuc2VSZXNwb25zZRIkCgdleHBlbnNlGAEgASgLMhMuZXhwZW5zZS52MS5FeHBlbnNlIiIKFERlbGV0ZUV4cGVuc2VSZXF1ZXN0EgoKAmlkGAEgASgJIigKFURlbGV0ZUV4cGVuc2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjwKE0xpc3RFeHBlbnNlc1JlcXVlc3QSEQoJcGFnZV9zaXplGAEgASgFEhIKCnBhZ2VfdG9rZW4YAiABKAkiVgoUTGlzdEV4cGVuc2VzUmVzcG9uc2USJQoIZXhwZW5zZXMYASADKAsyEy5leHBlbnNlLnYxLkV4cGVuc2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJMrIDCg5FeHBlbnNlU2VydmljZRJUCg1DcmVhdGVFeHBlbnNlEiAuZXhwZW5zZS52MS5DcmVhdGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEksKCkdldEV4cGVuc2USHS5leHBlbnNlLnYxLkdldEV4cGVuc2VSZXF1ZXN0Gh4uZXhwZW5zZS52MS5HZXRFeHBlbnNlUmVzcG9uc2USVAoNVXBkYXRlRXhwZW5zZRIgLmV4cGVuc2UudjEuVXBkYXRlRXhwZW5zZVJlcXVlc3QaIS5leHBlbnNlLnYxLlVwZGF0ZUV4cGVuc2VSZXNwb25zZRJUCg1EZWxldGVFeHBlbnNlEiAuZXhwZW5zZS52MS5EZWxldGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuRGVsZXRlRXhwZW5zZVJlc3BvbnNlElEKDExpc3RFeHBlbnNlcxIfLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVxdWVzdBogLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVzcG9uc2VCK1opZXhwZW5zZXMtYmFja2VuZC9wa2cvZXhwZW5zZS92MTtleHBlbnNldjFiBnByb3RvMw");
+  fileDesc("ChhleHBlbnNlL3YxL2V4cGVuc2UucHJvdG8SCmV4cGVuc2UudjEiiQEKB0V4cGVuc2USCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIEhIKCmNyZWF0ZWRfYXQYBiABKAMSEgoKdXBkYXRlZF9hdBgHIAEoAyJDCg1Tb3J0ZWRFeHBlbnNlEgsKA2RheRgBIAEoBRIlCghleHBlbnNlcxgCIAMoCzITLmV4cGVuc2UudjEuRXhwZW5zZSJiChRDcmVhdGVFeHBlbnNlUmVxdWVzdBIMCgRuYW1lGAEgASgJEg4KBmFtb3VudBgCIAEoARIYChBkYXlfb2ZfbW9udGhfZHVlGAMgASgFEhIKCmlzX2F1dG9wYXkYBCABKAgiPQoVQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UiHwoRR2V0RXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkiOgoSR2V0RXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UibgoUVXBkYXRlRXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIIj0KFVVwZGF0ZUV4cGVuc2VSZXNwb25zZRIkCgdleHBlbnNlGAEgASgLMhMuZXhwZW5zZS52MS5FeHBlbnNlIiIKFERlbGV0ZUV4cGVuc2VSZXF1ZXN0EgoKAmlkGAEgASgJIigKFURlbGV0ZUV4cGVuc2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjwKE0xpc3RFeHBlbnNlc1JlcXVlc3QSEQoJcGFnZV9zaXplGAEgASgFEhIKCnBhZ2VfdG9rZW4YAiABKAkiXAoUTGlzdEV4cGVuc2VzUmVzcG9uc2USKwoIZXhwZW5zZXMYASADKAsyGS5leHBlbnNlLnYxLlNvcnRlZEV4cGVuc2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJMrIDCg5FeHBlbnNlU2VydmljZRJUCg1DcmVhdGVFeHBlbnNlEiAuZXhwZW5zZS52MS5DcmVhdGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEksKCkdldEV4cGVuc2USHS5leHBlbnNlLnYxLkdldEV4cGVuc2VSZXF1ZXN0Gh4uZXhwZW5zZS52MS5HZXRFeHBlbnNlUmVzcG9uc2USVAoNVXBkYXRlRXhwZW5zZRIgLmV4cGVuc2UudjEuVXBkYXRlRXhwZW5zZVJlcXVlc3QaIS5leHBlbnNlLnYxLlVwZGF0ZUV4cGVuc2VSZXNwb25zZRJUCg1EZWxldGVFeHBlbnNlEiAuZXhwZW5zZS52MS5EZWxldGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuRGVsZXRlRXhwZW5zZVJlc3BvbnNlElEKDExpc3RFeHBlbnNlcxIfLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVxdWVzdBogLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVzcG9uc2VCK1opZXhwZW5zZXMtYmFja2VuZC9wa2cvZXhwZW5zZS92MTtleHBlbnNldjFiBnByb3RvMw");
 
 /**
  * @generated from message expense.v1.Expense
@@ -60,6 +60,28 @@ export const ExpenseSchema: GenMessage<Expense> = /*@__PURE__*/
   messageDesc(file_expense_v1_expense, 0);
 
 /**
+ * @generated from message expense.v1.SortedExpense
+ */
+export type SortedExpense = Message<"expense.v1.SortedExpense"> & {
+  /**
+   * @generated from field: int32 day = 1;
+   */
+  day: number;
+
+  /**
+   * @generated from field: repeated expense.v1.Expense expenses = 2;
+   */
+  expenses: Expense[];
+};
+
+/**
+ * Describes the message expense.v1.SortedExpense.
+ * Use `create(SortedExpenseSchema)` to create a new message.
+ */
+export const SortedExpenseSchema: GenMessage<SortedExpense> = /*@__PURE__*/
+  messageDesc(file_expense_v1_expense, 1);
+
+/**
  * @generated from message expense.v1.CreateExpenseRequest
  */
 export type CreateExpenseRequest = Message<"expense.v1.CreateExpenseRequest"> & {
@@ -89,7 +111,7 @@ export type CreateExpenseRequest = Message<"expense.v1.CreateExpenseRequest"> & 
  * Use `create(CreateExpenseRequestSchema)` to create a new message.
  */
 export const CreateExpenseRequestSchema: GenMessage<CreateExpenseRequest> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 1);
+  messageDesc(file_expense_v1_expense, 2);
 
 /**
  * @generated from message expense.v1.CreateExpenseResponse
@@ -106,7 +128,7 @@ export type CreateExpenseResponse = Message<"expense.v1.CreateExpenseResponse"> 
  * Use `create(CreateExpenseResponseSchema)` to create a new message.
  */
 export const CreateExpenseResponseSchema: GenMessage<CreateExpenseResponse> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 2);
+  messageDesc(file_expense_v1_expense, 3);
 
 /**
  * @generated from message expense.v1.GetExpenseRequest
@@ -123,7 +145,7 @@ export type GetExpenseRequest = Message<"expense.v1.GetExpenseRequest"> & {
  * Use `create(GetExpenseRequestSchema)` to create a new message.
  */
 export const GetExpenseRequestSchema: GenMessage<GetExpenseRequest> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 3);
+  messageDesc(file_expense_v1_expense, 4);
 
 /**
  * @generated from message expense.v1.GetExpenseResponse
@@ -140,7 +162,7 @@ export type GetExpenseResponse = Message<"expense.v1.GetExpenseResponse"> & {
  * Use `create(GetExpenseResponseSchema)` to create a new message.
  */
 export const GetExpenseResponseSchema: GenMessage<GetExpenseResponse> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 4);
+  messageDesc(file_expense_v1_expense, 5);
 
 /**
  * @generated from message expense.v1.UpdateExpenseRequest
@@ -177,7 +199,7 @@ export type UpdateExpenseRequest = Message<"expense.v1.UpdateExpenseRequest"> & 
  * Use `create(UpdateExpenseRequestSchema)` to create a new message.
  */
 export const UpdateExpenseRequestSchema: GenMessage<UpdateExpenseRequest> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 5);
+  messageDesc(file_expense_v1_expense, 6);
 
 /**
  * @generated from message expense.v1.UpdateExpenseResponse
@@ -194,7 +216,7 @@ export type UpdateExpenseResponse = Message<"expense.v1.UpdateExpenseResponse"> 
  * Use `create(UpdateExpenseResponseSchema)` to create a new message.
  */
 export const UpdateExpenseResponseSchema: GenMessage<UpdateExpenseResponse> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 6);
+  messageDesc(file_expense_v1_expense, 7);
 
 /**
  * @generated from message expense.v1.DeleteExpenseRequest
@@ -211,7 +233,7 @@ export type DeleteExpenseRequest = Message<"expense.v1.DeleteExpenseRequest"> & 
  * Use `create(DeleteExpenseRequestSchema)` to create a new message.
  */
 export const DeleteExpenseRequestSchema: GenMessage<DeleteExpenseRequest> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 7);
+  messageDesc(file_expense_v1_expense, 8);
 
 /**
  * @generated from message expense.v1.DeleteExpenseResponse
@@ -228,7 +250,7 @@ export type DeleteExpenseResponse = Message<"expense.v1.DeleteExpenseResponse"> 
  * Use `create(DeleteExpenseResponseSchema)` to create a new message.
  */
 export const DeleteExpenseResponseSchema: GenMessage<DeleteExpenseResponse> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 8);
+  messageDesc(file_expense_v1_expense, 9);
 
 /**
  * @generated from message expense.v1.ListExpensesRequest
@@ -250,16 +272,16 @@ export type ListExpensesRequest = Message<"expense.v1.ListExpensesRequest"> & {
  * Use `create(ListExpensesRequestSchema)` to create a new message.
  */
 export const ListExpensesRequestSchema: GenMessage<ListExpensesRequest> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 9);
+  messageDesc(file_expense_v1_expense, 10);
 
 /**
  * @generated from message expense.v1.ListExpensesResponse
  */
 export type ListExpensesResponse = Message<"expense.v1.ListExpensesResponse"> & {
   /**
-   * @generated from field: repeated expense.v1.Expense expenses = 1;
+   * @generated from field: repeated expense.v1.SortedExpense expenses = 1;
    */
-  expenses: Expense[];
+  expenses: SortedExpense[];
 
   /**
    * @generated from field: string next_page_token = 2;
@@ -272,7 +294,7 @@ export type ListExpensesResponse = Message<"expense.v1.ListExpensesResponse"> & 
  * Use `create(ListExpensesResponseSchema)` to create a new message.
  */
 export const ListExpensesResponseSchema: GenMessage<ListExpensesResponse> = /*@__PURE__*/
-  messageDesc(file_expense_v1_expense, 10);
+  messageDesc(file_expense_v1_expense, 11);
 
 /**
  * @generated from service expense.v1.ExpenseService
