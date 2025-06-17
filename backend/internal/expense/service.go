@@ -2,11 +2,10 @@ package expense
 
 import (
 	"context"
-	expensev1 "expenses-backend/pkg/expense/v1"
 	"expenses-backend/internal/middleware"
+	"expenses-backend/internal/models"
 	"expenses-backend/internal/repositories"
-	"expenses-backend/internal/repositories/expense"
-	"fmt"
+	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
 	"time"
 
@@ -51,13 +50,13 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 	// Create expense request adapted to repository model
 	// For now, we'll map the protobuf bill model to expense model
 	// This could be improved with a proper protobuf update
-	createReq := &expense.CreateExpenseRequest{
-		MemberID:    authCtx.UserID,
-		Amount:      req.Msg.Amount,
-		Currency:    "USD", // Default currency
-		Description: req.Msg.Name,
-		Date:        s.calculateDueDate(req.Msg.DayOfMonthDue),
-		IsRecurring: true, // Assuming bills are recurring
+	createReq := &models.CreateExpenseRequest{
+		MemberID:          authCtx.UserID,
+		Amount:            req.Msg.Amount,
+		Currency:          "USD", // Default currency
+		Description:       req.Msg.Name,
+		Date:              s.calculateDueDate(req.Msg.DayOfMonthDue),
+		IsRecurring:       true, // Assuming bills are recurring
 		RecurringInterval: stringPtr("monthly"),
 	}
 
@@ -160,7 +159,7 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 	}
 
 	// Build update request
-	updateReq := &expense.UpdateExpenseRequest{}
+	updateReq := &models.UpdateExpenseRequest{}
 
 	if req.Msg.Name != "" {
 		updateReq.Description = &req.Msg.Name
@@ -247,7 +246,7 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 	}
 
 	// Create filter for user's expenses
-	filter := &expense.ExpenseFilter{
+	filter := &models.ExpenseFilter{
 		MemberID: &authCtx.UserID,
 	}
 
@@ -319,7 +318,7 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 // Helper methods
 
 // convertToProtoExpense converts repository expense model to protobuf expense
-func (s *Service) convertToProtoExpense(exp *expense.Expense) *expensev1.Expense {
+func (s *Service) convertToProtoExpense(exp *models.Expense) *expensev1.Expense {
 	// Extract day of month from expense date
 	dayOfMonth := int32(exp.Date.Day())
 
