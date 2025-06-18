@@ -10,17 +10,15 @@ import (
 
 	"expenses-backend/internal/database"
 
-	"github.com/rs/zerolog"
+	"expenses-backend/internal/logger"
 )
 
 // Service handles family management operations
 type Service struct {
 	dbManager *database.Manager
-	logger    zerolog.Logger
+	logger    logger.Logger
 }
 
-
-// FamilyError represents family-specific errors
 type FamilyError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -49,10 +47,10 @@ var memorableWords = []string{
 }
 
 // NewService creates a new family service
-func NewService(dbManager *database.Manager, logger zerolog.Logger) *Service {
+func NewService(dbManager *database.Manager, log logger.Logger) *Service {
 	return &Service{
 		dbManager: dbManager,
-		logger:    logger.With().Str("component", "family-service").Logger(),
+		logger:    log.With(logger.Str("component", "family-service")),
 	}
 }
 
@@ -96,11 +94,11 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*F
 		}
 	}
 
-	s.logger.Info().
-		Str("family_id", familyID).
-		Str("manager_id", req.ManagerID).
-		Str("invite_code", inviteCode).
-		Msg("Creating family and provisioning database")
+	s.logger.Info("Creating family and provisioning database",
+		logger.Str("family_id", familyID),
+		logger.Str("manager_id", req.ManagerID),
+		logger.Str("invite_code", inviteCode),
+	)
 
 	// Provision family database
 	familyDB, err := s.dbManager.ProvisionFamilyDatabase(ctx, familyID, req.Name)
@@ -156,18 +154,18 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*F
 
 	// Add manager to family database
 	if err := s.addMemberToFamilyDatabase(ctx, familyID, req.ManagerID, req.ManagerName, req.ManagerEmail, "manager"); err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("family_id", familyID).
-			Str("manager_id", req.ManagerID).
-			Msg("Failed to add manager to family database - this may cause issues")
+		s.logger.Warn("Failed to add manager to family database - this may cause issues",
+			err,
+			logger.Str("family_id", familyID),
+			logger.Str("manager_id", req.ManagerID),
+		)
 	}
 
-	s.logger.Info().
-		Str("family_id", familyID).
-		Str("family_name", req.Name).
-		Str("invite_code", inviteCode).
-		Msg("Family created successfully")
+	s.logger.Info("Family created successfully",
+		logger.Str("family_id", familyID),
+		logger.Str("family_name", req.Name),
+		logger.Str("invite_code", inviteCode),
+	)
 
 	return family, nil
 }
@@ -207,18 +205,10 @@ func (s *Service) JoinFamily(ctx context.Context, req JoinFamilyRequest) (*Famil
 
 	// Add member to family database
 	if err := s.addMemberToFamilyDatabase(ctx, family.ID, req.UserID, req.UserName, req.UserEmail, "member"); err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("family_id", family.ID).
-			Str("user_id", req.UserID).
-			Msg("Failed to add member to family database")
+		s.logger.Warn("Failed to add member to family database", err, logger.Str("family_id", family.ID), logger.Str("user_id", req.UserID))
 	}
 
-	s.logger.Info().
-		Str("family_id", family.ID).
-		Str("user_id", req.UserID).
-		Str("invite_code", req.InviteCode).
-		Msg("User joined family successfully")
+	s.logger.Info("User joined family successfully", logger.Str("family_id", family.ID), logger.Str("user_id", req.UserID), logger.Str("invite_code", req.InviteCode))
 
 	return family, nil
 }
@@ -248,10 +238,7 @@ func (s *Service) GetUserFamily(ctx context.Context, userID string) (*Family, er
 	// Get family members
 	members, err := s.getFamilyMembers(ctx, family.ID)
 	if err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("family_id", family.ID).
-			Msg("Failed to get family members")
+		s.logger.Warn("Failed to get family members", err, logger.Str("family_id", family.ID))
 	} else {
 		family.Members = members
 	}
@@ -282,10 +269,7 @@ func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*Family, 
 	// Get family members
 	members, err := s.getFamilyMembers(ctx, family.ID)
 	if err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("family_id", family.ID).
-			Msg("Failed to get family members")
+		s.logger.Warn("Failed to get family members", err, logger.Str("family_id", family.ID))
 	} else {
 		family.Members = members
 	}
@@ -321,18 +305,14 @@ func (s *Service) RemoveFamilyMember(ctx context.Context, familyID, managerID, m
 
 	// Remove from family database
 	if err := s.removeMemberFromFamilyDatabase(ctx, familyID, memberID); err != nil {
-		s.logger.Warn().
-			Err(err).
-			Str("family_id", familyID).
-			Str("member_id", memberID).
-			Msg("Failed to remove member from family database")
+		s.logger.Warn("Failed to remove member from family database", err, logger.Str("family_id", familyID), logger.Str("member_id", memberID))
 	}
 
-	s.logger.Info().
-		Str("family_id", familyID).
-		Str("member_id", memberID).
-		Str("manager_id", managerID).
-		Msg("Family member removed successfully")
+	s.logger.Info("Family member removed successfully",
+		logger.Str("family_id", familyID),
+		logger.Str("member_id", memberID),
+		logger.Str("manager_id", managerID),
+	)
 
 	return nil
 }
@@ -349,10 +329,7 @@ func (s *Service) DeleteFamily(ctx context.Context, familyID, managerID string) 
 		return fmt.Errorf("failed to delete family database: %w", err)
 	}
 
-	s.logger.Info().
-		Str("family_id", familyID).
-		Str("manager_id", managerID).
-		Msg("Family deleted successfully")
+	s.logger.Info("Family deleted successfully", logger.Str("family_id", familyID), logger.Str("manager_id", managerID))
 
 	return nil
 }
@@ -394,10 +371,7 @@ func (s *Service) RegenerateInviteCode(ctx context.Context, familyID, managerID 
 		return "", fmt.Errorf("failed to update invite code: %w", err)
 	}
 
-	s.logger.Info().
-		Str("family_id", familyID).
-		Str("new_invite_code", newInviteCode).
-		Msg("Family invite code regenerated")
+	s.logger.Info("Family invite code regenerated", logger.Str("family_id", familyID), logger.Str("new_invite_code", newInviteCode))
 
 	return newInviteCode, nil
 }
@@ -511,11 +485,7 @@ func (s *Service) isUserFamilyManager(ctx context.Context, familyID, userID stri
 	var count int
 	err := masterDB.QueryRowContext(ctx, query, familyID, userID).Scan(&count)
 	if err != nil {
-		s.logger.Error().
-			Err(err).
-			Str("family_id", familyID).
-			Str("user_id", userID).
-			Msg("Failed to check if user is family manager")
+		s.logger.Error("Failed to check if user is family manager",  err, logger.Str("family_id", familyID), logger.Str("user_id", userID))
 		return false
 	}
 
@@ -546,4 +516,3 @@ func (s *Service) removeMemberFromFamilyDatabase(ctx context.Context, familyID, 
 	_, err = familyDB.ExecContext(ctx, query, userID)
 	return err
 }
-

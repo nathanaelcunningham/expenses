@@ -19,8 +19,7 @@ import (
 	"connectrpc.com/connect"
 	"connectrpc.com/grpcreflect"
 	"github.com/joho/godotenv"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"expenses-backend/internal/logger"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -28,8 +27,7 @@ import (
 func main() {
 	godotenv.Load()
 
-	zerolog.TimeFieldFormat = time.RFC3339
-	logger := log.With().Timestamp().Caller().Logger()
+	log := logger.New(nil)
 
 	dbConfig := database.Config{
 		MasterDatabaseURL: os.Getenv("TURSO_MASTER_DB_URL"),
@@ -42,16 +40,16 @@ func main() {
 	}
 
 	ctx := context.Background()
-	dbManager, err := database.NewManager(ctx, dbConfig, logger)
+	dbManager, err := database.NewManager(ctx, dbConfig, log)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Failed to initialize database manager")
+		log.Fatal("Failed to initialize database manager", err)
 	}
 	defer dbManager.Close()
 
-	migrationManager := migrations.NewMigrationManager(logger)
+	migrationManager := migrations.NewMigrationManager(log)
 
 	if err := dbManager.RunMigrations(ctx, migrationManager); err != nil {
-		logger.Fatal().Err(err).Msg("Failed to run migrations")
+		log.Fatal("Failed to run migrations", err)
 	}
 
 	// Initialize database factory
@@ -60,13 +58,13 @@ func main() {
 	// Initialize services
 	masterDB := dbManager.GetMasterDatabase()
 	masterQueries := masterdb.New(masterDB)
-	authService := auth.NewService(masterDB, masterQueries, logger)
-	familyService := family.NewService(dbManager, logger)
-	expenseService := expense.NewService(dbFactory, logger)
+	authService := auth.NewService(masterDB, masterQueries, log)
+	familyService := family.NewService(dbManager, log)
+	expenseService := expense.NewService(dbFactory, log)
 
 	// Initialize middleware
-	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, logger)
-	loggingInterceptor := middleware.NewLoggingInterceptor(logger)
+	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, log)
+	loggingInterceptor := middleware.NewLoggingInterceptor(log)
 
 	// Create interceptor chain
 	interceptors := connect.WithInterceptors(

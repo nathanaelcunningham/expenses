@@ -5,13 +5,13 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"expenses-backend/internal/logger"
 	"fmt"
 	"io"
 	"net/http"
 	"sync"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/tursodatabase/libsql-client-go/libsql"
 )
 
@@ -19,7 +19,7 @@ import (
 type Client struct {
 	authToken    string
 	organization string
-	logger       zerolog.Logger
+	logger       logger.Logger
 	connections  sync.Map // map[string]*sql.DB - cached connections
 	mu           sync.RWMutex
 	maxRetries   int
@@ -53,9 +53,9 @@ type TursoAPIResponse struct {
 }
 
 type TursoDatabase struct {
-	Name      string `json:"name"`
-	Hostname  string `json:"hostname"`
-	DbId      string `json:"DbId"`
+	Name      string   `json:"name"`
+	Hostname  string   `json:"hostname"`
+	DbId      string   `json:"DbId"`
 	Locations []string `json:"locations"`
 }
 
@@ -66,9 +66,9 @@ type TursoAPIError struct {
 
 // CreateDatabaseRequest represents the request to create a database
 type CreateDatabaseRequest struct {
-	Name      string `json:"name"`
-	Location  string `json:"location,omitempty"`
-	Image     string `json:"image,omitempty"`
+	Name     string `json:"name"`
+	Location string `json:"location,omitempty"`
+	Image    string `json:"image,omitempty"`
 }
 
 // LocationsResponse represents the available locations
@@ -77,7 +77,7 @@ type LocationsResponse struct {
 }
 
 // NewClient creates a new Turso client
-func NewClient(config Config, logger zerolog.Logger) *Client {
+func NewClient(config Config, log logger.Logger) *Client {
 	if config.MaxRetries == 0 {
 		config.MaxRetries = 3
 	}
@@ -88,7 +88,7 @@ func NewClient(config Config, logger zerolog.Logger) *Client {
 	return &Client{
 		authToken:    config.AuthToken,
 		organization: config.Organization,
-		logger:       logger.With().Str("component", "turso-client").Logger(),
+		logger:       log.With(logger.Str("component", "turso-client")),
 		maxRetries:   config.MaxRetries,
 		retryDelay:   config.RetryDelay,
 		httpClient: &http.Client{
@@ -104,10 +104,7 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, location strin
 		location = "ord" // Default to Chicago
 	}
 
-	c.logger.Info().
-		Str("database", name).
-		Str("location", location).
-		Msg("Creating Turso database")
+	c.logger.Info("Creating Turso database", logger.Str("database", name), logger.Str("location", location))
 
 	// Prepare request
 	reqBody := CreateDatabaseRequest{
@@ -133,7 +130,7 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, location strin
 
 	// Execute request with retries
 	var resp *http.Response
-	for attempt := 0; attempt < c.maxRetries; attempt++ {
+	for attempt := range c.maxRetries {
 		resp, err = c.httpClient.Do(req)
 		if err == nil && resp.StatusCode < 500 {
 			break // Success or client error (don't retry client errors)
@@ -144,17 +141,16 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, location strin
 		}
 
 		if attempt < c.maxRetries-1 {
-			c.logger.Warn().
-				Err(err).
-				Int("attempt", attempt+1).
-				Int("status_code", func() int {
+			c.logger.Warn("Database creation attempt failed, retrying",
+				err,
+				logger.Int("attempt", attempt+1),
+				logger.Int("status_code", func() int {
 					if resp != nil {
 						return resp.StatusCode
 					}
 					return 0
-				}()).
-				Msg("Database creation attempt failed, retrying")
-			
+				}()))
+
 			time.Sleep(c.retryDelay * time.Duration(attempt+1))
 		}
 	}
@@ -200,21 +196,18 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, location strin
 		Created:  time.Now(),
 	}
 
-	c.logger.Info().
-		Str("database", name).
-		Str("hostname", apiResponse.Database.Hostname).
-		Str("url", dbURL).
-		Str("db_id", apiResponse.Database.DbId).
-		Msg("Database created successfully")
+	c.logger.Info("Database created successfully",
+		logger.Str("database", name),
+		logger.Str("hostname", apiResponse.Database.Hostname),
+		logger.Str("url", dbURL),
+		logger.Str("db_id", apiResponse.Database.DbId))
 
 	return dbInfo, nil
 }
 
 // DeleteDatabase deletes a Turso database via API
 func (c *Client) DeleteDatabase(ctx context.Context, name string) error {
-	c.logger.Info().
-		Str("database", name).
-		Msg("Deleting Turso database")
+	c.logger.Info("Deleting Turso database", logger.Str("database", name))
 
 	// Create HTTP request
 	url := fmt.Sprintf("%s/organizations/%s/databases/%s", c.baseURL, c.organization, name)
@@ -228,7 +221,7 @@ func (c *Client) DeleteDatabase(ctx context.Context, name string) error {
 
 	// Execute request with retries
 	var resp *http.Response
-	for attempt := 0; attempt < c.maxRetries; attempt++ {
+	for attempt := range c.maxRetries {
 		resp, err = c.httpClient.Do(req)
 		if err == nil && resp.StatusCode < 500 {
 			break // Success or client error (don't retry client errors)
@@ -239,11 +232,8 @@ func (c *Client) DeleteDatabase(ctx context.Context, name string) error {
 		}
 
 		if attempt < c.maxRetries-1 {
-			c.logger.Warn().
-				Err(err).
-				Int("attempt", attempt+1).
-				Msg("Database deletion attempt failed, retrying")
-			
+			c.logger.Warn("Database deletion attempt failed, retrying", err, logger.Int("attempt", attempt+1))
+
 			time.Sleep(c.retryDelay * time.Duration(attempt+1))
 		}
 	}
@@ -262,9 +252,7 @@ func (c *Client) DeleteDatabase(ctx context.Context, name string) error {
 		return fmt.Errorf("unexpected status code %d: %s", resp.StatusCode, string(body))
 	}
 
-	c.logger.Info().
-		Str("database", name).
-		Msg("Database deleted successfully")
+	c.logger.Info("Database deleted successfully", logger.Str("database", name))
 
 	return nil
 }
@@ -283,7 +271,7 @@ func (c *Client) Connect(ctx context.Context, dbURL string) (*sql.DB, error) {
 		}
 	}
 
-	c.logger.Debug().Str("url", dbURL).Msg("Establishing new database connection")
+	c.logger.Debug("Establishing new database connection", logger.Str("url", dbURL))
 
 	// Create connection with retry logic
 	var db *sql.DB
@@ -295,11 +283,7 @@ func (c *Client) Connect(ctx context.Context, dbURL string) (*sql.DB, error) {
 			break
 		}
 
-		c.logger.Warn().
-			Err(err).
-			Int("attempt", attempt+1).
-			Int("max_retries", c.maxRetries).
-			Msg("Connection attempt failed, retrying")
+		c.logger.Warn("Connection attempt failed, retrying", err, logger.Int("attempt", attempt+1), logger.Int("max_retries", c.maxRetries))
 
 		if attempt < c.maxRetries-1 {
 			time.Sleep(c.retryDelay * time.Duration(attempt+1))
@@ -319,7 +303,7 @@ func (c *Client) Connect(ctx context.Context, dbURL string) (*sql.DB, error) {
 	// Cache the connection
 	c.connections.Store(dbURL, db)
 
-	c.logger.Info().Str("url", dbURL).Msg("Database connection established")
+	c.logger.Info("Database connection established", logger.Str("url", dbURL))
 	return db, nil
 }
 
@@ -353,7 +337,7 @@ func (c *Client) GetConnection(ctx context.Context, dbURL string) (*sql.DB, erro
 func (c *Client) CloseConnection(dbURL string) error {
 	if conn, ok := c.connections.LoadAndDelete(dbURL); ok {
 		if db, ok := conn.(*sql.DB); ok {
-			c.logger.Debug().Str("url", dbURL).Msg("Closing database connection")
+			c.logger.Debug("Closing database connection", logger.Str("url", dbURL))
 			return db.Close()
 		}
 	}
@@ -364,7 +348,7 @@ func (c *Client) CloseConnection(dbURL string) error {
 func (c *Client) CloseAll() error {
 	var errors []error
 
-	c.connections.Range(func(key, value interface{}) bool {
+	c.connections.Range(func(key, value any) bool {
 		if db, ok := value.(*sql.DB); ok {
 			if err := db.Close(); err != nil {
 				errors = append(errors, fmt.Errorf("failed to close connection %s: %w", key, err))
@@ -378,7 +362,7 @@ func (c *Client) CloseAll() error {
 		return fmt.Errorf("errors closing connections: %v", errors)
 	}
 
-	c.logger.Info().Msg("All database connections closed")
+	c.logger.Info("All database connections closed")
 	return nil
 }
 
@@ -386,16 +370,13 @@ func (c *Client) CloseAll() error {
 func (c *Client) HealthCheck(ctx context.Context) map[string]error {
 	results := make(map[string]error)
 
-	c.connections.Range(func(key, value interface{}) bool {
+	c.connections.Range(func(key, value any) bool {
 		dbURL := key.(string)
 		if db, ok := value.(*sql.DB); ok {
 			err := db.PingContext(ctx)
 			results[dbURL] = err
 			if err != nil {
-				c.logger.Warn().
-					Str("url", dbURL).
-					Err(err).
-					Msg("Database health check failed")
+				c.logger.Warn("Database health check failed", err, logger.Str("url", dbURL))
 			}
 		}
 		return true

@@ -10,16 +10,16 @@ import (
 
 	"expenses-backend/internal/auth"
 	"expenses-backend/internal/database"
+	"expenses-backend/internal/logger"
 
 	"connectrpc.com/connect"
-	"github.com/rs/zerolog"
 )
 
 // AuthInterceptor provides session-based authentication for Connect RPC
 type AuthInterceptor struct {
 	authService *auth.Service
 	dbManager   *database.Manager
-	logger      zerolog.Logger
+	logger      logger.Logger
 }
 
 // AuthContext holds authentication information for the request
@@ -40,11 +40,11 @@ const (
 )
 
 // NewAuthInterceptor creates a new authentication interceptor
-func NewAuthInterceptor(authService *auth.Service, dbManager *database.Manager, logger zerolog.Logger) *AuthInterceptor {
+func NewAuthInterceptor(authService *auth.Service, dbManager *database.Manager, log logger.Logger) *AuthInterceptor {
 	return &AuthInterceptor{
 		authService: authService,
 		dbManager:   dbManager,
-		logger:      logger.With().Str("component", "auth-interceptor").Logger(),
+		logger:      log.With(logger.Str("component", "auth-interceptor")),
 	}
 }
 
@@ -59,21 +59,18 @@ func (ai *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		// Extract and validate session
 		authCtx, err := ai.authenticateRequest(ctx, req.Header())
 		if err != nil {
-			ai.logger.Warn().
-				Err(err).
-				Str("procedure", req.Spec().Procedure).
-				Msg("Authentication failed")
+			ai.logger.Warn("Authentication failed", err,
+				logger.Str("procedure", req.Spec().Procedure))
 			return nil, err
 		}
 
 		// Add auth context to request context
 		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
 
-		ai.logger.Debug().
-			Str("user_id", authCtx.UserID).
-			Str("family_id", authCtx.FamilyID).
-			Str("procedure", req.Spec().Procedure).
-			Msg("Request authenticated successfully")
+		ai.logger.Debug("Request authenticated successfully",
+			logger.Str("user_id", authCtx.UserID),
+			logger.Str("family_id", authCtx.FamilyID),
+			logger.Str("procedure", req.Spec().Procedure))
 
 		return next(ctx, req)
 	}
@@ -98,21 +95,18 @@ func (ai *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFun
 		// Extract and validate session
 		authCtx, err := ai.authenticateRequest(ctx, conn.RequestHeader())
 		if err != nil {
-			ai.logger.Warn().
-				Err(err).
-				Str("procedure", conn.Spec().Procedure).
-				Msg("Authentication failed for streaming connection")
+			ai.logger.Warn("Authentication failed for streaming connection", err,
+				logger.Str("procedure", conn.Spec().Procedure))
 			return err
 		}
 
 		// Add auth context to request context
 		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
 
-		ai.logger.Debug().
-			Str("user_id", authCtx.UserID).
-			Str("family_id", authCtx.FamilyID).
-			Str("procedure", conn.Spec().Procedure).
-			Msg("Streaming connection authenticated successfully")
+		ai.logger.Debug("Streaming connection authenticated successfully",
+			logger.Str("user_id", authCtx.UserID),
+			logger.Str("family_id", authCtx.FamilyID),
+			logger.Str("procedure", conn.Spec().Procedure))
 
 		return next(ctx, conn)
 	}
@@ -144,10 +138,8 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 	if validation.FamilyID != "" {
 		familyDB, err = ai.dbManager.GetFamilyDatabase(ctx, validation.FamilyID)
 		if err != nil {
-			ai.logger.Error().
-				Err(err).
-				Str("family_id", validation.FamilyID).
-				Msg("Failed to get family database connection")
+			ai.logger.Error("Failed to get family database connection", err,
+				logger.Str("family_id", validation.FamilyID))
 			return nil, connect.NewError(connect.CodeInternal, 
 				fmt.Errorf("failed to access family database: %w", err))
 		}
@@ -242,13 +234,13 @@ func RequireFamilyManager(ctx context.Context) (*AuthContext, error) {
 
 // LoggingInterceptor provides request logging for Connect RPC
 type LoggingInterceptor struct {
-	logger zerolog.Logger
+	logger logger.Logger
 }
 
 // NewLoggingInterceptor creates a new logging interceptor
-func NewLoggingInterceptor(logger zerolog.Logger) *LoggingInterceptor {
+func NewLoggingInterceptor(log logger.Logger) *LoggingInterceptor {
 	return &LoggingInterceptor{
-		logger: logger.With().Str("component", "rpc-logger").Logger(),
+		logger: log.With(logger.Str("component", "rpc-logger")),
 	}
 }
 
@@ -270,17 +262,19 @@ func (li *LoggingInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFun
 		duration := time.Since(start)
 		
 		// Log the request
-		logEvent := li.logger.Info()
 		if err != nil {
-			logEvent = li.logger.Error().Err(err)
+			li.logger.Error("RPC request completed", err,
+				logger.Str("procedure", req.Spec().Procedure),
+				logger.Str("user_id", userID),
+				logger.Str("family_id", familyID),
+				logger.Duration("duration", duration))
+		} else {
+			li.logger.Info("RPC request completed",
+				logger.Str("procedure", req.Spec().Procedure),
+				logger.Str("user_id", userID),
+				logger.Str("family_id", familyID),
+				logger.Duration("duration", duration))
 		}
-		
-		logEvent.
-			Str("procedure", req.Spec().Procedure).
-			Str("user_id", userID).
-			Str("family_id", familyID).
-			Dur("duration", duration).
-			Msg("RPC request completed")
 
 		return resp, err
 	}
@@ -292,10 +286,9 @@ func (li *LoggingInterceptor) WrapStreamingClient(next connect.StreamingClientFu
 		start := time.Now()
 		conn := next(ctx, spec)
 		
-		li.logger.Debug().
-			Str("procedure", spec.Procedure).
-			Dur("setup_duration", time.Since(start)).
-			Msg("RPC streaming client connection established")
+		li.logger.Debug("RPC streaming client connection established",
+			logger.Str("procedure", spec.Procedure),
+			logger.Duration("setup_duration", time.Since(start)))
 		
 		return conn
 	}
@@ -319,17 +312,19 @@ func (li *LoggingInterceptor) WrapStreamingHandler(next connect.StreamingHandler
 		duration := time.Since(start)
 		
 		// Log the streaming connection
-		logEvent := li.logger.Info()
 		if err != nil {
-			logEvent = li.logger.Error().Err(err)
+			li.logger.Error("RPC streaming handler completed", err,
+				logger.Str("procedure", conn.Spec().Procedure),
+				logger.Str("user_id", userID),
+				logger.Str("family_id", familyID),
+				logger.Duration("duration", duration))
+		} else {
+			li.logger.Info("RPC streaming handler completed",
+				logger.Str("procedure", conn.Spec().Procedure),
+				logger.Str("user_id", userID),
+				logger.Str("family_id", familyID),
+				logger.Duration("duration", duration))
 		}
-		
-		logEvent.
-			Str("procedure", conn.Spec().Procedure).
-			Str("user_id", userID).
-			Str("family_id", familyID).
-			Dur("duration", duration).
-			Msg("RPC streaming handler completed")
 
 		return err
 	}

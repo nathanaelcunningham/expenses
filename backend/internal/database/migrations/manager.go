@@ -6,6 +6,8 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"embed"
+	"errors"
+	"expenses-backend/internal/logger"
 	"fmt"
 	"path/filepath"
 	"regexp"
@@ -13,8 +15,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/rs/zerolog"
 )
 
 //go:embed sql/master/*.sql
@@ -25,7 +25,7 @@ var familyMigrations embed.FS
 
 // MigrationManager handles database migrations
 type MigrationManager struct {
-	logger zerolog.Logger
+	logger logger.Logger
 }
 
 // Migration represents a database migration
@@ -55,9 +55,9 @@ type MigrationStatus struct {
 }
 
 // NewMigrationManager creates a new migration manager
-func NewMigrationManager(logger zerolog.Logger) *MigrationManager {
+func NewMigrationManager(log logger.Logger) *MigrationManager {
 	return &MigrationManager{
-		logger: logger.With().Str("component", "migration-manager").Logger(),
+		logger: log.With(logger.Str("component", "migration-manager")),
 	}
 }
 
@@ -92,18 +92,13 @@ func (mm *MigrationManager) LoadMigrations(migrationType MigrationType) ([]Migra
 
 		matches := migrationRegex.FindStringSubmatch(file.Name())
 		if len(matches) != 3 {
-			mm.logger.Warn().
-				Str("filename", file.Name()).
-				Msg("Skipping migration file with invalid name format (expected: 001_name.sql)")
+			mm.logger.Warn("Skipping migration file with invalid name format (expected: 001_name.sql)", errors.New("skipping migration, invalid format"), logger.Str("filename", file.Name()))
 			continue
 		}
 
 		version, err := strconv.Atoi(matches[1])
 		if err != nil {
-			mm.logger.Warn().
-				Str("filename", file.Name()).
-				Err(err).
-				Msg("Failed to parse migration version")
+			mm.logger.Warn("Failed to parse migration version", err, logger.Str("filename", file.Name()))
 			continue
 		}
 
@@ -131,10 +126,7 @@ func (mm *MigrationManager) LoadMigrations(migrationType MigrationType) ([]Migra
 		return migrations[i].Version < migrations[j].Version
 	})
 
-	mm.logger.Debug().
-		Int("count", len(migrations)).
-		Str("type", string(migrationType)).
-		Msg("Loaded migrations")
+	mm.logger.Debug("Loaded migrations", logger.Int("count", len(migrations)), logger.Str("type", string(migrationType)))
 
 	return migrations, nil
 }
@@ -153,37 +145,24 @@ func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migra
 	}
 
 	if len(migrations) == 0 {
-		mm.logger.Debug().
-			Str("type", string(migrationType)).
-			Msg("No migrations found")
+		mm.logger.Debug("No migrations found", logger.Str("type", string(migrationType)))
 		return nil
 	}
 
 	// Get current schema version
 	currentVersion := mm.getCurrentVersion(ctx, db)
 
-	mm.logger.Info().
-		Int("current_version", currentVersion).
-		Int("available_migrations", len(migrations)).
-		Str("type", string(migrationType)).
-		Msg("Starting migration process")
+	mm.logger.Info("Starting migration process", logger.Int("current_version", currentVersion), logger.Int("available_migrations", len(migrations)), logger.Str("type", string(migrationType)))
 
 	// Run pending migrations
 	migrationsRun := 0
 	for _, migration := range migrations {
 		if migration.Version <= currentVersion {
-			mm.logger.Debug().
-				Int("version", migration.Version).
-				Str("name", migration.Name).
-				Msg("Skipping already applied migration")
+			mm.logger.Debug("Skipping already applied migration", logger.Int("version", migration.Version), logger.Str("name", migration.Name))
 			continue
 		}
 
-		mm.logger.Info().
-			Int("version", migration.Version).
-			Str("name", migration.Name).
-			Str("filename", migration.Filename).
-			Msg("Running migration")
+		mm.logger.Info("Running migration", logger.Int("version", migration.Version), logger.Str("name", migration.Name), logger.Str("filename", migration.Filename))
 
 		if err := mm.runSingleMigration(ctx, db, migration, migrationType); err != nil {
 			return fmt.Errorf("failed to run migration %d (%s): %w",
@@ -191,21 +170,13 @@ func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migra
 		}
 
 		migrationsRun++
-		mm.logger.Info().
-			Int("version", migration.Version).
-			Str("name", migration.Name).
-			Msg("Migration completed successfully")
+		mm.logger.Info("Migration completed successfully", logger.Int("version", migration.Version), logger.Str("name", migration.Name))
 	}
 
 	if migrationsRun == 0 {
-		mm.logger.Info().
-			Str("type", string(migrationType)).
-			Msg("No new migrations to run - database is up to date")
+		mm.logger.Info("No new migrations to run - database is up to date", logger.Str("type", string(migrationType)))
 	} else {
-		mm.logger.Info().
-			Int("migrations_run", migrationsRun).
-			Str("type", string(migrationType)).
-			Msg("Migration process completed successfully")
+		mm.logger.Info("Migration process completed successfully", logger.Int("migrations_run", migrationsRun), logger.Str("type", string(migrationType)))
 	}
 
 	return nil
@@ -357,10 +328,7 @@ func (mm *MigrationManager) ValidateMigrations(migrationType MigrationType) erro
 		}
 	}
 
-	mm.logger.Info().
-		Int("count", len(migrations)).
-		Str("type", string(migrationType)).
-		Msg("All migrations validated successfully")
+	mm.logger.Info("All migrations validated successfully", logger.Int("count", len(migrations)), logger.Str("type", string(migrationType)))
 
 	return nil
 }
@@ -386,7 +354,7 @@ func (mm *MigrationManager) ensureMigrationsTable(ctx context.Context, db *sql.D
 
 	// If we get here, it means migration 000 hasn't run yet
 	// This should only happen in development or edge cases
-	mm.logger.Warn().Msg("Migration table doesn't exist - this suggests migration 000 hasn't been applied")
+	mm.logger.Warn("Migration table doesn't exist - this suggests migration 000 hasn't been applied", errors.New("migrations table required"))
 
 	query := `
         CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -411,7 +379,7 @@ func (mm *MigrationManager) ensureMigrationsTable(ctx context.Context, db *sql.D
 		return fmt.Errorf("failed to create schema_migrations table: %w", err)
 	}
 
-	mm.logger.Info().Msg("Created schema_migrations table as fallback")
+	mm.logger.Info("Created schema_migrations table as fallback")
 	return nil
 }
 
@@ -423,9 +391,7 @@ func (mm *MigrationManager) getCurrentVersion(ctx context.Context, db *sql.DB) i
 	err := db.QueryRowContext(ctx, query).Scan(&version)
 	if err != nil {
 		// If the table doesn't exist or query fails, we're at version 0
-		mm.logger.Debug().
-			Err(err).
-			Msg("Could not get current version, assuming 0 (this is normal for new databases)")
+		mm.logger.Debug("Could not get current version, assuming 0 (this is normal for new databases)", logger.Err(err))
 		return 0
 	}
 
@@ -444,10 +410,7 @@ func (mm *MigrationManager) runSingleMigration(ctx context.Context, db *sql.DB, 
 	// Ensure transaction is properly handled
 	defer func() {
 		if err := tx.Rollback(); err != nil && err != sql.ErrTxDone {
-			mm.logger.Error().
-				Err(err).
-				Int("version", migration.Version).
-				Msg("Failed to rollback transaction")
+			mm.logger.Error("Failed to rollback transaction", err, logger.Int("version", migration.Version))
 		}
 	}()
 
@@ -483,11 +446,7 @@ func (mm *MigrationManager) runSingleMigration(ctx context.Context, db *sql.DB, 
 		return fmt.Errorf("failed to commit migration transaction for version %d: %w", migration.Version, err)
 	}
 
-	mm.logger.Debug().
-		Int("version", migration.Version).
-		Int64("execution_time_ms", executionTime).
-		Str("checksum", checksum[:8]).
-		Msg("Migration tracking recorded")
+	mm.logger.Debug("Migration tracking recorded", logger.Int("version", migration.Version), logger.Int64("execution_time_ms", executionTime), logger.Str("checksum", checksum[:8]))
 
 	return nil
 }
@@ -549,25 +508,17 @@ func (mm *MigrationManager) VerifyMigrationIntegrity(ctx context.Context, db *sq
 	for _, applied := range appliedMigrations {
 		current, exists := currentMap[applied.Version]
 		if !exists {
-			mm.logger.Warn().
-				Int("version", applied.Version).
-				Msg("Applied migration not found in current migration files")
+			mm.logger.Warn("Applied migration not found in current migration files",  errors.New("applied migration not found"), logger.Int("version", applied.Version))
 			continue
 		}
 
 		currentChecksum := mm.calculateChecksum(current.SQL)
 		// Note: For this implementation, we assume checksum is stored separately
 		// In a full implementation, you'd want to store and compare checksums
-		mm.logger.Debug().
-			Int("version", applied.Version).
-			Str("current_checksum", currentChecksum[:8]).
-			Msg("Migration integrity check")
+		mm.logger.Debug("Migration integrity check", logger.Int("version", applied.Version), logger.Str("current_checksum", currentChecksum[:8]))
 	}
 
-	mm.logger.Info().
-		Int("verified_migrations", len(appliedMigrations)).
-		Str("type", string(migrationType)).
-		Msg("Migration integrity verification completed")
+	mm.logger.Info("Migration integrity verification completed", logger.Int("verified_migrations", len(appliedMigrations)), logger.Str("type", string(migrationType)))
 
 	return nil
 }

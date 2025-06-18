@@ -9,14 +9,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rs/zerolog"
+	"expenses-backend/internal/logger"
+	"maps"
 )
 
 // Manager handles database operations across master and family databases
 type Manager struct {
 	tursoClient *turso.Client
 	masterDB    *sql.DB
-	logger      zerolog.Logger
+	logger      logger.Logger
 	mu          sync.RWMutex
 }
 
@@ -36,9 +37,9 @@ type FamilyDatabase struct {
 }
 
 // NewManager creates a new database manager
-func NewManager(ctx context.Context, config Config, logger zerolog.Logger) (*Manager, error) {
+func NewManager(ctx context.Context, config Config, log logger.Logger) (*Manager, error) {
 	// Initialize Turso client
-	tursoClient := turso.NewClient(config.TursoConfig, logger)
+	tursoClient := turso.NewClient(config.TursoConfig, log)
 
 	// Connect to master database
 	masterDB, err := tursoClient.Connect(ctx, config.MasterDatabaseURL)
@@ -49,7 +50,7 @@ func NewManager(ctx context.Context, config Config, logger zerolog.Logger) (*Man
 	manager := &Manager{
 		tursoClient: tursoClient,
 		masterDB:    masterDB,
-		logger:      logger.With().Str("component", "db-manager").Logger(),
+		logger:      log.With(logger.Str("component", "db-manager")),
 	}
 
 	return manager, nil
@@ -57,10 +58,7 @@ func NewManager(ctx context.Context, config Config, logger zerolog.Logger) (*Man
 
 // ProvisionFamilyDatabase creates a new database for a family
 func (m *Manager) ProvisionFamilyDatabase(ctx context.Context, familyID, familyName string) (*FamilyDatabase, error) {
-	m.logger.Info().
-		Str("family_id", familyID).
-		Str("family_name", familyName).
-		Msg("Provisioning family database")
+	m.logger.Info("Provisioning family database", logger.Str("family_id", familyID), logger.Str("family_name", familyName))
 
 	// Generate unique database name
 	dbName := fmt.Sprintf("family-%s", familyID)
@@ -84,19 +82,14 @@ func (m *Manager) ProvisionFamilyDatabase(ctx context.Context, familyID, familyN
 		return nil, fmt.Errorf("failed to record family database: %w", err)
 	}
 
-	m.logger.Info().
-		Str("family_id", familyID).
-		Str("database_url", dbInfo.URL).
-		Msg("Family database provisioned successfully")
+	m.logger.Info("Family database provisioned successfully", logger.Str("family_id", familyID), logger.Str("database_url", dbInfo.URL))
 
 	return familyDB, nil
 }
 
 // DeleteFamilyDatabase removes a family database
 func (m *Manager) DeleteFamilyDatabase(ctx context.Context, familyID string) error {
-	m.logger.Info().
-		Str("family_id", familyID).
-		Msg("Deleting family database")
+	m.logger.Info("Deleting family database", logger.Str("family_id", familyID))
 
 	// Get the database name for deletion
 	dbName := fmt.Sprintf("family-%s", familyID)
@@ -109,17 +102,11 @@ func (m *Manager) DeleteFamilyDatabase(ctx context.Context, familyID string) err
 	// Remove from master database (this will cascade to family_memberships due to FK)
 	query := `DELETE FROM families WHERE id = ?`
 	if _, err := m.masterDB.ExecContext(ctx, query, familyID); err != nil {
-		m.logger.Error().
-			Str("family_id", familyID).
-			Err(err).
-			Msg("Failed to remove family from master database after Turso deletion")
+		m.logger.Error("Failed to remove family from master database after Turso deletion", err, logger.Str("family_id", familyID))
 		return fmt.Errorf("failed to remove family from master database: %w", err)
 	}
 
-	m.logger.Info().
-		Str("family_id", familyID).
-		Msg("Family database deleted successfully")
-
+	m.logger.Info("Family database deleted successfully", logger.Str("family_id", familyID))
 	return nil
 }
 
@@ -148,7 +135,7 @@ func (m *Manager) GetMasterDatabase() *sql.DB {
 
 // RunMigrations runs pending migrations on all family databases
 func (m *Manager) RunMigrations(ctx context.Context, migrationManager *migrations.MigrationManager) error {
-	m.logger.Info().Msg("Running database migrations")
+	m.logger.Info("Running database migrations")
 
 	// Run master database migrations first
 	if err := migrationManager.RunMigrations(ctx, m.masterDB, migrations.MasterMigration); err != nil {
@@ -165,31 +152,22 @@ func (m *Manager) RunMigrations(ctx context.Context, migrationManager *migration
 	for _, family := range families {
 		familyDB, err := m.tursoClient.GetConnection(ctx, family.URL)
 		if err != nil {
-			m.logger.Error().
-				Str("family_id", family.ID).
-				Err(err).
-				Msg("Failed to connect to family database")
+			m.logger.Error("Failed to connect to family database", err, logger.Str("family_id", family.ID))
 			continue
 		}
 
 		if err := migrationManager.RunMigrations(ctx, familyDB, migrations.FamilyMigration); err != nil {
-			m.logger.Error().
-				Str("family_id", family.ID).
-				Err(err).
-				Msg("Failed to run migrations for family")
+			m.logger.Error("Failed to run migrations for family", err, logger.Str("family_id", family.ID))
 			continue
 		}
 
 		// Update schema version in master database
 		if err := m.updateFamilySchemaVersion(ctx, family.ID); err != nil {
-			m.logger.Warn().
-				Str("family_id", family.ID).
-				Err(err).
-				Msg("Failed to update family schema version")
+			m.logger.Warn("Failed to update family schema version", err, logger.Str("family_id", family.ID))
 		}
 	}
 
-	m.logger.Info().Msg("Database migrations completed")
+	m.logger.Info("Database migrations completed")
 	return nil
 }
 
@@ -204,16 +182,14 @@ func (m *Manager) HealthCheck(ctx context.Context) map[string]error {
 
 	// Check family databases
 	familyResults := m.tursoClient.HealthCheck(ctx)
-	for url, err := range familyResults {
-		results[url] = err
-	}
+	maps.Copy(results, familyResults)
 
 	return results
 }
 
 // Close closes all database connections
 func (m *Manager) Close() error {
-	m.logger.Info().Msg("Closing database manager")
+	m.logger.Info("Closing database manager")
 
 	var errors []error
 
@@ -288,28 +264,3 @@ func (m *Manager) getAllFamilies(ctx context.Context) ([]FamilyDatabase, error) 
 	return families, rows.Err()
 }
 
-// runFamilyMigrations runs migrations for a specific family database
-func (m *Manager) runFamilyMigrations(ctx context.Context, family FamilyDatabase) error {
-	db, err := m.tursoClient.GetConnection(ctx, family.URL)
-	if err != nil {
-		return err
-	}
-
-	// Check current schema version
-	var currentVersion int
-	err = db.QueryRowContext(ctx, "SELECT MAX(version) FROM schema_migrations").Scan(&currentVersion)
-	if err != nil {
-		return err
-	}
-
-	// Run pending migrations (this would be expanded with actual migration logic)
-	if currentVersion < 1 {
-		// Migration logic would go here
-		m.logger.Info().
-			Str("family_id", family.ID).
-			Int("version", 1).
-			Msg("Running migration")
-	}
-
-	return nil
-}

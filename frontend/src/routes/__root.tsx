@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TransportProvider } from "@connectrpc/connect-query";
 
 import Header from "../components/Header";
+import { AuthProvider } from "../contexts/AuthContext";
 const url = import.meta.env.VITE_API_URL;
 const finalTransport = createConnectTransport({
     baseUrl: url,
@@ -12,15 +13,28 @@ const finalTransport = createConnectTransport({
 
 const queryClient = new QueryClient();
 
-export const Route = createRootRoute({
-    component: () => (
+function RootComponent() {
+    return (
         <TransportProvider transport={finalTransport}>
             <QueryClientProvider client={queryClient}>
-                <Header />
-
-                <Outlet />
-                <TanStackRouterDevtools />
+                <AuthProvider>
+                    <RootLayout />
+                </AuthProvider>
             </QueryClientProvider>
         </TransportProvider>
-    ),
+    );
+}
+
+function RootLayout() {
+    return (
+        <>
+            <Header />
+            <Outlet />
+            <TanStackRouterDevtools />
+        </>
+    );
+}
+
+export const Route = createRootRoute({
+    component: RootComponent,
 });
