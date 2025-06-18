@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "expenses-backend/pkg/auth/v1;authv1";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RefreshSession(RefreshSessionRequest) returns (RefreshSessionResponse);
+  rpc ValidateSession(ValidateSessionRequest) returns (ValidateSessionResponse);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+}
+
+message Session {
+  string id = 1;
+  string user_id = 2;
+  string family_id = 3;
+  string user_role = 4;
+  int64 created_at = 5;
+  int64 last_active = 6;
+  int64 expires_at = 7;
+  string user_agent = 8;
+  string ip_address = 9;
+}
+
+message AuthError {
+  string code = 1;
+  string message = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string name = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  User user = 1;
+  AuthError error = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  Session session = 1;
+  User user = 2;
+  AuthError error = 3;
+}
+
+message LogoutRequest {
+  string session_id = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  AuthError error = 2;
+}
+
+message RefreshSessionRequest {
+  string session_id = 1;
+}
+
+message RefreshSessionResponse {
+  Session session = 1;
+  AuthError error = 2;
+}
+
+message ValidateSessionRequest {
+  string session_id = 1;
+}
+
+message SessionValidationResult {
+  bool valid = 1;
+  Session session = 2;
+  User user = 3;
+  string family_id = 4;
+}
+
+message ValidateSessionResponse {
+  SessionValidationResult result = 1;
+  AuthError error = 2;
+}

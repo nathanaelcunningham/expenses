@@ -2,9 +2,10 @@ package expense
 
 import (
 	"context"
+	"database/sql"
+	"expenses-backend/internal/database"
+	"expenses-backend/internal/database/sql/familydb"
 	"expenses-backend/internal/middleware"
-	"expenses-backend/internal/models"
-	"expenses-backend/internal/repository"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
 	"time"
@@ -15,17 +16,17 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// Service handles expense operations using repository pattern
+// Service handles expense operations using database queries
 type Service struct {
-	repoFactory *repository.RepositoryFactory
-	logger      zerolog.Logger
+	dbFactory *database.Factory
+	logger    zerolog.Logger
 }
 
 // NewService creates a new expense service
-func NewService(repoFactory *repository.RepositoryFactory, logger zerolog.Logger) *Service {
+func NewService(dbFactory *database.Factory, logger zerolog.Logger) *Service {
 	return &Service{
-		repoFactory: repoFactory,
-		logger:      logger.With().Str("component", "expense-service").Logger(),
+		dbFactory: dbFactory,
+		logger:    logger.With().Str("component", "expense-service").Logger(),
 	}
 }
 
@@ -49,8 +50,7 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 
 	now := time.Now()
 	
-	// Calculate date from day of month
-	year, month, _ := now.Date()
+	// Validate day of month
 	day := req.Msg.DayOfMonthDue
 	if day > 31 {
 		day = 31
@@ -58,27 +58,26 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 	if day < 1 {
 		day = 1
 	}
-	expenseDate := time.Date(year, month, int(day), 0, 0, 0, 0, time.UTC)
 
-	createReq := &models.CreateExpenseRequest{
-		Name:        req.Msg.Name,
-		Description: req.Msg.Name,
-		Amount:      req.Msg.Amount,
-		CategoryID:  nil, // Set to nil for now, could be mapped from request
-		Date:        expenseDate,
-		MemberID:    authCtx.UserID,
-		IsRecurring: req.Msg.IsAutopay,
+	createParams := familydb.CreateExpenseParams{
+		CategoryID:    nil, // Set to nil for now, could be mapped from request
+		Amount:        req.Msg.Amount,
+		Name:          req.Msg.Name,
+		DayOfMonthDue: int64(day),
+		IsAutopay:     req.Msg.IsAutopay,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 	}
 
-	// Get family repositories
-	familyRepos, err := s.repoFactory.GetFamilyRepositories(ctx, authCtx.FamilyID)
+	// Get family database queries
+	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to get family repositories")
+		s.logger.Error().Err(err).Msg("Failed to get family database")
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
-	// Create expense using repository
-	expenseResult, err := familyRepos.Expenses.CreateExpense(ctx, createReq)
+	// Create expense using SQLC
+	expenseResult, err := familyQueries.CreateExpense(ctx, createParams)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to create expense")
 		return nil, status.Error(codes.Internal, "failed to create expense")
@@ -108,22 +107,22 @@ func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
-	// Get family repositories
-	familyRepos, err := s.repoFactory.GetFamilyRepositories(ctx, authCtx.FamilyID)
+	// Get family database queries
+	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to get family repositories")
+		s.logger.Error().Err(err).Msg("Failed to get family database")
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
-	// Get expense from repository
-	expenseResult, err := familyRepos.Expenses.GetExpenseByID(ctx, req.Msg.Id)
+	// Get expense from database
+	expenseResult, err := familyQueries.GetExpenseByID(ctx, req.Msg.Id)
 	if err != nil {
 		s.logger.Error().Err(err).Str("expense_id", req.Msg.Id).Msg("Failed to get expense")
 		return nil, status.Error(codes.NotFound, "expense not found")
 	}
 
-	// Verify user has access to this expense
-	canAccess, err := familyRepos.Expenses.UserCanAccessExpense(ctx, req.Msg.Id, authCtx.UserID)
+	// Verify user has access to this expense (simplified for family-based access)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to check expense access")
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -151,15 +150,15 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
-	// Get family repositories
-	familyRepos, err := s.repoFactory.GetFamilyRepositories(ctx, authCtx.FamilyID)
+	// Get family database queries
+	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to get family repositories")
+		s.logger.Error().Err(err).Msg("Failed to get family database")
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
 	// Verify user has access to this expense
-	canAccess, err := familyRepos.Expenses.UserCanAccessExpense(ctx, req.Msg.Id, authCtx.UserID)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to check expense access")
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -168,26 +167,40 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 		return nil, status.Error(codes.PermissionDenied, "access denied to expense")
 	}
 
-	// Build update request
-	updateReq := &models.UpdateExpenseRequest{}
+	// Get current expense to build update parameters
+	current, err := familyQueries.GetExpenseByID(ctx, req.Msg.Id)
+	if err != nil {
+		s.logger.Error().Err(err).Str("expense_id", req.Msg.Id).Msg("Failed to get current expense")
+		return nil, status.Error(codes.NotFound, "expense not found")
+	}
 
+	// Build update parameters
+	updateParams := familydb.UpdateExpenseParams{
+		ID:            req.Msg.Id,
+		CategoryID:    current.CategoryID,
+		Amount:        current.Amount,
+		Name:          current.Name,
+		DayOfMonthDue: current.DayOfMonthDue,
+		IsAutopay:     current.IsAutopay,
+		UpdatedAt:     time.Now(),
+	}
+
+	// Apply updates
 	if req.Msg.Name != "" {
-		updateReq.Name = &req.Msg.Name
-		updateReq.Description = &req.Msg.Name
+		updateParams.Name = req.Msg.Name
 	}
 	if req.Msg.Amount > 0 {
-		updateReq.Amount = &req.Msg.Amount
+		updateParams.Amount = req.Msg.Amount
 	}
 	if req.Msg.DayOfMonthDue >= 1 && req.Msg.DayOfMonthDue <= 31 {
-		newDate := s.calculateDueDate(req.Msg.DayOfMonthDue)
-		updateReq.Date = &newDate
+		updateParams.DayOfMonthDue = int64(req.Msg.DayOfMonthDue)
 	}
-	if req.Msg.IsAutopay {
-		updateReq.IsRecurring = &req.Msg.IsAutopay
+	if req.Msg.IsAutopay != current.IsAutopay {
+		updateParams.IsAutopay = req.Msg.IsAutopay
 	}
 
-	// Update expense using repository
-	expenseResult, err := familyRepos.Expenses.UpdateExpense(ctx, req.Msg.Id, updateReq)
+	// Update expense using SQLC
+	expenseResult, err := familyQueries.UpdateExpense(ctx, updateParams)
 	if err != nil {
 		s.logger.Error().Err(err).Str("expense_id", req.Msg.Id).Msg("Failed to update expense")
 		return nil, status.Error(codes.Internal, "failed to update expense")
@@ -217,15 +230,15 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
-	// Get family repositories
-	familyRepos, err := s.repoFactory.GetFamilyRepositories(ctx, authCtx.FamilyID)
+	// Get family database queries
+	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to get family repositories")
+		s.logger.Error().Err(err).Msg("Failed to get family database")
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
 	// Verify user has access to this expense
-	canAccess, err := familyRepos.Expenses.UserCanAccessExpense(ctx, req.Msg.Id, authCtx.UserID)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to check expense access")
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -234,8 +247,8 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 		return nil, status.Error(codes.PermissionDenied, "access denied to expense")
 	}
 
-	// Delete expense using repository
-	err = familyRepos.Expenses.DeleteExpense(ctx, req.Msg.Id)
+	// Delete expense using SQLC
+	err = familyQueries.DeleteExpense(ctx, req.Msg.Id)
 	if err != nil {
 		s.logger.Error().Err(err).Str("expense_id", req.Msg.Id).Msg("Failed to delete expense")
 		return nil, status.Error(codes.Internal, "failed to delete expense")
@@ -258,25 +271,26 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 		return nil, err
 	}
 
-	// Create filter for user's expenses
-	filter := &models.ExpenseFilter{
-		MemberID: &authCtx.UserID,
-	}
-
-	// Set pagination if provided
+	// Set pagination parameters
+	limit := int64(50) // default limit
 	if req.Msg.PageSize > 0 {
-		filter.Limit = int(req.Msg.PageSize)
+		limit = int64(req.Msg.PageSize)
 	}
 
-	// Get family repositories
-	familyRepos, err := s.repoFactory.GetFamilyRepositories(ctx, authCtx.FamilyID)
+	listParams := familydb.ListExpensesParams{
+		Limit:  limit,
+		Offset: 0, // TODO: Implement proper pagination with page tokens
+	}
+
+	// Get family database queries
+	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Failed to get family repositories")
+		s.logger.Error().Err(err).Msg("Failed to get family database")
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
-	// Get expenses from repository
-	expenses, err := familyRepos.Expenses.ListExpenses(ctx, filter)
+	// Get expenses from database
+	expenses, err := familyQueries.ListExpenses(ctx, listParams)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to list expenses")
 		return nil, status.Error(codes.Internal, "failed to list expenses")
@@ -330,29 +344,29 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 
 // Helper methods
 
-// convertToProtoExpense converts repository expense model to protobuf expense
-func (s *Service) convertToProtoExpense(exp *models.Expense) *expensev1.Expense {
+// convertToProtoExpense converts SQLC expense to protobuf expense
+func (s *Service) convertToProtoExpense(exp *familydb.Expense) *expensev1.Expense {
 	return &expensev1.Expense{
 		Id:            exp.ID,
 		Name:          exp.Name,
 		Amount:        exp.Amount,
-		DayOfMonthDue: int32(exp.Date.Day()),
-		IsAutopay:     exp.IsRecurring,
+		DayOfMonthDue: int32(exp.DayOfMonthDue),
+		IsAutopay:     exp.IsAutopay,
 		CreatedAt:     exp.CreatedAt.Unix(),
 		UpdatedAt:     exp.UpdatedAt.Unix(),
 	}
 }
 
-// calculateDueDate calculates a date from a day of month
-func (s *Service) calculateDueDate(dayOfMonth int32) time.Time {
-	now := time.Now()
-	year, month, _ := now.Date()
-	day := int(dayOfMonth)
-	if day > 31 {
-		day = 31
+// userCanAccessExpense checks if a user can access an expense (simplified for family-based access)
+func (s *Service) userCanAccessExpense(ctx context.Context, queries *familydb.Queries, expenseID, userID string) (bool, error) {
+	// For family databases, all family members can access all expenses
+	// In a more complex system, you might check expense ownership or permissions
+	_, err := queries.GetExpenseByID(ctx, expenseID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
 	}
-	if day < 1 {
-		day = 1
-	}
-	return time.Date(year, month, day, 0, 0, 0, 0, time.UTC)
+	return true, nil
 }

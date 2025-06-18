@@ -75,6 +75,22 @@ func (q *Queries) GetFamilyMembership(ctx context.Context, arg GetFamilyMembersh
 	return &i, err
 }
 
+const getUserFamilyInfo = `-- name: GetUserFamilyInfo :one
+SELECT family_id, role FROM family_memberships WHERE user_id = ?
+`
+
+type GetUserFamilyInfoRow struct {
+	FamilyID *string `json:"family_id"`
+	Role     string  `json:"role"`
+}
+
+func (q *Queries) GetUserFamilyInfo(ctx context.Context, userID *string) (*GetUserFamilyInfoRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserFamilyInfo, userID)
+	var i GetUserFamilyInfoRow
+	err := row.Scan(&i.FamilyID, &i.Role)
+	return &i, err
+}
+
 const listFamilyMemberships = `-- name: ListFamilyMemberships :many
 SELECT family_id, user_id, role, joined_at FROM family_memberships WHERE family_id = ?
 `

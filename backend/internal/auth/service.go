@@ -10,14 +10,18 @@ import (
 	"strings"
 	"time"
 
+	authv1 "expenses-backend/pkg/auth/v1"
+	"expenses-backend/internal/database/sql/masterdb"
+	"connectrpc.com/connect"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Service handles authentication operations
 type Service struct {
-	db     *sql.DB
-	logger zerolog.Logger
+	db      *sql.DB
+	queries *masterdb.Queries
+	logger  zerolog.Logger
 }
 
 // User represents a user in the system
@@ -85,15 +89,16 @@ var (
 )
 
 // NewService creates a new authentication service
-func NewService(db *sql.DB, logger zerolog.Logger) *Service {
+func NewService(db *sql.DB, queries *masterdb.Queries, logger zerolog.Logger) *Service {
 	return &Service{
-		db:     db,
-		logger: logger.With().Str("component", "auth-service").Logger(),
+		db:      db,
+		queries: queries,
+		logger:  logger.With().Str("component", "auth-service").Logger(),
 	}
 }
 
-// Register creates a new user account
-func (s *Service) Register(ctx context.Context, req RegisterRequest) (*User, error) {
+// register creates a new user account
+func (s *Service) register(ctx context.Context, req RegisterRequest) (*User, error) {
 	// Validate input
 	if err := s.validateRegisterRequest(req); err != nil {
 		return nil, err
@@ -121,25 +126,22 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*User, err
 	}
 
 	// Create user
-	user := &User{
+	now := time.Now()
+	createParams := masterdb.CreateUserParams{
 		ID:           userID,
 		Email:        strings.ToLower(strings.TrimSpace(req.Email)),
 		Name:         strings.TrimSpace(req.Name),
 		PasswordHash: passwordHash,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	}
 
-	query := `
-		INSERT INTO users (id, email, name, password_hash, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?)`
-
-	_, err = s.db.ExecContext(ctx, query,
-		user.ID, user.Email, user.Name, user.PasswordHash,
-		user.CreatedAt, user.UpdatedAt)
+	sqlcUser, err := s.queries.CreateUser(ctx, createParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
+	
+	user := s.sqlcUserToUser(sqlcUser)
 
 	s.logger.Info().
 		Str("user_id", user.ID).
@@ -149,8 +151,8 @@ func (s *Service) Register(ctx context.Context, req RegisterRequest) (*User, err
 	return user, nil
 }
 
-// Login authenticates a user and creates a session
-func (s *Service) Login(ctx context.Context, req LoginRequest, userAgent, ipAddress string) (*Session, *User, error) {
+// login authenticates a user and creates a session
+func (s *Service) login(ctx context.Context, req LoginRequest, userAgent, ipAddress string) (*Session, *User, error) {
 	// Validate input
 	if req.Email == "" || req.Password == "" {
 		return nil, nil, ErrInvalidCredentials
@@ -194,8 +196,13 @@ func (s *Service) Login(ctx context.Context, req LoginRequest, userAgent, ipAddr
 	return session, user, nil
 }
 
-// ValidateSession checks if a session is valid and returns session info
-func (s *Service) ValidateSession(ctx context.Context, sessionID string) (*SessionValidationResult, error) {
+// ValidateSessionInternal checks if a session is valid and returns session info (for internal use)
+func (s *Service) ValidateSessionInternal(ctx context.Context, sessionID string) (*SessionValidationResult, error) {
+	return s.validateSession(ctx, sessionID)
+}
+
+// validateSession checks if a session is valid and returns session info
+func (s *Service) validateSession(ctx context.Context, sessionID string) (*SessionValidationResult, error) {
 	if sessionID == "" {
 		return &SessionValidationResult{Valid: false}, nil
 	}
@@ -238,8 +245,8 @@ func (s *Service) ValidateSession(ctx context.Context, sessionID string) (*Sessi
 	}, nil
 }
 
-// Logout invalidates a session
-func (s *Service) Logout(ctx context.Context, sessionID string) error {
+// logout invalidates a session
+func (s *Service) logout(ctx context.Context, sessionID string) error {
 	if err := s.deleteSession(ctx, sessionID); err != nil {
 		return fmt.Errorf("failed to delete session: %w", err)
 	}
@@ -251,8 +258,8 @@ func (s *Service) Logout(ctx context.Context, sessionID string) error {
 	return nil
 }
 
-// RefreshSession extends a session's expiry time
-func (s *Service) RefreshSession(ctx context.Context, sessionID string) (*Session, error) {
+// refreshSession extends a session's expiry time
+func (s *Service) refreshSession(ctx context.Context, sessionID string) (*Session, error) {
 	// Get current session
 	session, err := s.getSession(ctx, sessionID)
 	if err != nil {
@@ -265,16 +272,22 @@ func (s *Service) RefreshSession(ctx context.Context, sessionID string) (*Sessio
 	}
 
 	// Extend expiry
-	newExpiresAt := time.Now().Add(24 * time.Hour)
-	query := `UPDATE user_sessions SET expires_at = ?, last_active = CURRENT_TIMESTAMP WHERE id = ?`
+	now := time.Now()
+	newExpiresAt := now.Add(24 * time.Hour)
 	
-	_, err = s.db.ExecContext(ctx, query, newExpiresAt, sessionID)
+	refreshParams := masterdb.RefreshSessionParams{
+		ExpiresAt:  newExpiresAt,
+		LastActive: now,
+		ID:         sessionID,
+	}
+	
+	err = s.queries.RefreshSession(ctx, refreshParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh session: %w", err)
 	}
 
 	session.ExpiresAt = newExpiresAt
-	session.LastActive = time.Now()
+	session.LastActive = now
 
 	return session, nil
 }
@@ -282,12 +295,14 @@ func (s *Service) RefreshSession(ctx context.Context, sessionID string) (*Sessio
 // UpdateUserFamily updates the user's family association when they join/leave a family
 func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID, role string) error {
 	// Update all active sessions for this user
-	query := `
-		UPDATE user_sessions 
-		SET family_id = ?, user_role = ?
-		WHERE user_id = ? AND expires_at > CURRENT_TIMESTAMP`
+	updateParams := masterdb.UpdateUserFamilySessionsParams{
+		FamilyID:  familyID,
+		UserRole:  role,
+		UserID:    userID,
+		ExpiresAt: time.Now(), // Only sessions that expire after now
+	}
 
-	_, err := s.db.ExecContext(ctx, query, familyID, role, userID)
+	err := s.queries.UpdateUserFamilySessions(ctx, updateParams)
 	if err != nil {
 		return fmt.Errorf("failed to update user sessions: %w", err)
 	}
@@ -303,9 +318,11 @@ func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID, role s
 
 // CleanupExpiredSessions removes expired sessions from the database
 func (s *Service) CleanupExpiredSessions(ctx context.Context) (int64, error) {
-	query := `DELETE FROM user_sessions WHERE expires_at < CURRENT_TIMESTAMP`
+	// We can't get rows affected from sqlc's exec method directly, so we'll use the raw DB
+	// for this specific case since it needs to return the count
+	query := `DELETE FROM user_sessions WHERE expires_at < ?`
 	
-	result, err := s.db.ExecContext(ctx, query)
+	result, err := s.db.ExecContext(ctx, query, time.Now())
 	if err != nil {
 		return 0, fmt.Errorf("failed to cleanup expired sessions: %w", err)
 	}
@@ -341,10 +358,11 @@ func (s *Service) validateRegisterRequest(req RegisterRequest) error {
 }
 
 func (s *Service) userExists(ctx context.Context, email string) (bool, error) {
-	var count int
-	query := `SELECT COUNT(*) FROM users WHERE email = ?`
-	err := s.db.QueryRowContext(ctx, query, strings.ToLower(email)).Scan(&count)
-	return count > 0, err
+	count, err := s.queries.CheckUserExists(ctx, strings.ToLower(email))
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (s *Service) hashPassword(password string) (string, error) {
@@ -369,31 +387,35 @@ func (s *Service) generateID() (string, error) {
 }
 
 func (s *Service) getUserByEmail(ctx context.Context, email string) (*User, error) {
-	user := &User{}
-	query := `SELECT id, email, name, password_hash, created_at, updated_at FROM users WHERE email = ?`
+	sqlcUser, err := s.queries.GetUserByEmail(ctx, strings.ToLower(email))
+	if err != nil {
+		return nil, err
+	}
 	
-	err := s.db.QueryRowContext(ctx, query, strings.ToLower(email)).Scan(
-		&user.ID, &user.Email, &user.Name, &user.PasswordHash,
-		&user.CreatedAt, &user.UpdatedAt)
-	
-	return user, err
+	return s.sqlcUserToUser(sqlcUser), nil
 }
 
 func (s *Service) getUserByID(ctx context.Context, userID string) (*User, error) {
-	user := &User{}
-	query := `SELECT id, email, name, password_hash, created_at, updated_at FROM users WHERE id = ?`
+	sqlcUser, err := s.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
 	
-	err := s.db.QueryRowContext(ctx, query, userID).Scan(
-		&user.ID, &user.Email, &user.Name, &user.PasswordHash,
-		&user.CreatedAt, &user.UpdatedAt)
-	
-	return user, err
+	return s.sqlcUserToUser(sqlcUser), nil
 }
 
 func (s *Service) getUserFamilyInfo(ctx context.Context, userID string) (familyID, role string, err error) {
-	query := `SELECT family_id, role FROM family_memberships WHERE user_id = ?`
-	err = s.db.QueryRowContext(ctx, query, userID).Scan(&familyID, &role)
-	return
+	result, err := s.queries.GetUserFamilyInfo(ctx, &userID)
+	if err != nil {
+		return "", "", err
+	}
+	
+	var famID string
+	if result.FamilyID != nil {
+		famID = *result.FamilyID
+	}
+	
+	return famID, result.Role, nil
 }
 
 func (s *Service) createSession(ctx context.Context, userID, familyID, userRole, userAgent, ipAddress string) (*Session, error) {
@@ -405,7 +427,7 @@ func (s *Service) createSession(ctx context.Context, userID, familyID, userRole,
 	now := time.Now()
 	expiresAt := now.Add(24 * time.Hour) // 24 hour sessions
 
-	session := &Session{
+	createParams := masterdb.CreateUserSessionParams{
 		ID:         sessionID,
 		UserID:     userID,
 		FamilyID:   familyID,
@@ -413,49 +435,255 @@ func (s *Service) createSession(ctx context.Context, userID, familyID, userRole,
 		CreatedAt:  now,
 		LastActive: now,
 		ExpiresAt:  expiresAt,
-		UserAgent:  userAgent,
-		IPAddress:  ipAddress,
+		UserAgent:  &userAgent,
+		IpAddress:  &ipAddress,
 	}
 
-	query := `
-		INSERT INTO user_sessions (id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	sqlcSession, err := s.queries.CreateUserSession(ctx, createParams)
+	if err != nil {
+		return nil, err
+	}
 
-	_, err = s.db.ExecContext(ctx, query,
-		session.ID, session.UserID, session.FamilyID, session.UserRole,
-		session.CreatedAt, session.LastActive, session.ExpiresAt,
-		session.UserAgent, session.IPAddress)
-
-	return session, err
+	return s.sqlcSessionToSession(sqlcSession), nil
 }
 
 func (s *Service) getSession(ctx context.Context, sessionID string) (*Session, error) {
-	session := &Session{}
-	query := `
-		SELECT id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address
-		FROM user_sessions WHERE id = ?`
-
-	err := s.db.QueryRowContext(ctx, query, sessionID).Scan(
-		&session.ID, &session.UserID, &session.FamilyID, &session.UserRole,
-		&session.CreatedAt, &session.LastActive, &session.ExpiresAt,
-		&session.UserAgent, &session.IPAddress)
-
-	return session, err
+	sqlcSession, err := s.queries.GetUserSession(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	
+	return s.sqlcSessionToSession(sqlcSession), nil
 }
 
 func (s *Service) updateSessionActivity(ctx context.Context, sessionID string) error {
-	query := `UPDATE user_sessions SET last_active = CURRENT_TIMESTAMP WHERE id = ?`
-	_, err := s.db.ExecContext(ctx, query, sessionID)
-	return err
+	updateParams := masterdb.UpdateSessionActivityParams{
+		LastActive: time.Now(),
+		ID:         sessionID,
+	}
+	
+	return s.queries.UpdateSessionActivity(ctx, updateParams)
 }
 
 func (s *Service) deleteSession(ctx context.Context, sessionID string) error {
-	query := `DELETE FROM user_sessions WHERE id = ?`
-	_, err := s.db.ExecContext(ctx, query, sessionID)
-	return err
+	return s.queries.DeleteUserSession(ctx, sessionID)
 }
 
 // SecureCompare performs a constant-time comparison of two strings
 func SecureCompare(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
+
+// Connect interface implementation
+
+// Register implements the Connect AuthServiceHandler interface
+func (s *Service) Register(ctx context.Context, req *connect.Request[authv1.RegisterRequest]) (*connect.Response[authv1.RegisterResponse], error) {
+	// Convert protobuf request to internal type
+	internalReq := RegisterRequest{
+		Email:    req.Msg.Email,
+		Name:     req.Msg.Name,
+		Password: req.Msg.Password,
+	}
+
+	// Call internal business logic
+	user, err := s.register(ctx, internalReq)
+	if err != nil {
+		// Handle auth errors specifically
+		if authErr, ok := err.(*AuthError); ok {
+			return connect.NewResponse(&authv1.RegisterResponse{
+				Error: &authv1.AuthError{
+					Code:    authErr.Code,
+					Message: authErr.Message,
+				},
+			}), nil
+		}
+		// Return other errors as Connect errors
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Convert user to protobuf type
+	pbUser := s.userToProto(user)
+	
+	return connect.NewResponse(&authv1.RegisterResponse{
+		User: pbUser,
+	}), nil
+}
+
+// Login implements the Connect AuthServiceHandler interface
+func (s *Service) Login(ctx context.Context, req *connect.Request[authv1.LoginRequest]) (*connect.Response[authv1.LoginResponse], error) {
+	// Convert protobuf request to internal type
+	internalReq := LoginRequest{
+		Email:    req.Msg.Email,
+		Password: req.Msg.Password,
+	}
+
+	// Extract user agent and IP from metadata (simplified for now)
+	userAgent := req.Header().Get("User-Agent")
+	// In a real implementation, you'd extract the real IP from headers
+	ipAddress := "127.0.0.1"
+
+	// Call internal business logic
+	session, user, err := s.login(ctx, internalReq, userAgent, ipAddress)
+	if err != nil {
+		// Handle auth errors specifically
+		if authErr, ok := err.(*AuthError); ok {
+			return connect.NewResponse(&authv1.LoginResponse{
+				Error: &authv1.AuthError{
+					Code:    authErr.Code,
+					Message: authErr.Message,
+				},
+			}), nil
+		}
+		// Return other errors as Connect errors
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	// Convert to protobuf types
+	pbSession := s.sessionToProto(session)
+	pbUser := s.userToProto(user)
+	
+	return connect.NewResponse(&authv1.LoginResponse{
+		Session: pbSession,
+		User:    pbUser,
+	}), nil
+}
+
+// Logout implements the Connect AuthServiceHandler interface
+func (s *Service) Logout(ctx context.Context, req *connect.Request[authv1.LogoutRequest]) (*connect.Response[authv1.LogoutResponse], error) {
+	err := s.logout(ctx, req.Msg.SessionId)
+	if err != nil {
+		// Handle auth errors specifically
+		if authErr, ok := err.(*AuthError); ok {
+			return connect.NewResponse(&authv1.LogoutResponse{
+				Success: false,
+				Error: &authv1.AuthError{
+					Code:    authErr.Code,
+					Message: authErr.Message,
+				},
+			}), nil
+		}
+		// Return other errors as Connect errors
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	return connect.NewResponse(&authv1.LogoutResponse{
+		Success: true,
+	}), nil
+}
+
+// RefreshSession implements the Connect AuthServiceHandler interface
+func (s *Service) RefreshSession(ctx context.Context, req *connect.Request[authv1.RefreshSessionRequest]) (*connect.Response[authv1.RefreshSessionResponse], error) {
+	session, err := s.refreshSession(ctx, req.Msg.SessionId)
+	if err != nil {
+		// Handle auth errors specifically
+		if authErr, ok := err.(*AuthError); ok {
+			return connect.NewResponse(&authv1.RefreshSessionResponse{
+				Error: &authv1.AuthError{
+					Code:    authErr.Code,
+					Message: authErr.Message,
+				},
+			}), nil
+		}
+		// Return other errors as Connect errors
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	pbSession := s.sessionToProto(session)
+	
+	return connect.NewResponse(&authv1.RefreshSessionResponse{
+		Session: pbSession,
+	}), nil
+}
+
+// ValidateSession implements the Connect AuthServiceHandler interface
+func (s *Service) ValidateSession(ctx context.Context, req *connect.Request[authv1.ValidateSessionRequest]) (*connect.Response[authv1.ValidateSessionResponse], error) {
+	result, err := s.validateSession(ctx, req.Msg.SessionId)
+	if err != nil {
+		// Handle auth errors specifically
+		if authErr, ok := err.(*AuthError); ok {
+			return connect.NewResponse(&authv1.ValidateSessionResponse{
+				Error: &authv1.AuthError{
+					Code:    authErr.Code,
+					Message: authErr.Message,
+				},
+			}), nil
+		}
+		// Return other errors as Connect errors
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	pbResult := &authv1.SessionValidationResult{
+		Valid:    result.Valid,
+		FamilyId: result.FamilyID,
+	}
+
+	if result.Session != nil {
+		pbResult.Session = s.sessionToProto(result.Session)
+	}
+	if result.User != nil {
+		pbResult.User = s.userToProto(result.User)
+	}
+	
+	return connect.NewResponse(&authv1.ValidateSessionResponse{
+		Result: pbResult,
+	}), nil
+}
+
+// Type conversion helpers
+
+func (s *Service) sqlcUserToUser(sqlcUser *masterdb.User) *User {
+	return &User{
+		ID:           sqlcUser.ID,
+		Email:        sqlcUser.Email,
+		Name:         sqlcUser.Name,
+		PasswordHash: sqlcUser.PasswordHash,
+		CreatedAt:    sqlcUser.CreatedAt,
+		UpdatedAt:    sqlcUser.UpdatedAt,
+	}
+}
+
+func (s *Service) sqlcSessionToSession(sqlcSession *masterdb.UserSession) *Session {
+	var userAgent, ipAddress string
+	if sqlcSession.UserAgent != nil {
+		userAgent = *sqlcSession.UserAgent
+	}
+	if sqlcSession.IpAddress != nil {
+		ipAddress = *sqlcSession.IpAddress
+	}
+	
+	return &Session{
+		ID:         sqlcSession.ID,
+		UserID:     sqlcSession.UserID,
+		FamilyID:   sqlcSession.FamilyID,
+		UserRole:   sqlcSession.UserRole,
+		CreatedAt:  sqlcSession.CreatedAt,
+		LastActive: sqlcSession.LastActive,
+		ExpiresAt:  sqlcSession.ExpiresAt,
+		UserAgent:  userAgent,
+		IPAddress:  ipAddress,
+	}
+}
+
+func (s *Service) userToProto(user *User) *authv1.User {
+	return &authv1.User{
+		Id:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		CreatedAt: user.CreatedAt.Unix(),
+		UpdatedAt: user.UpdatedAt.Unix(),
+	}
+}
+
+func (s *Service) sessionToProto(session *Session) *authv1.Session {
+	return &authv1.Session{
+		Id:         session.ID,
+		UserId:     session.UserID,
+		FamilyId:   session.FamilyID,
+		UserRole:   session.UserRole,
+		CreatedAt:  session.CreatedAt.Unix(),
+		LastActive: session.LastActive.Unix(),
+		ExpiresAt:  session.ExpiresAt.Unix(),
+		UserAgent:  session.UserAgent,
+		IpAddress:  session.IPAddress,
+	}
 }

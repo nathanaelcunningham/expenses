@@ -10,6 +10,15 @@ import (
 	"time"
 )
 
+const cleanupExpiredSessions = `-- name: CleanupExpiredSessions :exec
+DELETE FROM user_sessions WHERE expires_at < ?
+`
+
+func (q *Queries) CleanupExpiredSessions(ctx context.Context, expiresAt time.Time) error {
+	_, err := q.db.ExecContext(ctx, cleanupExpiredSessions, expiresAt)
+	return err
+}
+
 const createUserSession = `-- name: CreateUserSession :one
 INSERT INTO user_sessions (id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -138,6 +147,23 @@ func (q *Queries) GetUserSession(ctx context.Context, id string) (*UserSession, 
 	return &i, err
 }
 
+const refreshSession = `-- name: RefreshSession :exec
+UPDATE user_sessions 
+SET expires_at = ?, last_active = ? 
+WHERE id = ?
+`
+
+type RefreshSessionParams struct {
+	ExpiresAt  time.Time `json:"expires_at"`
+	LastActive time.Time `json:"last_active"`
+	ID         string    `json:"id"`
+}
+
+func (q *Queries) RefreshSession(ctx context.Context, arg RefreshSessionParams) error {
+	_, err := q.db.ExecContext(ctx, refreshSession, arg.ExpiresAt, arg.LastActive, arg.ID)
+	return err
+}
+
 const updateSessionActivity = `-- name: UpdateSessionActivity :exec
 UPDATE user_sessions 
 SET last_active = ?
@@ -151,5 +177,28 @@ type UpdateSessionActivityParams struct {
 
 func (q *Queries) UpdateSessionActivity(ctx context.Context, arg UpdateSessionActivityParams) error {
 	_, err := q.db.ExecContext(ctx, updateSessionActivity, arg.LastActive, arg.ID)
+	return err
+}
+
+const updateUserFamilySessions = `-- name: UpdateUserFamilySessions :exec
+UPDATE user_sessions 
+SET family_id = ?, user_role = ?
+WHERE user_id = ? AND expires_at > ?
+`
+
+type UpdateUserFamilySessionsParams struct {
+	FamilyID  string    `json:"family_id"`
+	UserRole  string    `json:"user_role"`
+	UserID    string    `json:"user_id"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+func (q *Queries) UpdateUserFamilySessions(ctx context.Context, arg UpdateUserFamilySessionsParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserFamilySessions,
+		arg.FamilyID,
+		arg.UserRole,
+		arg.UserID,
+		arg.ExpiresAt,
+	)
 	return err
 }

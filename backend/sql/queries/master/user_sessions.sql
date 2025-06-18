@@ -21,3 +21,16 @@ DELETE FROM user_sessions WHERE expires_at < ?;
 SELECT * FROM user_sessions 
 WHERE user_id = ? AND expires_at > ?
 ORDER BY last_active DESC;
+
+-- name: RefreshSession :exec
+UPDATE user_sessions 
+SET expires_at = ?, last_active = ? 
+WHERE id = ?;
+
+-- name: UpdateUserFamilySessions :exec
+UPDATE user_sessions 
+SET family_id = ?, user_role = ?
+WHERE user_id = ? AND expires_at > ?;
+
+-- name: CleanupExpiredSessions :exec
+DELETE FROM user_sessions WHERE expires_at < ?;

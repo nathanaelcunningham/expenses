@@ -17,3 +17,6 @@ RETURNING *;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?;
+
+-- name: CheckUserExists :one
+SELECT COUNT(*) FROM users WHERE email = ?;
