@@ -44,8 +44,8 @@ INSERT OR IGNORE INTO categories (id, name, description, color, icon) VALUES
 ('cat_other', 'Other', 'Miscellaneous expenses', '#A8A8A8', 'more-horizontal');
 
 -- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_expenses_category_date ON expenses(category_id, date);
-CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+CREATE INDEX IF NOT EXISTS idx_expenses_category_created_at ON expenses(category_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_expenses_created_at ON expenses(created_at);
 
 -- Triggers to update updated_at timestamps
 CREATE TRIGGER IF NOT EXISTS update_categories_timestamp
