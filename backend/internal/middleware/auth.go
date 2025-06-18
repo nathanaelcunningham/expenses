@@ -128,7 +128,7 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 	}
 
 	// Validate session
-	validation, err := ai.authService.ValidateSession(ctx, sessionToken)
+	validation, err := ai.authService.ValidateSessionInternal(ctx, sessionToken)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, 
 			fmt.Errorf("failed to validate session: %w", err))

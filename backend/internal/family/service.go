@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"expenses-backend/internal/database"
-	"expenses-backend/internal/models"
 
 	"github.com/rs/zerolog"
 )
@@ -58,7 +57,7 @@ func NewService(dbManager *database.Manager, logger zerolog.Logger) *Service {
 }
 
 // CreateFamily creates a new family and provisions its database
-func (s *Service) CreateFamily(ctx context.Context, req models.CreateFamilyRequest) (*models.Family, error) {
+func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*Family, error) {
 	// Validate input
 	if err := s.validateCreateFamilyRequest(req); err != nil {
 		return nil, err
@@ -119,7 +118,7 @@ func (s *Service) CreateFamily(ctx context.Context, req models.CreateFamilyReque
 
 	// Insert family
 	now := time.Now()
-	family := &models.Family{
+	family := &Family{
 		ID:          familyID,
 		Name:        req.Name,
 		InviteCode:  inviteCode,
@@ -174,7 +173,7 @@ func (s *Service) CreateFamily(ctx context.Context, req models.CreateFamilyReque
 }
 
 // JoinFamily allows a user to join a family using an invite code
-func (s *Service) JoinFamily(ctx context.Context, req models.JoinFamilyRequest) (*models.Family, error) {
+func (s *Service) JoinFamily(ctx context.Context, req JoinFamilyRequest) (*Family, error) {
 	// Validate input
 	if req.InviteCode == "" || req.UserID == "" {
 		return nil, &FamilyError{"INVALID_REQUEST", "Invite code and user ID are required"}
@@ -225,7 +224,7 @@ func (s *Service) JoinFamily(ctx context.Context, req models.JoinFamilyRequest) 
 }
 
 // GetUserFamily retrieves the family that a user belongs to
-func (s *Service) GetUserFamily(ctx context.Context, userID string) (*models.Family, error) {
+func (s *Service) GetUserFamily(ctx context.Context, userID string) (*Family, error) {
 	masterDB := s.dbManager.GetMasterDatabase()
 
 	query := `
@@ -234,7 +233,7 @@ func (s *Service) GetUserFamily(ctx context.Context, userID string) (*models.Fam
 		JOIN family_memberships fm ON f.id = fm.family_id
 		WHERE fm.user_id = ?`
 
-	family := &models.Family{}
+	family := &Family{}
 	err := masterDB.QueryRowContext(ctx, query, userID).Scan(
 		&family.ID, &family.Name, &family.InviteCode, &family.DatabaseURL,
 		&family.ManagerID, &family.CreatedAt, &family.UpdatedAt)
@@ -261,14 +260,14 @@ func (s *Service) GetUserFamily(ctx context.Context, userID string) (*models.Fam
 }
 
 // GetFamilyByID retrieves a family by its ID
-func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*models.Family, error) {
+func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*Family, error) {
 	masterDB := s.dbManager.GetMasterDatabase()
 
 	query := `
 		SELECT id, name, invite_code, database_url, manager_id, created_at, updated_at
 		FROM families WHERE id = ?`
 
-	family := &models.Family{}
+	family := &Family{}
 	err := masterDB.QueryRowContext(ctx, query, familyID).Scan(
 		&family.ID, &family.Name, &family.InviteCode, &family.DatabaseURL,
 		&family.ManagerID, &family.CreatedAt, &family.UpdatedAt)
@@ -405,7 +404,7 @@ func (s *Service) RegenerateInviteCode(ctx context.Context, familyID, managerID 
 
 // Helper methods
 
-func (s *Service) validateCreateFamilyRequest(req models.CreateFamilyRequest) error {
+func (s *Service) validateCreateFamilyRequest(req CreateFamilyRequest) error {
 	if req.Name == "" || len(req.Name) > 100 {
 		return ErrInvalidFamilyName
 	}
@@ -457,14 +456,14 @@ func (s *Service) inviteCodeExists(ctx context.Context, inviteCode string) (bool
 	return count > 0, err
 }
 
-func (s *Service) getFamilyByInviteCode(ctx context.Context, inviteCode string) (*models.Family, error) {
+func (s *Service) getFamilyByInviteCode(ctx context.Context, inviteCode string) (*Family, error) {
 	masterDB := s.dbManager.GetMasterDatabase()
 
 	query := `
 		SELECT id, name, invite_code, database_url, manager_id, created_at, updated_at
 		FROM families WHERE invite_code = ?`
 
-	family := &models.Family{}
+	family := &Family{}
 	err := masterDB.QueryRowContext(ctx, query, inviteCode).Scan(
 		&family.ID, &family.Name, &family.InviteCode, &family.DatabaseURL,
 		&family.ManagerID, &family.CreatedAt, &family.UpdatedAt)
@@ -472,7 +471,7 @@ func (s *Service) getFamilyByInviteCode(ctx context.Context, inviteCode string) 
 	return family, err
 }
 
-func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]models.Member, error) {
+func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]Member, error) {
 	masterDB := s.dbManager.GetMasterDatabase()
 
 	query := `
@@ -488,9 +487,9 @@ func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]mode
 	}
 	defer rows.Close()
 
-	var members []models.Member
+	var members []Member
 	for rows.Next() {
-		var member models.Member
+		var member Member
 		err := rows.Scan(&member.UserID, &member.Name, &member.Email, &member.Role, &member.JoinedAt)
 		if err != nil {
 			return nil, err

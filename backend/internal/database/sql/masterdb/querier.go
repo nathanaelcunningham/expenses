@@ -10,6 +10,8 @@ import (
 )
 
 type Querier interface {
+	CheckUserExists(ctx context.Context, email string) (int64, error)
+	CleanupExpiredSessions(ctx context.Context, expiresAt time.Time) error
 	CreateFamily(ctx context.Context, arg CreateFamilyParams) (*Family, error)
 	CreateFamilyMembership(ctx context.Context, arg CreateFamilyMembershipParams) (*FamilyMembership, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
@@ -25,13 +27,16 @@ type Querier interface {
 	GetUserActiveSessions(ctx context.Context, arg GetUserActiveSessionsParams) ([]*UserSession, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
+	GetUserFamilyInfo(ctx context.Context, userID *string) (*GetUserFamilyInfoRow, error)
 	GetUserSession(ctx context.Context, id string) (*UserSession, error)
 	ListFamilyMemberships(ctx context.Context, familyID *string) ([]*FamilyMembership, error)
 	ListUserMemberships(ctx context.Context, userID *string) ([]*FamilyMembership, error)
+	RefreshSession(ctx context.Context, arg RefreshSessionParams) error
 	UpdateFamily(ctx context.Context, arg UpdateFamilyParams) (*Family, error)
 	UpdateFamilyMembershipRole(ctx context.Context, arg UpdateFamilyMembershipRoleParams) (*FamilyMembership, error)
 	UpdateSessionActivity(ctx context.Context, arg UpdateSessionActivityParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
+	UpdateUserFamilySessions(ctx context.Context, arg UpdateUserFamilySessionsParams) error
 }
 
 var _ Querier = (*Queries)(nil)

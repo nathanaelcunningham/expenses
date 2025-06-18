@@ -5,11 +5,12 @@ import (
 	"expenses-backend/internal/auth"
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/database/migrations"
+	"expenses-backend/internal/database/sql/masterdb"
 	"expenses-backend/internal/database/turso"
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
 	"expenses-backend/internal/middleware"
-	"expenses-backend/internal/repository"
+	"expenses-backend/pkg/auth/v1/authv1connect"
 	"expenses-backend/pkg/expense/v1/expensev1connect"
 	"net/http"
 	"os"
@@ -53,13 +54,15 @@ func main() {
 		logger.Fatal().Err(err).Msg("Failed to run migrations")
 	}
 
-	// Initialize repository factory
-	repoFactory := repository.NewRepositoryFactory(dbManager)
+	// Initialize database factory
+	dbFactory := database.NewFactory(dbManager)
 
 	// Initialize services
-	authService := auth.NewService(dbManager.GetMasterDatabase(), logger)
+	masterDB := dbManager.GetMasterDatabase()
+	masterQueries := masterdb.New(masterDB)
+	authService := auth.NewService(masterDB, masterQueries, logger)
 	familyService := family.NewService(dbManager, logger)
-	expenseService := expense.NewService(repoFactory, logger)
+	expenseService := expense.NewService(dbFactory, logger)
 
 	// Initialize middleware
 	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, logger)
@@ -83,8 +86,15 @@ func main() {
 	)
 	mux.Handle(expenseServicePath, expenseServiceHandler)
 
+	authServicePath, authServiceHandler := authv1connect.NewAuthServiceHandler(
+		authService,
+		connect.WithInterceptors(loggingInterceptor),
+	)
+	mux.Handle(authServicePath, authServiceHandler)
+
 	reflector := grpcreflect.NewStaticReflector(
 		"expense.v1.ExpenseService",
+		"auth.v1.AuthService",
 	)
 
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))
