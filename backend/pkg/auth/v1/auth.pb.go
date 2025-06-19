@@ -262,6 +262,7 @@ type RegisterRequest struct {
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	InviteCode    string                 `protobuf:"bytes,4,opt,name=invite_code,json=inviteCode,proto3" json:"invite_code,omitempty"` // Optional: if provided, user joins existing family instead of creating new one
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -313,6 +314,13 @@ func (x *RegisterRequest) GetName() string {
 func (x *RegisterRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetInviteCode() string {
+	if x != nil {
+		return x.InviteCode
 	}
 	return ""
 }
@@ -867,11 +875,13 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"ip_address\x18\t \x01(\tR\tipAddress\"9\n" +
 	"\tAuthError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\"W\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"x\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\"_\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\x12\x1f\n" +
+	"\vinvite_code\x18\x04 \x01(\tR\n" +
+	"inviteCode\"_\n" +
 	"\x10RegisterResponse\x12!\n" +
 	"\x04user\x18\x01 \x01(\v2\r.auth.v1.UserR\x04user\x12(\n" +
 	"\x05error\x18\x02 \x01(\v2\x12.auth.v1.AuthErrorR\x05error\"@\n" +

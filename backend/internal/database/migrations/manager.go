@@ -508,7 +508,7 @@ func (mm *MigrationManager) VerifyMigrationIntegrity(ctx context.Context, db *sq
 	for _, applied := range appliedMigrations {
 		current, exists := currentMap[applied.Version]
 		if !exists {
-			mm.logger.Warn("Applied migration not found in current migration files",  errors.New("applied migration not found"), logger.Int("version", applied.Version))
+			mm.logger.Warn("Applied migration not found in current migration files", rrors.New("applied migration not found"), logger.Int("version", applied.Version))
 			continue
 		}
 

@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"expenses-backend/internal/database/migrations"
 	"expenses-backend/internal/database/turso"
 	"fmt"
@@ -13,18 +14,26 @@ import (
 	"maps"
 )
 
+// SeedDatabase represents a seed database configuration
+type SeedDatabase struct {
+	Type string `json:"type"` // "database"
+	Name string `json:"name"` // e.g., "family-seed"
+}
+
 // Manager handles database operations across master and family databases
 type Manager struct {
-	tursoClient *turso.Client
-	masterDB    *sql.DB
-	logger      logger.Logger
-	mu          sync.RWMutex
+	tursoClient        *turso.Client
+	masterDB           *sql.DB
+	logger             logger.Logger
+	mu                 sync.RWMutex
+	familyDatabaseSeed *SeedDatabase // Turso database seed/template for family databases
 }
 
 // Config holds database manager configuration
 type Config struct {
-	MasterDatabaseURL string       `json:"master_database_url"`
-	TursoConfig       turso.Config `json:"turso_config"`
+	MasterDatabaseURL  string        `json:"master_database_url"`
+	TursoConfig        turso.Config  `json:"turso_config"`
+	FamilyDatabaseSeed *SeedDatabase `json:"family_database_seed"` // Turso database seed/template for family databases
 }
 
 // FamilyDatabase represents a family-specific database
@@ -48,9 +57,19 @@ func NewManager(ctx context.Context, config Config, log logger.Logger) (*Manager
 	}
 
 	manager := &Manager{
-		tursoClient: tursoClient,
-		masterDB:    masterDB,
-		logger:      log.With(logger.Str("component", "db-manager")),
+		tursoClient:        tursoClient,
+		masterDB:           masterDB,
+		logger:             log.With(logger.Str("component", "db-manager")),
+		familyDatabaseSeed: config.FamilyDatabaseSeed,
+	}
+
+	// Log seed database configuration
+	if config.FamilyDatabaseSeed != nil {
+		manager.logger.Info("Family database seed configured",
+			logger.Str("seed_type", config.FamilyDatabaseSeed.Type),
+			logger.Str("seed_name", config.FamilyDatabaseSeed.Name))
+	} else {
+		manager.logger.Warn("No family database seed configured - family databases will be created empty", errors.New("no family database seed configured"))
 	}
 
 	return manager, nil
@@ -58,13 +77,21 @@ func NewManager(ctx context.Context, config Config, log logger.Logger) (*Manager
 
 // ProvisionFamilyDatabase creates a new database for a family
 func (m *Manager) ProvisionFamilyDatabase(ctx context.Context, familyID, familyName string) (*FamilyDatabase, error) {
-	m.logger.Info("Provisioning family database", logger.Str("family_id", familyID), logger.Str("family_name", familyName))
+	// Validate seed database configuration before provisioning
+	if err := m.ValidateSeedDatabase(ctx); err != nil {
+		return nil, fmt.Errorf("seed database validation failed: %w", err)
+	}
+
+	m.logger.Info("Provisioning family database",
+		logger.Str("family_id", familyID),
+		logger.Str("family_name", familyName),
+		logger.Str("seed", m.familyDatabaseSeed.Name))
 
 	// Generate unique database name
 	dbName := fmt.Sprintf("family-%s", familyID)
 
-	// Create database via Turso API
-	dbInfo, err := m.tursoClient.CreateDatabase(ctx, dbName, "ord")
+	// Create database via Turso API with seed if configured
+	dbInfo, err := m.tursoClient.CreateDatabase(ctx, dbName, "ord", m.familyDatabaseSeed.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create database: %w", err)
 	}
@@ -138,6 +165,11 @@ func (m *Manager) RunMigrations(ctx context.Context, migrationManager *migration
 	m.logger.Info("Running database migrations")
 
 	// Run master database migrations first
+	if err := migrationManager.RunMigrations(ctx, m.masterDB, migrations.MasterMigration); err != nil {
+		return fmt.Errorf("failed to run master migrations: %w", err)
+	}
+
+	// Run FamilySeed migrations
 	if err := migrationManager.RunMigrations(ctx, m.masterDB, migrations.MasterMigration); err != nil {
 		return fmt.Errorf("failed to run master migrations: %w", err)
 	}
@@ -264,3 +296,101 @@ func (m *Manager) getAllFamilies(ctx context.Context) ([]FamilyDatabase, error) 
 	return families, rows.Err()
 }
 
+// CreateFamilySeedDatabase creates and configures a seed database for family databases
+func (m *Manager) CreateFamilySeedDatabase(ctx context.Context, migrationManager *migrations.MigrationManager) error {
+	if m.familyDatabaseSeed == nil {
+		return fmt.Errorf("family database seed configuration is not set")
+	}
+
+	m.logger.Info("Creating family seed database",
+		logger.Str("seed_name", m.familyDatabaseSeed.Name),
+		logger.Str("seed_type", m.familyDatabaseSeed.Type))
+
+	// Create the seed database
+	_, err := m.tursoClient.CreateDatabase(ctx, m.familyDatabaseSeed.Name, "ord", "")
+	if err != nil {
+		return fmt.Errorf("failed to create seed database: %w", err)
+	}
+
+	// Get connection to the seed database
+	seedDB, err := m.tursoClient.GetConnection(ctx, fmt.Sprintf("libsql://%s.turso.io", m.familyDatabaseSeed.Name))
+	if err != nil {
+		return fmt.Errorf("failed to connect to seed database: %w", err)
+	}
+	defer seedDB.Close()
+
+	// Run family migrations on the seed database
+	if err := migrationManager.RunMigrations(ctx, seedDB, migrations.FamilyMigration); err != nil {
+		return fmt.Errorf("failed to run migrations on seed database: %w", err)
+	}
+
+	m.logger.Info("Family seed database created successfully", logger.Str("seed_name", m.familyDatabaseSeed.Name))
+	return nil
+}
+
+// RefreshFamilySeedDatabase updates an existing seed database with the latest migrations
+func (m *Manager) RefreshFamilySeedDatabase(ctx context.Context, migrationManager *migrations.MigrationManager) error {
+	if m.familyDatabaseSeed == nil {
+		return fmt.Errorf("family database seed configuration is not set")
+	}
+
+	m.logger.Info("Refreshing family seed database",
+		logger.Str("seed_name", m.familyDatabaseSeed.Name),
+		logger.Str("seed_type", m.familyDatabaseSeed.Type))
+
+	// Get connection to the existing seed database
+	seedDB, err := m.tursoClient.GetConnection(ctx, fmt.Sprintf("libsql://%s.turso.io", m.familyDatabaseSeed.Name))
+	if err != nil {
+		return fmt.Errorf("failed to connect to seed database: %w", err)
+	}
+	defer seedDB.Close()
+
+	// Run family migrations to ensure seed database is up to date
+	if err := migrationManager.RunMigrations(ctx, seedDB, migrations.FamilyMigration); err != nil {
+		return fmt.Errorf("failed to run migrations on seed database: %w", err)
+	}
+
+	m.logger.Info("Family seed database refreshed successfully", logger.Str("seed_name", m.familyDatabaseSeed.Name))
+	return nil
+}
+
+// ValidateSeedDatabase checks if the seed database exists and is accessible
+func (m *Manager) ValidateSeedDatabase(ctx context.Context) error {
+	if m.familyDatabaseSeed == nil {
+		return fmt.Errorf("family database seed configuration is not set")
+	}
+
+	if m.familyDatabaseSeed.Type != "database" {
+		return fmt.Errorf("invalid seed database type: %s (expected 'database')", m.familyDatabaseSeed.Type)
+	}
+
+	if m.familyDatabaseSeed.Name == "" {
+		return fmt.Errorf("seed database name cannot be empty")
+	}
+
+	m.logger.Debug("Validating family seed database", logger.Str("seed_name", m.familyDatabaseSeed.Name))
+
+	// Try to connect to the seed database to verify it exists
+	seedDB, err := m.tursoClient.GetConnection(ctx, fmt.Sprintf("libsql://%s.turso.io", m.familyDatabaseSeed.Name))
+	if err != nil {
+		return fmt.Errorf("failed to connect to seed database '%s': %w", m.familyDatabaseSeed.Name, err)
+	}
+	defer seedDB.Close()
+
+	// Verify the seed database has the expected schema by checking for migrations table
+	var migrationCount int
+	err = seedDB.QueryRowContext(ctx, "SELECT COUNT(*) FROM schema_migrations").Scan(&migrationCount)
+	if err != nil {
+		return fmt.Errorf("seed database '%s' appears to be invalid (no schema_migrations table): %w", m.familyDatabaseSeed.Name, err)
+	}
+
+	if migrationCount == 0 {
+		return fmt.Errorf("seed database '%s' has no migrations applied", m.familyDatabaseSeed.Name)
+	}
+
+	m.logger.Debug("Family seed database validation successful",
+		logger.Str("seed_name", m.familyDatabaseSeed.Name),
+		logger.Int("migration_count", migrationCount))
+
+	return nil
+}

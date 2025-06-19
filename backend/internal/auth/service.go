@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"expenses-backend/internal/database/sql/masterdb"
+	"expenses-backend/internal/family"
 	"expenses-backend/internal/logger"
 	authv1 "expenses-backend/pkg/auth/v1"
 
@@ -77,6 +78,81 @@ func (s *Service) register(ctx context.Context, req *authv1.RegisterRequest) (*m
 	sqlcUser, err := s.queries.CreateUser(ctx, createParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
+	}
+
+	// Handle family assignment based on invite code
+	if req.InviteCode != "" {
+		// User is joining an existing family
+		joinRequest := family.JoinFamilyRequest{
+			InviteCode: req.InviteCode,
+			UserID:     sqlcUser.ID,
+			UserName:   sqlcUser.Name,
+			UserEmail:  sqlcUser.Email,
+		}
+
+		userFamily, err := s.familyService.JoinFamily(ctx, joinRequest)
+		if err != nil {
+			s.logger.Warn("Failed to join family with invite code - user can join later",
+				err,
+				logger.Str("user_id", sqlcUser.ID),
+				logger.Str("email", sqlcUser.Email),
+				logger.Str("invite_code", req.InviteCode),
+			)
+			// Don't fail registration if family joining fails
+			// User can join the family later using the invite code
+		} else {
+			s.logger.Info("User joined family during registration",
+				logger.Str("user_id", sqlcUser.ID),
+				logger.Str("family_id", userFamily.ID),
+				logger.Str("family_name", userFamily.Name),
+				logger.Str("invite_code", req.InviteCode),
+			)
+			
+			// Update user sessions with family information
+			if updateErr := s.UpdateUserFamily(ctx, sqlcUser.ID, userFamily.ID, "member"); updateErr != nil {
+				s.logger.Warn("Failed to update user sessions with family info",
+					updateErr,
+					logger.Str("user_id", sqlcUser.ID),
+					logger.Str("family_id", userFamily.ID),
+				)
+			}
+		}
+	} else {
+		// Create a personal family for the new user
+		familyRequest := family.CreateFamilyRequest{
+			Name:         fmt.Sprintf("%s's Family", sqlcUser.Name),
+			ManagerID:    sqlcUser.ID,
+			ManagerName:  sqlcUser.Name,
+			ManagerEmail: sqlcUser.Email,
+		}
+
+		userFamily, err := s.familyService.CreateFamily(ctx, familyRequest)
+		if err != nil {
+			s.logger.Warn("Failed to create family for new user - user can create one later",
+				err,
+				logger.Str("user_id", sqlcUser.ID),
+				logger.Str("email", sqlcUser.Email),
+			)
+			// Don't fail registration if family creation fails
+			// User can create a family later or join an existing one
+		} else {
+			s.logger.Info("Family created for new user",
+				logger.Str("user_id", sqlcUser.ID),
+				logger.Str("family_id", userFamily.ID),
+				logger.Str("family_name", userFamily.Name),
+			)
+			
+			// Update user sessions with family information
+			// This ensures that any future logins will have the correct family context
+			if updateErr := s.UpdateUserFamily(ctx, sqlcUser.ID, userFamily.ID, "manager"); updateErr != nil {
+				s.logger.Warn("Failed to update user sessions with family info",
+					updateErr,
+					logger.Str("user_id", sqlcUser.ID),
+					logger.Str("family_id", userFamily.ID),
+				)
+				// This is not critical - user can still login and family info will be retrieved
+			}
+		}
 	}
 
 	s.logger.Info("User registered successfully",

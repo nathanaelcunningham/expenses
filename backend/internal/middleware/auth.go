@@ -135,21 +135,21 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 
 	// Get family database connection if user has a family
 	var familyDB *sql.DB
-	if validation.FamilyID != "" {
-		familyDB, err = ai.dbManager.GetFamilyDatabase(ctx, validation.FamilyID)
+	if validation.FamilyId != "" {
+		familyDB, err = ai.dbManager.GetFamilyDatabase(ctx, validation.FamilyId)
 		if err != nil {
 			ai.logger.Error("Failed to get family database connection", err,
-				logger.Str("family_id", validation.FamilyID))
+				logger.Str("family_id", validation.FamilyId))
 			return nil, connect.NewError(connect.CodeInternal, 
 				fmt.Errorf("failed to access family database: %w", err))
 		}
 	}
 
 	return &AuthContext{
-		UserID:    validation.User.ID,
-		FamilyID:  validation.FamilyID,
+		UserID:    validation.User.Id,
+		FamilyID:  validation.FamilyId,
 		UserRole:  validation.Session.UserRole,
-		SessionID: validation.Session.ID,
+		SessionID: validation.Session.Id,
 		FamilyDB:  familyDB,
 	}, nil
 }

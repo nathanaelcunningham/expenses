@@ -18,6 +18,7 @@ import (
 // Client represents a Turso client with connection management
 type Client struct {
 	authToken    string
+	apiToken     string
 	organization string
 	logger       logger.Logger
 	connections  sync.Map // map[string]*sql.DB - cached connections
@@ -31,6 +32,7 @@ type Client struct {
 // Config holds Turso client configuration
 type Config struct {
 	AuthToken    string        `json:"auth_token"`
+	ApiToken     string        `json:"api_token"`
 	Organization string        `json:"organization"`
 	MaxRetries   int           `json:"max_retries"`
 	RetryDelay   time.Duration `json:"retry_delay"`
@@ -87,6 +89,7 @@ func NewClient(config Config, log logger.Logger) *Client {
 
 	return &Client{
 		authToken:    config.AuthToken,
+		apiToken:         config.ApiToken,
 		organization: config.Organization,
 		logger:       log.With(logger.Str("component", "turso-client")),
 		maxRetries:   config.MaxRetries,
@@ -99,17 +102,21 @@ func NewClient(config Config, log logger.Logger) *Client {
 }
 
 // CreateDatabase creates a new Turso database via API
-func (c *Client) CreateDatabase(ctx context.Context, name string, location string) (*DatabaseInfo, error) {
+func (c *Client) CreateDatabase(ctx context.Context, name string, location string, seed string) (*DatabaseInfo, error) {
 	if location == "" {
 		location = "ord" // Default to Chicago
 	}
 
-	c.logger.Info("Creating Turso database", logger.Str("database", name), logger.Str("location", location))
+	c.logger.Info("Creating Turso database", 
+		logger.Str("database", name), 
+		logger.Str("location", location),
+		logger.Str("seed", seed))
 
 	// Prepare request
 	reqBody := CreateDatabaseRequest{
 		Name:     name,
 		Location: location,
+		Image:    seed, // Use seed as database image/template
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
@@ -125,7 +132,7 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, location strin
 	}
 
 	// Set headers
-	req.Header.Set("Authorization", "Bearer "+c.authToken)
+	req.Header.Set("Authorization", "Bearer "+c.apiToken)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Execute request with retries

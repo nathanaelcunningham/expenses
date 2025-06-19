@@ -6,6 +6,7 @@ import (
 	"database/sql"
 
 	"expenses-backend/internal/database/sql/masterdb"
+	"expenses-backend/internal/family"
 	"expenses-backend/internal/logger"
 	authv1 "expenses-backend/pkg/auth/v1"
 
@@ -14,17 +15,19 @@ import (
 
 // Service handles authentication operations
 type Service struct {
-	db      *sql.DB
-	queries *masterdb.Queries
-	logger  logger.Logger
+	db            *sql.DB
+	queries       *masterdb.Queries
+	logger        logger.Logger
+	familyService *family.Service
 }
 
 // NewService creates a new authentication service
-func NewService(db *sql.DB, queries *masterdb.Queries, log logger.Logger) *Service {
+func NewService(db *sql.DB, queries *masterdb.Queries, familyService *family.Service, log logger.Logger) *Service {
 	return &Service{
-		db:      db,
-		queries: queries,
-		logger:  log.With(logger.Str("component", "auth-service")),
+		db:            db,
+		queries:       queries,
+		logger:        log.With(logger.Str("component", "auth-service")),
+		familyService: familyService,
 	}
 }
 

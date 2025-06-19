@@ -41,6 +41,7 @@ message RegisterRequest {
   string email = 1;
   string name = 2;
   string password = 3;
+  string invite_code = 4; // Optional: if provided, user joins existing family instead of creating new one
 }
 
 message RegisterResponse {

@@ -16,10 +16,11 @@ import (
 	"os"
 	"time"
 
+	"expenses-backend/internal/logger"
+
 	"connectrpc.com/connect"
 	"connectrpc.com/grpcreflect"
 	"github.com/joho/godotenv"
-	"expenses-backend/internal/logger"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
@@ -31,8 +32,13 @@ func main() {
 
 	dbConfig := database.Config{
 		MasterDatabaseURL: os.Getenv("TURSO_MASTER_DB_URL"),
+		FamilyDatabaseSeed: &database.SeedDatabase{
+			Type: "database",
+			Name: os.Getenv("TURSO_FAMILY_DB_SEED"),
+		},
 		TursoConfig: turso.Config{
 			AuthToken:    os.Getenv("TURSO_AUTH_TOKEN"),
+			ApiToken:     os.Getenv("TURSO_API_AUTH_TOKEN"),
 			Organization: os.Getenv("TURSO_ORGANIZATION"),
 			MaxRetries:   3,
 			RetryDelay:   time.Second,
@@ -58,8 +64,8 @@ func main() {
 	// Initialize services
 	masterDB := dbManager.GetMasterDatabase()
 	masterQueries := masterdb.New(masterDB)
-	authService := auth.NewService(masterDB, masterQueries, log)
 	familyService := family.NewService(dbManager, log)
+	authService := auth.NewService(masterDB, masterQueries, familyService, log)
 	expenseService := expense.NewService(dbFactory, log)
 
 	// Initialize middleware
@@ -71,9 +77,6 @@ func main() {
 		loggingInterceptor,
 		authInterceptor,
 	)
-
-	// Suppress unused variable warnings for now
-	_ = familyService
 
 	mux := http.NewServeMux()
 
