@@ -18,14 +18,14 @@ import (
 
 // Service handles expense operations using database queries
 type Service struct {
-	dbFactory *database.Factory
+	dbManager *database.DatabaseManager
 	logger    logger.Logger
 }
 
 // NewService creates a new expense service
-func NewService(dbFactory *database.Factory, log logger.Logger) *Service {
+func NewService(dbManager *database.DatabaseManager, log logger.Logger) *Service {
 	return &Service{
-		dbFactory: dbFactory,
+		dbManager: dbManager,
 		logger:    log.With(logger.Str("component", "expense-service")),
 	}
 }
@@ -64,9 +64,8 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
 	if err != nil {
-		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
@@ -101,7 +100,7 @@ func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
@@ -145,7 +144,7 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
@@ -226,7 +225,7 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
@@ -278,7 +277,7 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbFactory.GetFamilyQueries(ctx, authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")

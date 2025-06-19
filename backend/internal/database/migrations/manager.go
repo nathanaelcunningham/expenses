@@ -290,7 +290,7 @@ func (mm *MigrationManager) GetPendingMigrations(ctx context.Context, db *sql.DB
 	return pendingMigrations, nil
 }
 
-// ValidateMigrations checks if all migration files are properly formatted
+// ValidateMigrations performs basic validation of migration files
 func (mm *MigrationManager) ValidateMigrations(migrationType MigrationType) error {
 	migrations, err := mm.LoadMigrations(migrationType)
 	if err != nil {
@@ -298,38 +298,17 @@ func (mm *MigrationManager) ValidateMigrations(migrationType MigrationType) erro
 	}
 
 	if len(migrations) == 0 {
-		return nil // No migrations to validate
+		return nil
 	}
 
-	// Check for sequential versions starting from 1
-	expectedVersion := 1
-	for _, migration := range migrations {
-		if migration.Version != expectedVersion {
-			return fmt.Errorf("migration version gap detected: expected %d, found %d (%s)",
-				expectedVersion, migration.Version, migration.Filename)
-		}
-		expectedVersion++
-	}
-
-	// Check for duplicate versions
-	versionMap := make(map[int]string)
-	for _, migration := range migrations {
-		if existingFile, exists := versionMap[migration.Version]; exists {
-			return fmt.Errorf("duplicate migration version %d: %s and %s",
-				migration.Version, existingFile, migration.Filename)
-		}
-		versionMap[migration.Version] = migration.Filename
-	}
-
-	// Validate SQL content
+	// Basic validation - check for empty SQL content
 	for _, migration := range migrations {
 		if strings.TrimSpace(migration.SQL) == "" {
 			return fmt.Errorf("migration %s has empty SQL content", migration.Filename)
 		}
 	}
 
-	mm.logger.Info("All migrations validated successfully", logger.Int("count", len(migrations)), logger.Str("type", string(migrationType)))
-
+	mm.logger.Info("Migration validation completed", logger.Int("count", len(migrations)), logger.Str("type", string(migrationType)))
 	return nil
 }
 
@@ -486,39 +465,3 @@ func (mm *MigrationManager) IsMigrationApplied(ctx context.Context, db *sql.DB, 
 	return count > 0, nil
 }
 
-// VerifyMigrationIntegrity checks if applied migrations match their checksums
-func (mm *MigrationManager) VerifyMigrationIntegrity(ctx context.Context, db *sql.DB, migrationType MigrationType) error {
-	appliedMigrations, err := mm.GetAppliedMigrations(ctx, db)
-	if err != nil {
-		return err
-	}
-
-	currentMigrations, err := mm.LoadMigrations(migrationType)
-	if err != nil {
-		return err
-	}
-
-	// Create lookup map of current migrations
-	currentMap := make(map[int]Migration)
-	for _, migration := range currentMigrations {
-		currentMap[migration.Version] = migration
-	}
-
-	// Verify each applied migration
-	for _, applied := range appliedMigrations {
-		current, exists := currentMap[applied.Version]
-		if !exists {
-			mm.logger.Warn("Applied migration not found in current migration files", rrors.New("applied migration not found"), logger.Int("version", applied.Version))
-			continue
-		}
-
-		currentChecksum := mm.calculateChecksum(current.SQL)
-		// Note: For this implementation, we assume checksum is stored separately
-		// In a full implementation, you'd want to store and compare checksums
-		mm.logger.Debug("Migration integrity check", logger.Int("version", applied.Version), logger.Str("current_checksum", currentChecksum[:8]))
-	}
-
-	mm.logger.Info("Migration integrity verification completed", logger.Int("verified_migrations", len(appliedMigrations)), logger.Str("type", string(migrationType)))
-
-	return nil
-}

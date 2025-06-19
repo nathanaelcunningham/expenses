@@ -4,8 +4,6 @@ import (
 	"context"
 	"expenses-backend/internal/auth"
 	"expenses-backend/internal/database"
-	"expenses-backend/internal/database/migrations"
-	"expenses-backend/internal/database/sql/masterdb"
 	"expenses-backend/internal/database/turso"
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
@@ -14,7 +12,6 @@ import (
 	"expenses-backend/pkg/expense/v1/expensev1connect"
 	"net/http"
 	"os"
-	"time"
 
 	"expenses-backend/internal/logger"
 
@@ -26,47 +23,58 @@ import (
 )
 
 func main() {
+	// Initialize env
 	godotenv.Load()
 
 	log := logger.New(nil)
 
-	dbConfig := database.Config{
-		MasterDatabaseURL: os.Getenv("TURSO_MASTER_DB_URL"),
-		FamilyDatabaseSeed: &database.SeedDatabase{
-			Type: "database",
-			Name: os.Getenv("TURSO_FAMILY_DB_SEED"),
-		},
-		TursoConfig: turso.Config{
-			AuthToken:    os.Getenv("TURSO_AUTH_TOKEN"),
-			ApiToken:     os.Getenv("TURSO_API_AUTH_TOKEN"),
-			Organization: os.Getenv("TURSO_ORGANIZATION"),
-			MaxRetries:   3,
-			RetryDelay:   time.Second,
-		},
+	// migrationManager := migrations.NewMigrationManager(log)
+	//
+	// // Check/run migrations on master
+	// log.Info("Running migrations on master database")
+	// if err := migrationManager.RunMigrations(ctx, dbManager.GetMasterDatabase(), migrations.MasterMigration); err != nil {
+	// 	log.Fatal("Failed to run master migrations", err)
+	// }
+	//
+	// // Check/run migrations on family-seed
+	// log.Info("Running migrations on family-seed database")
+	// familySeedMigrated, err := dbManager.RunFamilySeedMigrations(ctx, migrationManager)
+	// if err != nil {
+	// 	log.Fatal("Failed to run family-seed migrations", err)
+	// }
+	//
+	// // If migrations run on family-seed, run migrations on all family databases
+	// if familySeedMigrated {
+	// 	log.Info("Family-seed migrations applied, updating all family databases")
+	// 	if err := dbManager.RunFamilyDatabaseMigrations(ctx, migrationManager); err != nil {
+	// 		log.Fatal("Failed to run migrations on family databases", err)
+	// 	}
+	// }
+	//
+	// // Initialize database factory
+	// dbFactory := database.NewFactory(dbManager)
+	//
+	// // Initialize services
+	// masterDB := dbManager.GetMasterDatabase()
+	// masterQueries := masterdb.New(masterDB)
+
+	tursoClient := turso.NewClient(turso.Config{
+		AuthToken:    os.Getenv("TURSO_AUTH_TOKEN"),
+		ApiToken:     os.Getenv("TURSO_API_TOKEN"),
+		Organization: os.Getenv("TURSO_ORGANIZATION"),
+	})
+
+	masterDB, err := tursoClient.Connect(context.Background(), os.Getenv("TURSO_MASTER_DB_URL"))
+	if err != nil {
+		panic(err)
 	}
 
-	ctx := context.Background()
-	dbManager, err := database.NewManager(ctx, dbConfig, log)
-	if err != nil {
-		log.Fatal("Failed to initialize database manager", err)
-	}
+	dbManager := database.New(masterDB, tursoClient, log)
 	defer dbManager.Close()
 
-	migrationManager := migrations.NewMigrationManager(log)
-
-	if err := dbManager.RunMigrations(ctx, migrationManager); err != nil {
-		log.Fatal("Failed to run migrations", err)
-	}
-
-	// Initialize database factory
-	dbFactory := database.NewFactory(dbManager)
-
-	// Initialize services
-	masterDB := dbManager.GetMasterDatabase()
-	masterQueries := masterdb.New(masterDB)
 	familyService := family.NewService(dbManager, log)
-	authService := auth.NewService(masterDB, masterQueries, familyService, log)
-	expenseService := expense.NewService(dbFactory, log)
+	authService := auth.NewService(dbManager, familyService, log)
+	expenseService := expense.NewService(dbManager, log)
 
 	// Initialize middleware
 	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, log)

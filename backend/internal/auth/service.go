@@ -75,83 +75,30 @@ func (s *Service) register(ctx context.Context, req *authv1.RegisterRequest) (*m
 		UpdatedAt:    now,
 	}
 
-	sqlcUser, err := s.queries.CreateUser(ctx, createParams)
+	sqlcUser, err := s.dbManager.GetMasterQueries().CreateUser(ctx, createParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
 	}
 
-	// Handle family assignment based on invite code
+	// Follow NOTES.md registration pattern: create family db -> create family -> create family membership
 	if req.InviteCode != "" {
 		// User is joining an existing family
-		joinRequest := family.JoinFamilyRequest{
-			InviteCode: req.InviteCode,
-			UserID:     sqlcUser.ID,
-			UserName:   sqlcUser.Name,
-			UserEmail:  sqlcUser.Email,
-		}
-
-		userFamily, err := s.familyService.JoinFamily(ctx, joinRequest)
-		if err != nil {
+		if err := s.joinExistingFamily(ctx, sqlcUser, req.InviteCode); err != nil {
 			s.logger.Warn("Failed to join family with invite code - user can join later",
 				err,
 				logger.Str("user_id", sqlcUser.ID),
 				logger.Str("email", sqlcUser.Email),
 				logger.Str("invite_code", req.InviteCode),
 			)
-			// Don't fail registration if family joining fails
-			// User can join the family later using the invite code
-		} else {
-			s.logger.Info("User joined family during registration",
-				logger.Str("user_id", sqlcUser.ID),
-				logger.Str("family_id", userFamily.ID),
-				logger.Str("family_name", userFamily.Name),
-				logger.Str("invite_code", req.InviteCode),
-			)
-			
-			// Update user sessions with family information
-			if updateErr := s.UpdateUserFamily(ctx, sqlcUser.ID, userFamily.ID, "member"); updateErr != nil {
-				s.logger.Warn("Failed to update user sessions with family info",
-					updateErr,
-					logger.Str("user_id", sqlcUser.ID),
-					logger.Str("family_id", userFamily.ID),
-				)
-			}
 		}
 	} else {
-		// Create a personal family for the new user
-		familyRequest := family.CreateFamilyRequest{
-			Name:         fmt.Sprintf("%s's Family", sqlcUser.Name),
-			ManagerID:    sqlcUser.ID,
-			ManagerName:  sqlcUser.Name,
-			ManagerEmail: sqlcUser.Email,
-		}
-
-		userFamily, err := s.familyService.CreateFamily(ctx, familyRequest)
-		if err != nil {
+		// Create new family for the user
+		if err := s.createNewFamily(ctx, sqlcUser); err != nil {
 			s.logger.Warn("Failed to create family for new user - user can create one later",
 				err,
 				logger.Str("user_id", sqlcUser.ID),
 				logger.Str("email", sqlcUser.Email),
 			)
-			// Don't fail registration if family creation fails
-			// User can create a family later or join an existing one
-		} else {
-			s.logger.Info("Family created for new user",
-				logger.Str("user_id", sqlcUser.ID),
-				logger.Str("family_id", userFamily.ID),
-				logger.Str("family_name", userFamily.Name),
-			)
-			
-			// Update user sessions with family information
-			// This ensures that any future logins will have the correct family context
-			if updateErr := s.UpdateUserFamily(ctx, sqlcUser.ID, userFamily.ID, "manager"); updateErr != nil {
-				s.logger.Warn("Failed to update user sessions with family info",
-					updateErr,
-					logger.Str("user_id", sqlcUser.ID),
-					logger.Str("family_id", userFamily.ID),
-				)
-				// This is not critical - user can still login and family info will be retrieved
-			}
 		}
 	}
 
@@ -295,7 +242,7 @@ func (s *Service) refreshSession(ctx context.Context, sessionID string) (*master
 		ID:         sessionID,
 	}
 
-	err = s.queries.RefreshSession(ctx, refreshParams)
+	err = s.dbManager.GetMasterQueries().RefreshSession(ctx, refreshParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -316,7 +263,7 @@ func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID, role s
 		ExpiresAt: time.Now(), // Only sessions that expire after now
 	}
 
-	err := s.queries.UpdateUserFamilySessions(ctx, updateParams)
+	err := s.dbManager.GetMasterQueries().UpdateUserFamilySessions(ctx, updateParams)
 	if err != nil {
 		return fmt.Errorf("failed to update user sessions: %w", err)
 	}
@@ -335,7 +282,7 @@ func (s *Service) CleanupExpiredSessions(ctx context.Context) (int64, error) {
 	// for this specific case since it needs to return the count
 	query := `DELETE FROM user_sessions WHERE expires_at < ?`
 
-	result, err := s.db.ExecContext(ctx, query, time.Now())
+	result, err := s.dbManager.GetMasterDB().ExecContext(ctx, query, time.Now())
 	if err != nil {
 		return 0, fmt.Errorf("failed to cleanup expired sessions: %w", err)
 	}
@@ -370,7 +317,7 @@ func (s *Service) validateRegisterRequest(req *authv1.RegisterRequest) error {
 }
 
 func (s *Service) userExists(ctx context.Context, email string) (bool, error) {
-	count, err := s.queries.CheckUserExists(ctx, strings.ToLower(email))
+	count, err := s.dbManager.GetMasterQueries().CheckUserExists(ctx, strings.ToLower(email))
 	if err != nil {
 		return false, err
 	}
@@ -399,7 +346,7 @@ func (s *Service) generateID() (string, error) {
 }
 
 func (s *Service) getUserByEmail(ctx context.Context, email string) (*masterdb.User, error) {
-	sqlcUser, err := s.queries.GetUserByEmail(ctx, strings.ToLower(email))
+	sqlcUser, err := s.dbManager.GetMasterQueries().GetUserByEmail(ctx, strings.ToLower(email))
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +355,7 @@ func (s *Service) getUserByEmail(ctx context.Context, email string) (*masterdb.U
 }
 
 func (s *Service) getUserByID(ctx context.Context, userID string) (*masterdb.User, error) {
-	sqlcUser, err := s.queries.GetUserByID(ctx, userID)
+	sqlcUser, err := s.dbManager.GetMasterQueries().GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -417,7 +364,7 @@ func (s *Service) getUserByID(ctx context.Context, userID string) (*masterdb.Use
 }
 
 func (s *Service) getUserFamilyInfo(ctx context.Context, userID string) (familyID, role string, err error) {
-	result, err := s.queries.GetUserFamilyInfo(ctx, &userID)
+	result, err := s.dbManager.GetMasterQueries().GetUserFamilyInfo(ctx, &userID)
 	if err != nil {
 		return "", "", err
 	}
@@ -451,7 +398,7 @@ func (s *Service) createSession(ctx context.Context, userID, familyID, userRole,
 		IpAddress:  &ipAddress,
 	}
 
-	sqlcSession, err := s.queries.CreateUserSession(ctx, createParams)
+	sqlcSession, err := s.dbManager.GetMasterQueries().CreateUserSession(ctx, createParams)
 	if err != nil {
 		return nil, err
 	}
@@ -460,7 +407,7 @@ func (s *Service) createSession(ctx context.Context, userID, familyID, userRole,
 }
 
 func (s *Service) getSession(ctx context.Context, sessionID string) (*masterdb.UserSession, error) {
-	sqlcSession, err := s.queries.GetUserSession(ctx, sessionID)
+	sqlcSession, err := s.dbManager.GetMasterQueries().GetUserSession(ctx, sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -474,9 +421,74 @@ func (s *Service) updateSessionActivity(ctx context.Context, sessionID string) e
 		ID:         sessionID,
 	}
 
-	return s.queries.UpdateSessionActivity(ctx, updateParams)
+	return s.dbManager.GetMasterQueries().UpdateSessionActivity(ctx, updateParams)
 }
 
 func (s *Service) deleteSession(ctx context.Context, sessionID string) error {
-	return s.queries.DeleteUserSession(ctx, sessionID)
+	return s.dbManager.GetMasterQueries().DeleteUserSession(ctx, sessionID)
+}
+
+// joinExistingFamily handles joining an existing family with invite code
+func (s *Service) joinExistingFamily(ctx context.Context, user *masterdb.User, inviteCode string) error {
+	joinRequest := family.JoinFamilyRequest{
+		InviteCode: inviteCode,
+		UserID:     user.ID,
+		UserName:   user.Name,
+		UserEmail:  user.Email,
+	}
+
+	userFamily, err := s.familyService.JoinFamily(ctx, joinRequest)
+	if err != nil {
+		return fmt.Errorf("failed to join family: %w", err)
+	}
+
+	s.logger.Info("User joined family during registration",
+		logger.Str("user_id", user.ID),
+		logger.Str("family_id", userFamily.ID),
+		logger.Str("family_name", userFamily.Name),
+		logger.Str("invite_code", inviteCode),
+	)
+
+	// Update user sessions with family information
+	if err := s.UpdateUserFamily(ctx, user.ID, userFamily.ID, "member"); err != nil {
+		s.logger.Warn("Failed to update user sessions with family info",
+			err,
+			logger.Str("user_id", user.ID),
+			logger.Str("family_id", userFamily.ID),
+		)
+	}
+
+	return nil
+}
+
+// createNewFamily implements NOTES.md pattern: create family db -> create family -> create family membership
+func (s *Service) createNewFamily(ctx context.Context, user *masterdb.User) error {
+	familyRequest := family.CreateFamilyRequest{
+		Name:         fmt.Sprintf("%s's Family", user.Name),
+		ManagerID:    user.ID,
+		ManagerName:  user.Name,
+		ManagerEmail: user.Email,
+	}
+
+	userFamily, err := s.familyService.CreateFamily(ctx, familyRequest)
+	if err != nil {
+		return fmt.Errorf("failed to create family: %w", err)
+	}
+
+	s.logger.Info("Family created for new user",
+		logger.Str("user_id", user.ID),
+		logger.Str("family_id", userFamily.ID),
+		logger.Str("family_name", userFamily.Name),
+	)
+
+	// Update user sessions with family information
+	if err := s.UpdateUserFamily(ctx, user.ID, userFamily.ID, "manager"); err != nil {
+		s.logger.Warn("Failed to update user sessions with family info",
+			err,
+			logger.Str("user_id", user.ID),
+			logger.Str("family_id", userFamily.ID),
+		)
+	}
+
+	return nil
 }

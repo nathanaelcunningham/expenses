@@ -47,7 +47,7 @@ var memorableWords = []string{
 }
 
 // NewService creates a new family service
-func NewService(dbManager *database.Manager, log logger.Logger) *Service {
+func NewService(dbManager *database.DatabaseManager, log logger.Logger) *Service {
 	return &Service{
 		dbManager: dbManager,
 		logger:    log.With(logger.Str("component", "family-service")),
@@ -485,7 +485,7 @@ func (s *Service) isUserFamilyManager(ctx context.Context, familyID, userID stri
 	var count int
 	err := masterDB.QueryRowContext(ctx, query, familyID, userID).Scan(&count)
 	if err != nil {
-		s.logger.Error("Failed to check if user is family manager",  err, logger.Str("family_id", familyID), logger.Str("user_id", userID))
+		s.logger.Error("Failed to check if user is family manager", err, logger.Str("family_id", familyID), logger.Str("user_id", userID))
 		return false
 	}
 
