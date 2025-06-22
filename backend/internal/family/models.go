@@ -11,6 +11,16 @@ type CreateFamilyRequest struct {
 	ManagerEmail string `json:"manager_email"`
 }
 
+func (r CreateFamilyRequest) Validate() error {
+	if r.Name == "" || len(r.Name) > 100 {
+		return ErrInvalidFamilyName
+	}
+	if r.ManagerID == "" {
+		return &FamilyError{"INVALID_MANAGER", "Manager ID is required"}
+	}
+	return nil
+}
+
 type JoinFamilyRequest struct {
 	InviteCode string `json:"invite_code"`
 	UserID     string `json:"user_id"`
@@ -38,3 +48,4 @@ type Member struct {
 	JoinedAt time.Time `json:"joined_at"`
 	IsActive bool      `json:"is_active"`
 }
+

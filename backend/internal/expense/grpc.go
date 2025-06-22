@@ -88,6 +88,7 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 		Expense: pbExpense,
 	}), nil
 }
+
 func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1.GetExpenseRequest]) (*connect.Response[expensev1.GetExpenseResponse], error) {
 	// Get authentication context
 	authCtx, err := middleware.RequireFamily(ctx)

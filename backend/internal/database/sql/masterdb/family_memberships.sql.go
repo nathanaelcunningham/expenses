@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+const checkUserExistsInFamily = `-- name: CheckUserExistsInFamily :one
+SELECT COUNT(*) FROM family_memberships WHERE user_id = ?
+`
+
+func (q *Queries) CheckUserExistsInFamily(ctx context.Context, userID *string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, checkUserExistsInFamily, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createFamilyMembership = `-- name: CreateFamilyMembership :one
 INSERT INTO family_memberships (family_id, user_id, role, joined_at)
 VALUES (?, ?, ?, ?)

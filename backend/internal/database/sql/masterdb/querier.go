@@ -11,6 +11,7 @@ import (
 
 type Querier interface {
 	CheckUserExists(ctx context.Context, email string) (int64, error)
+	CheckUserExistsInFamily(ctx context.Context, userID *string) (int64, error)
 	CleanupExpiredSessions(ctx context.Context, expiresAt time.Time) error
 	CreateFamily(ctx context.Context, arg CreateFamilyParams) (*Family, error)
 	CreateFamilyMembership(ctx context.Context, arg CreateFamilyMembershipParams) (*FamilyMembership, error)

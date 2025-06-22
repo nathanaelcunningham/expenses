@@ -23,3 +23,6 @@ DELETE FROM family_memberships WHERE family_id = ? AND user_id = ?;
 
 -- name: GetUserFamilyInfo :one
 SELECT family_id, role FROM family_memberships WHERE user_id = ?;
+
+-- name: CheckUserExistsInFamily :one
+SELECT COUNT(*) FROM family_memberships WHERE user_id = ?;
