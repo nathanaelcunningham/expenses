@@ -461,7 +461,6 @@ func (s *Service) joinExistingFamily(ctx context.Context, user *masterdb.User, i
 	return nil
 }
 
-// createNewFamily implements NOTES.md pattern: create family db -> create family -> create family membership
 func (s *Service) createNewFamily(ctx context.Context, user *masterdb.User) error {
 	familyRequest := family.CreateFamilyRequest{
 		Name:         fmt.Sprintf("%s's Family", user.Name),

@@ -9,15 +9,23 @@ import (
 )
 
 type Querier interface {
+	CheckMigrationApplied(ctx context.Context, version int64) (int64, error)
+	// This query will return 1 if table exists, 0 if not
+	// We use a simple approach that works with sqlc
+	CheckMigrationsTableExists(ctx context.Context) (int64, error)
 	CountExpenses(ctx context.Context) (int64, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (*Category, error)
 	CreateExpense(ctx context.Context, arg CreateExpenseParams) (*Expense, error)
 	CreateFamilyMember(ctx context.Context, arg CreateFamilyMemberParams) (*FamilyMember, error)
+	CreateMigrationsTable(ctx context.Context) error
 	DeactivateFamilyMember(ctx context.Context, id string) error
 	DeleteCategory(ctx context.Context, id string) error
 	DeleteExpense(ctx context.Context, id string) error
 	DeleteFamilyMember(ctx context.Context, id string) error
+	GetAppliedMigrations(ctx context.Context) ([]*GetAppliedMigrationsRow, error)
 	GetCategoryByID(ctx context.Context, id string) (*Category, error)
+	// Migration-related queries for family database
+	GetCurrentMigrationVersion(ctx context.Context) (int64, error)
 	GetExpenseByID(ctx context.Context, id string) (*Expense, error)
 	GetExpensesByDateRange(ctx context.Context, arg GetExpensesByDateRangeParams) ([]*Expense, error)
 	GetFamilyMemberByEmail(ctx context.Context, email string) (*FamilyMember, error)
@@ -27,6 +35,7 @@ type Querier interface {
 	ListExpenses(ctx context.Context, arg ListExpensesParams) ([]*Expense, error)
 	ListExpensesByCategory(ctx context.Context, categoryID *string) ([]*Expense, error)
 	ListFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
+	RecordMigration(ctx context.Context, arg RecordMigrationParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
 	UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (*Expense, error)
 	UpdateFamilyMember(ctx context.Context, arg UpdateFamilyMemberParams) (*FamilyMember, error)

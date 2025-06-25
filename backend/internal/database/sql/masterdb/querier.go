@@ -10,11 +10,16 @@ import (
 )
 
 type Querier interface {
+	CheckMigrationApplied(ctx context.Context, version int64) (int64, error)
+	// This query will return 1 if table exists, 0 if not
+	// We use a simple approach that works with sqlc
+	CheckMigrationsTableExists(ctx context.Context) (int64, error)
 	CheckUserExists(ctx context.Context, email string) (int64, error)
 	CheckUserExistsInFamily(ctx context.Context, userID *string) (int64, error)
 	CleanupExpiredSessions(ctx context.Context, expiresAt time.Time) error
 	CreateFamily(ctx context.Context, arg CreateFamilyParams) (*Family, error)
 	CreateFamilyMembership(ctx context.Context, arg CreateFamilyMembershipParams) (*FamilyMembership, error)
+	CreateMigrationsTable(ctx context.Context) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (*User, error)
 	CreateUserSession(ctx context.Context, arg CreateUserSessionParams) (*UserSession, error)
 	DeleteExpiredSessions(ctx context.Context, expiresAt time.Time) error
@@ -22,6 +27,9 @@ type Querier interface {
 	DeleteFamilyMembership(ctx context.Context, arg DeleteFamilyMembershipParams) error
 	DeleteUser(ctx context.Context, id string) error
 	DeleteUserSession(ctx context.Context, id string) error
+	GetAppliedMigrations(ctx context.Context) ([]*GetAppliedMigrationsRow, error)
+	// Migration-related queries for master database
+	GetCurrentMigrationVersion(ctx context.Context) (int64, error)
 	GetFamilyByID(ctx context.Context, id string) (*Family, error)
 	GetFamilyByInviteCode(ctx context.Context, inviteCode string) (*Family, error)
 	GetFamilyMembership(ctx context.Context, arg GetFamilyMembershipParams) (*FamilyMembership, error)
@@ -32,6 +40,7 @@ type Querier interface {
 	GetUserSession(ctx context.Context, id string) (*UserSession, error)
 	ListFamilyMemberships(ctx context.Context, familyID *string) ([]*FamilyMembership, error)
 	ListUserMemberships(ctx context.Context, userID *string) ([]*FamilyMembership, error)
+	RecordMigration(ctx context.Context, arg RecordMigrationParams) error
 	RefreshSession(ctx context.Context, arg RefreshSessionParams) error
 	UpdateFamily(ctx context.Context, arg UpdateFamilyParams) (*Family, error)
 	UpdateFamilyMembershipRole(ctx context.Context, arg UpdateFamilyMembershipRoleParams) (*FamilyMembership, error)

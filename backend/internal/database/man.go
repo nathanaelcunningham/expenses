@@ -27,6 +27,7 @@ func New(masterDB *sql.DB, tursoClient *turso.Client, log logger.Logger) *Databa
 	return &DatabaseManager{
 		masterDB:      masterDB,
 		masterQueries: masterdb.New(masterDB),
+		familyDBs:     make(map[string]*sql.DB),
 		familyQueries: make(map[string]*familydb.Queries),
 		tursoClient:   tursoClient,
 		log:           log.With(logger.Str("component", "db-manager")),
@@ -133,5 +134,15 @@ func (dm *DatabaseManager) Close() error {
 		return fmt.Errorf("close errors: %v", errors)
 	}
 
+	return nil
+}
+
+// ProvisionFamilyDatabase creates a new database for a family
+func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyID, familyName string) (*turso.DatabaseInfo, error) {
+	return nil, nil
+}
+
+// DeleteFamilyDatabase removes a family database
+func (dm *DatabaseManager) DeleteFamilyDatabase(ctx context.Context, familyID string) error {
 	return nil
 }

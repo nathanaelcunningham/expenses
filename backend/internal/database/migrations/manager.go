@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	"embed"
 	"errors"
+	"expenses-backend/internal/database/sql/familydb"
+	"expenses-backend/internal/database/sql/masterdb"
 	"expenses-backend/internal/logger"
 	"fmt"
 	"path/filepath"
@@ -25,7 +27,9 @@ var familyMigrations embed.FS
 
 // MigrationManager handles database migrations
 type MigrationManager struct {
-	logger logger.Logger
+	logger   logger.Logger
+	masterDB masterdb.Querier
+	familyDB familydb.Querier
 }
 
 // Migration represents a database migration
@@ -55,9 +59,11 @@ type MigrationStatus struct {
 }
 
 // NewMigrationManager creates a new migration manager
-func NewMigrationManager(log logger.Logger) *MigrationManager {
+func NewMigrationManager(log logger.Logger, masterDB masterdb.Querier, familyDB familydb.Querier) *MigrationManager {
 	return &MigrationManager{
-		logger: log.With(logger.Str("component", "migration-manager")),
+		logger:   log.With(logger.Str("component", "migration-manager")),
+		masterDB: masterDB,
+		familyDB: familyDB,
 	}
 }
 
@@ -134,7 +140,7 @@ func (mm *MigrationManager) LoadMigrations(migrationType MigrationType) ([]Migra
 // RunMigrations runs all pending migrations for a database
 func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migrationType MigrationType) error {
 	// Ensure migrations table exists
-	if err := mm.ensureMigrationsTable(ctx, db); err != nil {
+	if err := mm.ensureMigrationsTable(ctx, migrationType); err != nil {
 		return fmt.Errorf("failed to create migrations table: %w", err)
 	}
 
@@ -150,7 +156,7 @@ func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migra
 	}
 
 	// Get current schema version
-	currentVersion := mm.getCurrentVersion(ctx, db)
+	currentVersion := mm.getCurrentVersion(ctx, migrationType)
 
 	mm.logger.Info("Starting migration process", logger.Int("current_version", currentVersion), logger.Int("available_migrations", len(migrations)), logger.Str("type", string(migrationType)))
 
@@ -183,20 +189,20 @@ func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migra
 }
 
 // GetMigrationStatus returns the current migration status
-func (mm *MigrationManager) GetMigrationStatus(ctx context.Context, db *sql.DB, migrationType MigrationType) (*MigrationStatus, error) {
+func (mm *MigrationManager) GetMigrationStatus(ctx context.Context, migrationType MigrationType) (*MigrationStatus, error) {
 	// Ensure migrations table exists
-	if err := mm.ensureMigrationsTable(ctx, db); err != nil {
+	if err := mm.ensureMigrationsTable(ctx, migrationType); err != nil {
 		return nil, fmt.Errorf("failed to create migrations table: %w", err)
 	}
 
-	currentVersion := mm.getCurrentVersion(ctx, db)
+	currentVersion := mm.getCurrentVersion(ctx, migrationType)
 
-	appliedMigrations, err := mm.GetAppliedMigrations(ctx, db)
+	appliedMigrations, err := mm.GetAppliedMigrations(ctx, migrationType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get applied migrations: %w", err)
 	}
 
-	pendingMigrations, err := mm.GetPendingMigrations(ctx, db, migrationType)
+	pendingMigrations, err := mm.GetPendingMigrations(ctx, migrationType)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pending migrations: %w", err)
 	}
@@ -215,22 +221,49 @@ func (mm *MigrationManager) GetMigrationStatus(ctx context.Context, db *sql.DB, 
 }
 
 // GetAppliedMigrations returns a list of applied migrations
-func (mm *MigrationManager) GetAppliedMigrations(ctx context.Context, db *sql.DB) ([]Migration, error) {
-	query := `
-        SELECT 
-            version, 
-            name, 
-            filename, 
-            COALESCE(description, ''), 
-            applied_at,
-            COALESCE(checksum, ''),
-            COALESCE(execution_time_ms, 0),
-            COALESCE(migration_type, ''),
-            COALESCE(applied_by, 'unknown')
-        FROM schema_migrations 
-        ORDER BY version ASC`
+func (mm *MigrationManager) GetAppliedMigrations(ctx context.Context, migrationType MigrationType) ([]Migration, error) {
+	var querier interface {
+		GetAppliedMigrations(ctx context.Context) ([]*masterdb.GetAppliedMigrationsRow, error)
+	}
 
-	rows, err := db.QueryContext(ctx, query)
+	switch migrationType {
+	case MasterMigration:
+		querier = mm.masterDB
+	case FamilyMigration:
+		// Cast to the common interface for GetAppliedMigrations
+		var familyQuerier interface {
+			GetAppliedMigrations(ctx context.Context) ([]*familydb.GetAppliedMigrationsRow, error)
+		} = mm.familyDB
+
+		familyRows, err := familyQuerier.GetAppliedMigrations(ctx)
+		if err != nil {
+			if strings.Contains(err.Error(), "no such table") {
+				return []Migration{}, nil
+			}
+			return nil, fmt.Errorf("failed to query applied migrations: %w", err)
+		}
+
+		var migrations []Migration
+		for _, row := range familyRows {
+			appliedAt := ""
+			if row.AppliedAt != nil {
+				appliedAt = row.AppliedAt.Format(time.RFC3339)
+			}
+
+			migrations = append(migrations, Migration{
+				Version:     int(row.Version),
+				Name:        row.Name,
+				Filename:    row.Filename,
+				Description: row.Description,
+				AppliedAt:   appliedAt,
+			})
+		}
+		return migrations, nil
+	default:
+		return nil, fmt.Errorf("unsupported migration type: %s", migrationType)
+	}
+
+	masterRows, err := querier.GetAppliedMigrations(ctx)
 	if err != nil {
 		// If table doesn't exist, return empty slice
 		if strings.Contains(err.Error(), "no such table") {
@@ -238,47 +271,34 @@ func (mm *MigrationManager) GetAppliedMigrations(ctx context.Context, db *sql.DB
 		}
 		return nil, fmt.Errorf("failed to query applied migrations: %w", err)
 	}
-	defer rows.Close()
 
 	var migrations []Migration
-	for rows.Next() {
-		var migration Migration
-		var checksum, migrationType, appliedBy string
-		var executionTime int64
-
-		err := rows.Scan(
-			&migration.Version,
-			&migration.Name,
-			&migration.Filename,
-			&migration.Description,
-			&migration.AppliedAt,
-			&checksum,
-			&executionTime,
-			&migrationType,
-			&appliedBy,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("failed to scan migration row: %w", err)
+	for _, row := range masterRows {
+		appliedAt := ""
+		if row.AppliedAt != nil {
+			appliedAt = row.AppliedAt.Format(time.RFC3339)
 		}
 
-		migrations = append(migrations, migration)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating migration rows: %w", err)
+		migrations = append(migrations, Migration{
+			Version:     int(row.Version),
+			Name:        row.Name,
+			Filename:    row.Filename,
+			Description: row.Description,
+			AppliedAt:   appliedAt,
+		})
 	}
 
 	return migrations, nil
 }
 
 // GetPendingMigrations returns migrations that haven't been applied yet
-func (mm *MigrationManager) GetPendingMigrations(ctx context.Context, db *sql.DB, migrationType MigrationType) ([]Migration, error) {
+func (mm *MigrationManager) GetPendingMigrations(ctx context.Context, migrationType MigrationType) ([]Migration, error) {
 	allMigrations, err := mm.LoadMigrations(migrationType)
 	if err != nil {
 		return nil, err
 	}
 
-	currentVersion := mm.getCurrentVersion(ctx, db)
+	currentVersion := mm.getCurrentVersion(ctx, migrationType)
 
 	var pendingMigrations []Migration
 	for _, migration := range allMigrations {
@@ -313,68 +333,66 @@ func (mm *MigrationManager) ValidateMigrations(migrationType MigrationType) erro
 }
 
 // DryRun shows what migrations would be executed without actually running them
-func (mm *MigrationManager) DryRun(ctx context.Context, db *sql.DB, migrationType MigrationType) ([]Migration, error) {
-	return mm.GetPendingMigrations(ctx, db, migrationType)
+func (mm *MigrationManager) DryRun(ctx context.Context, migrationType MigrationType) ([]Migration, error) {
+	return mm.GetPendingMigrations(ctx, migrationType)
 }
 
 // ensureMigrationsTable creates the migrations table if it doesn't exist
 // This is a fallback - normally migration 000 should handle this
-func (mm *MigrationManager) ensureMigrationsTable(ctx context.Context, db *sql.DB) error {
-	// Check if migrations table exists
-	var count int
-	err := db.QueryRowContext(ctx, "SELECT COUNT(*) FROM sqlite_schema WHERE type='table' AND name='schema_migrations'").Scan(&count)
-	if err != nil {
-		return fmt.Errorf("failed to check for migrations table: %w", err)
+func (mm *MigrationManager) ensureMigrationsTable(ctx context.Context, migrationType MigrationType) error {
+	var querier interface {
+		CheckMigrationsTableExists(ctx context.Context) (int64, error)
+		CreateMigrationsTable(ctx context.Context) error
 	}
 
-	if count > 0 {
-		return nil // Table already exists
+	switch migrationType {
+	case MasterMigration:
+		querier = mm.masterDB
+	case FamilyMigration:
+		querier = mm.familyDB
+	default:
+		return fmt.Errorf("unsupported migration type: %s", migrationType)
 	}
 
-	// If we get here, it means migration 000 hasn't run yet
-	// This should only happen in development or edge cases
-	mm.logger.Warn("Migration table doesn't exist - this suggests migration 000 hasn't been applied", errors.New("migrations table required"))
+	// Try to query the migrations table - if it fails, table doesn't exist
+	if _, err := querier.CheckMigrationsTableExists(ctx); err != nil {
+		// Table doesn't exist, create it
+		mm.logger.Warn("Migration table doesn't exist - this suggests migration 000 hasn't been applied", errors.New("migrations table required"))
 
-	query := `
-        CREATE TABLE IF NOT EXISTS schema_migrations (
-            version INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            filename TEXT NOT NULL,
-            description TEXT,
-            applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            checksum TEXT,
-            execution_time_ms INTEGER,
-            migration_type TEXT CHECK (migration_type IN ('master', 'family')),
-            applied_by TEXT DEFAULT 'system'
-        );
-        
-        CREATE INDEX IF NOT EXISTS idx_schema_migrations_applied_at ON schema_migrations(applied_at);
-        CREATE INDEX IF NOT EXISTS idx_schema_migrations_type ON schema_migrations(migration_type);
-        CREATE INDEX IF NOT EXISTS idx_schema_migrations_version ON schema_migrations(version);
-    `
+		if err := querier.CreateMigrationsTable(ctx); err != nil {
+			return fmt.Errorf("failed to create schema_migrations table: %w", err)
+		}
 
-	_, err = db.ExecContext(ctx, query)
-	if err != nil {
-		return fmt.Errorf("failed to create schema_migrations table: %w", err)
+		mm.logger.Info("Created schema_migrations table as fallback")
 	}
 
-	mm.logger.Info("Created schema_migrations table as fallback")
 	return nil
 }
 
 // getCurrentVersion gets the current schema version
-func (mm *MigrationManager) getCurrentVersion(ctx context.Context, db *sql.DB) int {
-	var version int
-	query := "SELECT COALESCE(MAX(version), 0) FROM schema_migrations"
+func (mm *MigrationManager) getCurrentVersion(ctx context.Context, migrationType MigrationType) int {
+	var querier interface {
+		GetCurrentMigrationVersion(ctx context.Context) (int64, error)
+	}
 
-	err := db.QueryRowContext(ctx, query).Scan(&version)
+	switch migrationType {
+	case MasterMigration:
+		querier = mm.masterDB
+	case FamilyMigration:
+		querier = mm.familyDB
+	default:
+		mm.logger.Debug("Unsupported migration type, assuming version 0")
+		return 0
+	}
+
+	version, err := querier.GetCurrentMigrationVersion(ctx)
 	if err != nil {
 		// If the table doesn't exist or query fails, we're at version 0
 		mm.logger.Debug("Could not get current version, assuming 0 (this is normal for new databases)", logger.Err(err))
 		return 0
 	}
 
-	return version
+	return int(version)
 }
 
 // runSingleMigration runs a single migration in a transaction with enhanced tracking
@@ -402,22 +420,53 @@ func (mm *MigrationManager) runSingleMigration(ctx context.Context, db *sql.DB, 
 	checksum := mm.calculateChecksum(migration.SQL)
 
 	// Record migration in migrations table with enhanced metadata
-	recordQuery := `
-        INSERT INTO schema_migrations 
-        (version, name, filename, description, applied_at, checksum, execution_time_ms, migration_type, applied_by) 
-        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?)`
+	switch migrationType {
+	case MasterMigration:
+		// Use masterdb queries with transaction
+		masterQuerier := masterdb.New(tx)
+		description := &migration.Description
+		if migration.Description == "" {
+			description = nil
+		}
+		migrTypeStr := string(migrationType)
+		appliedBy := "system"
 
-	if _, err = tx.ExecContext(ctx, recordQuery,
-		migration.Version,
-		migration.Name,
-		migration.Filename,
-		migration.Description,
-		checksum,
-		executionTime,
-		string(migrationType),
-		"system",
-	); err != nil {
-		return fmt.Errorf("failed to record migration %d: %w", migration.Version, err)
+		if err = masterQuerier.RecordMigration(ctx, masterdb.RecordMigrationParams{
+			Version:         int64(migration.Version),
+			Name:            migration.Name,
+			Filename:        migration.Filename,
+			Description:     description,
+			Checksum:        &checksum,
+			ExecutionTimeMs: &executionTime,
+			MigrationType:   &migrTypeStr,
+			AppliedBy:       &appliedBy,
+		}); err != nil {
+			return fmt.Errorf("failed to record migration %d: %w", migration.Version, err)
+		}
+	case FamilyMigration:
+		// Use familydb queries with transaction
+		familyQuerier := familydb.New(tx)
+		description := &migration.Description
+		if migration.Description == "" {
+			description = nil
+		}
+		migrTypeStr := string(migrationType)
+		appliedBy := "system"
+
+		if err = familyQuerier.RecordMigration(ctx, familydb.RecordMigrationParams{
+			Version:         int64(migration.Version),
+			Name:            migration.Name,
+			Filename:        migration.Filename,
+			Description:     description,
+			Checksum:        &checksum,
+			ExecutionTimeMs: &executionTime,
+			MigrationType:   &migrTypeStr,
+			AppliedBy:       &appliedBy,
+		}); err != nil {
+			return fmt.Errorf("failed to record migration %d: %w", migration.Version, err)
+		}
+	default:
+		return fmt.Errorf("unsupported migration type: %s", migrationType)
 	}
 
 	// Commit the transaction
@@ -448,12 +497,39 @@ func (mm *MigrationManager) calculateChecksum(sql string) string {
 	return fmt.Sprintf("%x", h)
 }
 
-// Helper method to check if a specific migration version has been applied
-func (mm *MigrationManager) IsMigrationApplied(ctx context.Context, db *sql.DB, version int) (bool, error) {
-	var count int
-	query := "SELECT COUNT(*) FROM schema_migrations WHERE version = ?"
+// RunStartupMigrations runs master migrations automatically on application startup
+// This ensures the master database is always up to date when the application starts
+func (mm *MigrationManager) RunStartupMigrations(ctx context.Context, masterDB *sql.DB, familyMasterDB *sql.DB) error {
+	mm.logger.Info("Running startup migrations for master database")
 
-	err := db.QueryRowContext(ctx, query, version).Scan(&count)
+	if err := mm.RunMigrations(ctx, masterDB, MasterMigration); err != nil {
+		return fmt.Errorf("failed to run master startup migrations: %w", err)
+	}
+
+	if err := mm.RunMigrations(ctx, familyMasterDB, FamilyMigration); err != nil {
+		return fmt.Errorf("failed to run family master startup migrations: %w", err)
+	}
+
+	mm.logger.Info("Startup migrations completed successfully")
+	return nil
+}
+
+// Helper method to check if a specific migration version has been applied
+func (mm *MigrationManager) IsMigrationApplied(ctx context.Context, migrationType MigrationType, version int) (bool, error) {
+	var querier interface {
+		CheckMigrationApplied(ctx context.Context, version int64) (int64, error)
+	}
+
+	switch migrationType {
+	case MasterMigration:
+		querier = mm.masterDB
+	case FamilyMigration:
+		querier = mm.familyDB
+	default:
+		return false, fmt.Errorf("unsupported migration type: %s", migrationType)
+	}
+
+	count, err := querier.CheckMigrationApplied(ctx, int64(version))
 	if err != nil {
 		// If table doesn't exist, migration is not applied
 		if strings.Contains(err.Error(), "no such table") {
@@ -464,4 +540,3 @@ func (mm *MigrationManager) IsMigrationApplied(ctx context.Context, db *sql.DB, 
 
 	return count > 0, nil
 }
-

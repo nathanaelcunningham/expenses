@@ -1,8 +1,9 @@
 package family
 
-import "time"
-
-// Temporary stub models for family service - these should be replaced with SQLC types
+import (
+	"time"
+	"expenses-backend/internal/database/sql/masterdb"
+)
 
 type CreateFamilyRequest struct {
 	Name         string `json:"name"`
@@ -28,19 +29,14 @@ type JoinFamilyRequest struct {
 	UserEmail  string `json:"user_email"`
 }
 
-type Family struct {
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	InviteCode  string    `json:"invite_code"`
-	DatabaseURL string    `json:"database_url"`
-	ManagerID   string    `json:"manager_id"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Members     []Member  `json:"members,omitempty"`
+// FamilyResponse combines SQLC Family with additional computed data
+type FamilyResponse struct {
+	*masterdb.Family
+	Members []MemberResponse `json:"members,omitempty"`
 }
 
-type Member struct {
-	ID       string    `json:"id"`
+// MemberResponse combines user info with membership details
+type MemberResponse struct {
 	UserID   string    `json:"user_id"`
 	Name     string    `json:"name"`
 	Email    string    `json:"email"`

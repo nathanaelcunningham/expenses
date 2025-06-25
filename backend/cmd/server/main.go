@@ -4,6 +4,8 @@ import (
 	"context"
 	"expenses-backend/internal/auth"
 	"expenses-backend/internal/database"
+	"expenses-backend/internal/database/migrations"
+	"expenses-backend/internal/database/sql/familydb"
 	"expenses-backend/internal/database/turso"
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
@@ -68,9 +70,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	familyDB, err := tursoClient.Connect(context.Background(), os.Getenv("TURSO_FAMILY_SEED_URL"))
+	if err != nil {
+		panic(err)
+	}
+	defer familyDB.Close()
 
 	dbManager := database.New(masterDB, tursoClient, log)
 	defer dbManager.Close()
+
+	familyQueries := familydb.New(familyDB)
+
+	migrationManager := migrations.NewMigrationManager(log, dbManager.GetMasterQueries(), familyQueries)
+
+	err = migrationManager.RunStartupMigrations(context.Background(), masterDB, familyDB)
+	if err != nil {
+		panic(err)
+	}
 
 	familyService := family.NewService(dbManager, log)
 	authService := auth.NewService(dbManager, familyService, log)
