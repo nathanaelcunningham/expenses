@@ -56,9 +56,9 @@ func NewClient(config Config) *Client {
 func (c *Client) CreateDatabase(ctx context.Context, name string, seed string) (*DatabaseInfo, error) {
 	reqBody := CreateDatabaseRequest{
 		Name:  name,
-		Group: "default",
+		Group: "expenses",
 		Seed: CreateDatabaseRequestSeed{
-			Type: "databases",
+			Type: "database",
 			Name: seed,
 		},
 	}
@@ -120,7 +120,7 @@ func (c *Client) CreateDatabase(ctx context.Context, name string, seed string) (
 		return nil, fmt.Errorf("no database info in response")
 	}
 
-	dbURL := fmt.Sprintf("libsql://%s.turso.io", apiResponse.Database.Hostname)
+	dbURL := fmt.Sprintf("libsql://%s", apiResponse.Database.Hostname)
 
 	dbInfo := &DatabaseInfo{
 		Name:     apiResponse.Database.Name,

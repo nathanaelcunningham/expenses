@@ -18,22 +18,22 @@ type Querier interface {
 	CreateExpense(ctx context.Context, arg CreateExpenseParams) (*Expense, error)
 	CreateFamilyMember(ctx context.Context, arg CreateFamilyMemberParams) (*FamilyMember, error)
 	CreateMigrationsTable(ctx context.Context) error
-	DeactivateFamilyMember(ctx context.Context, id string) error
-	DeleteCategory(ctx context.Context, id string) error
-	DeleteExpense(ctx context.Context, id string) error
-	DeleteFamilyMember(ctx context.Context, id string) error
+	DeactivateFamilyMember(ctx context.Context, id int64) error
+	DeleteCategory(ctx context.Context, id int64) error
+	DeleteExpense(ctx context.Context, id int64) error
+	DeleteFamilyMember(ctx context.Context, id int64) error
 	GetAppliedMigrations(ctx context.Context) ([]*GetAppliedMigrationsRow, error)
-	GetCategoryByID(ctx context.Context, id string) (*Category, error)
+	GetCategoryByID(ctx context.Context, id int64) (*Category, error)
 	// Migration-related queries for family database
 	GetCurrentMigrationVersion(ctx context.Context) (int64, error)
-	GetExpenseByID(ctx context.Context, id string) (*Expense, error)
+	GetExpenseByID(ctx context.Context, id int64) (*Expense, error)
 	GetExpensesByDateRange(ctx context.Context, arg GetExpensesByDateRangeParams) ([]*Expense, error)
 	GetFamilyMemberByEmail(ctx context.Context, email string) (*FamilyMember, error)
-	GetFamilyMemberByID(ctx context.Context, id string) (*FamilyMember, error)
+	GetFamilyMemberByID(ctx context.Context, id int64) (*FamilyMember, error)
 	ListAllFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
 	ListCategories(ctx context.Context) ([]*Category, error)
 	ListExpenses(ctx context.Context, arg ListExpensesParams) ([]*Expense, error)
-	ListExpensesByCategory(ctx context.Context, categoryID *string) ([]*Expense, error)
+	ListExpensesByCategory(ctx context.Context, categoryID *int64) ([]*Expense, error)
 	ListFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
 	RecordMigration(ctx context.Context, arg RecordMigrationParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)

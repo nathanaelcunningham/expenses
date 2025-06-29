@@ -1,6 +1,6 @@
 -- name: CreateFamily :one
-INSERT INTO families (id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO families (name, invite_code, database_url, manager_id, schema_version, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: GetFamilyByID :one

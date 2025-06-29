@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,17 +20,17 @@ import (
 // AuthInterceptor provides session-based authentication for Connect RPC
 type AuthInterceptor struct {
 	authService *auth.Service
-	dbManager   *database.Manager
+	dbManager   *database.DatabaseManager
 	logger      logger.Logger
 }
 
 // AuthContext holds authentication information for the request
 type AuthContext struct {
-	UserID     string `json:"user_id"`
-	FamilyID   string `json:"family_id"`
-	UserRole   string `json:"user_role"`
-	SessionID  string `json:"session_id"`
-	FamilyDB   *sql.DB `json:"-"`
+	UserID    int64   `json:"user_id"`
+	FamilyID  int64   `json:"family_id"`
+	UserRole  string  `json:"user_role"`
+	SessionID int64   `json:"session_id"`
+	FamilyDB  *sql.DB `json:"-"`
 }
 
 // ContextKey is used for storing auth context in request context
@@ -36,11 +38,11 @@ type ContextKey string
 
 const (
 	AuthContextKey ContextKey = "auth_context"
-	SessionHeader            = "Authorization"
+	SessionHeader  ContextKey = "Authorization"
 )
 
 // NewAuthInterceptor creates a new authentication interceptor
-func NewAuthInterceptor(authService *auth.Service, dbManager *database.Manager, log logger.Logger) *AuthInterceptor {
+func NewAuthInterceptor(authService *auth.Service, dbManager *database.DatabaseManager, log logger.Logger) *AuthInterceptor {
 	return &AuthInterceptor{
 		authService: authService,
 		dbManager:   dbManager,
@@ -68,8 +70,8 @@ func (ai *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
 
 		ai.logger.Debug("Request authenticated successfully",
-			logger.Str("user_id", authCtx.UserID),
-			logger.Str("family_id", authCtx.FamilyID),
+			logger.Int64("user_id", authCtx.UserID),
+			logger.Int64("family_id", authCtx.FamilyID),
 			logger.Str("procedure", req.Spec().Procedure))
 
 		return next(ctx, req)
@@ -104,8 +106,8 @@ func (ai *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFun
 		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
 
 		ai.logger.Debug("Streaming connection authenticated successfully",
-			logger.Str("user_id", authCtx.UserID),
-			logger.Str("family_id", authCtx.FamilyID),
+			logger.Int64("user_id", authCtx.UserID),
+			logger.Int64("family_id", authCtx.FamilyID),
 			logger.Str("procedure", conn.Spec().Procedure))
 
 		return next(ctx, conn)
@@ -117,30 +119,37 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 	// Extract session token from Authorization header
 	sessionToken := ai.extractSessionToken(headers)
 	if sessionToken == "" {
-		return nil, connect.NewError(connect.CodeUnauthenticated, 
+		return nil, connect.NewError(connect.CodeUnauthenticated,
 			fmt.Errorf("missing or invalid session token"))
 	}
 
-	// Validate session
-	validation, err := ai.authService.ValidateSessionInternal(ctx, sessionToken)
+	// Convert session token to int64
+	sessionID, err := strconv.ParseInt(sessionToken, 10, 64)
 	if err != nil {
-		return nil, connect.NewError(connect.CodeInternal, 
+		return nil, connect.NewError(connect.CodeUnauthenticated,
+			fmt.Errorf("invalid session token format"))
+	}
+
+	// Validate session
+	validation, err := ai.authService.ValidateSessionInternal(ctx, sessionID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal,
 			fmt.Errorf("failed to validate session: %w", err))
 	}
 
 	if !validation.Valid {
-		return nil, connect.NewError(connect.CodeUnauthenticated, 
+		return nil, connect.NewError(connect.CodeUnauthenticated,
 			fmt.Errorf("invalid or expired session"))
 	}
 
 	// Get family database connection if user has a family
 	var familyDB *sql.DB
-	if validation.FamilyId != "" {
-		familyDB, err = ai.dbManager.GetFamilyDatabase(ctx, validation.FamilyId)
+	if validation.FamilyId != 0 {
+		familyDB, err = ai.dbManager.GetFamilyDatabase(ctx, int(validation.FamilyId))
 		if err != nil {
 			ai.logger.Error("Failed to get family database connection", err,
-				logger.Str("family_id", validation.FamilyId))
-			return nil, connect.NewError(connect.CodeInternal, 
+				logger.Int64("family_id", validation.FamilyId))
+			return nil, connect.NewError(connect.CodeInternal,
 				fmt.Errorf("failed to access family database: %w", err))
 		}
 	}
@@ -156,14 +165,14 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 
 // extractSessionToken extracts the session token from request headers
 func (ai *AuthInterceptor) extractSessionToken(headers http.Header) string {
-	authHeader := headers.Get(SessionHeader)
+	authHeader := headers.Get("Authorization")
 	if authHeader == "" {
 		return ""
 	}
 
 	// Support both "Bearer <token>" and just "<token>" formats
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		return strings.TrimPrefix(authHeader, "Bearer ")
+	if after, ok := strings.CutPrefix(authHeader, "Bearer "); ok {
+		return after
 	}
 
 	return authHeader
@@ -177,13 +186,7 @@ func (ai *AuthInterceptor) isPublicEndpoint(procedure string) bool {
 		"/health.v1.HealthService/Check",
 	}
 
-	for _, endpoint := range publicEndpoints {
-		if procedure == endpoint {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(publicEndpoints, procedure)
 }
 
 // GetAuthContext extracts the authentication context from the request context
@@ -196,7 +199,7 @@ func GetAuthContext(ctx context.Context) (*AuthContext, bool) {
 func RequireAuth(ctx context.Context) (*AuthContext, error) {
 	authCtx, ok := GetAuthContext(ctx)
 	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated, 
+		return nil, connect.NewError(connect.CodeUnauthenticated,
 			fmt.Errorf("authentication required"))
 	}
 	return authCtx, nil
@@ -209,8 +212,8 @@ func RequireFamily(ctx context.Context) (*AuthContext, error) {
 		return nil, err
 	}
 
-	if authCtx.FamilyID == "" {
-		return nil, connect.NewError(connect.CodeFailedPrecondition, 
+	if authCtx.FamilyID == 0 {
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
 			fmt.Errorf("user must be a member of a family to access this resource"))
 	}
 
@@ -225,7 +228,7 @@ func RequireFamilyManager(ctx context.Context) (*AuthContext, error) {
 	}
 
 	if authCtx.UserRole != "manager" {
-		return nil, connect.NewError(connect.CodePermissionDenied, 
+		return nil, connect.NewError(connect.CodePermissionDenied,
 			fmt.Errorf("only family managers can perform this action"))
 	}
 
@@ -248,9 +251,9 @@ func NewLoggingInterceptor(log logger.Logger) *LoggingInterceptor {
 func (li *LoggingInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 		start := time.Now()
-		
+
 		// Get auth context if available
-		var userID, familyID string
+		var userID, familyID int64
 		if authCtx, ok := GetAuthContext(ctx); ok {
 			userID = authCtx.UserID
 			familyID = authCtx.FamilyID
@@ -258,21 +261,21 @@ func (li *LoggingInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFun
 
 		// Execute request
 		resp, err := next(ctx, req)
-		
+
 		duration := time.Since(start)
-		
+
 		// Log the request
 		if err != nil {
 			li.logger.Error("RPC request completed", err,
 				logger.Str("procedure", req.Spec().Procedure),
-				logger.Str("user_id", userID),
-				logger.Str("family_id", familyID),
+				logger.Int64("user_id", userID),
+				logger.Int64("family_id", familyID),
 				logger.Duration("duration", duration))
 		} else {
 			li.logger.Info("RPC request completed",
 				logger.Str("procedure", req.Spec().Procedure),
-				logger.Str("user_id", userID),
-				logger.Str("family_id", familyID),
+				logger.Int64("user_id", userID),
+				logger.Int64("family_id", familyID),
 				logger.Duration("duration", duration))
 		}
 
@@ -285,11 +288,11 @@ func (li *LoggingInterceptor) WrapStreamingClient(next connect.StreamingClientFu
 	return func(ctx context.Context, spec connect.Spec) connect.StreamingClientConn {
 		start := time.Now()
 		conn := next(ctx, spec)
-		
+
 		li.logger.Debug("RPC streaming client connection established",
 			logger.Str("procedure", spec.Procedure),
 			logger.Duration("setup_duration", time.Since(start)))
-		
+
 		return conn
 	}
 }
@@ -298,9 +301,9 @@ func (li *LoggingInterceptor) WrapStreamingClient(next connect.StreamingClientFu
 func (li *LoggingInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFunc) connect.StreamingHandlerFunc {
 	return func(ctx context.Context, conn connect.StreamingHandlerConn) error {
 		start := time.Now()
-		
+
 		// Get auth context if available
-		var userID, familyID string
+		var userID, familyID int64
 		if authCtx, ok := GetAuthContext(ctx); ok {
 			userID = authCtx.UserID
 			familyID = authCtx.FamilyID
@@ -308,21 +311,21 @@ func (li *LoggingInterceptor) WrapStreamingHandler(next connect.StreamingHandler
 
 		// Execute streaming connection
 		err := next(ctx, conn)
-		
+
 		duration := time.Since(start)
-		
+
 		// Log the streaming connection
 		if err != nil {
 			li.logger.Error("RPC streaming handler completed", err,
 				logger.Str("procedure", conn.Spec().Procedure),
-				logger.Str("user_id", userID),
-				logger.Str("family_id", familyID),
+				logger.Int64("user_id", userID),
+				logger.Int64("family_id", familyID),
 				logger.Duration("duration", duration))
 		} else {
 			li.logger.Info("RPC streaming handler completed",
 				logger.Str("procedure", conn.Spec().Procedure),
-				logger.Str("user_id", userID),
-				logger.Str("family_id", familyID),
+				logger.Int64("user_id", userID),
+				logger.Int64("family_id", familyID),
 				logger.Duration("duration", duration))
 		}
 

@@ -9,19 +9,19 @@ import (
 )
 
 type Family struct {
-	ID            string    `json:"id"`
+	ID            int64     `json:"id"`
 	Name          string    `json:"name"`
 	InviteCode    string    `json:"invite_code"`
 	DatabaseUrl   string    `json:"database_url"`
-	ManagerID     string    `json:"manager_id"`
+	ManagerID     int64     `json:"manager_id"`
 	SchemaVersion *int64    `json:"schema_version"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 type FamilyMembership struct {
-	FamilyID *string   `json:"family_id"`
-	UserID   *string   `json:"user_id"`
+	FamilyID *int64    `json:"family_id"`
+	UserID   *int64    `json:"user_id"`
 	Role     string    `json:"role"`
 	JoinedAt time.Time `json:"joined_at"`
 }
@@ -39,7 +39,7 @@ type SchemaMigration struct {
 }
 
 type User struct {
-	ID           string    `json:"id"`
+	ID           int64     `json:"id"`
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"password_hash"`
@@ -48,9 +48,9 @@ type User struct {
 }
 
 type UserSession struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	FamilyID   string    `json:"family_id"`
+	ID         int64     `json:"id"`
+	UserID     int64     `json:"user_id"`
+	FamilyID   int64     `json:"family_id"`
 	UserRole   string    `json:"user_role"`
 	CreatedAt  time.Time `json:"created_at"`
 	LastActive time.Time `json:"last_active"`

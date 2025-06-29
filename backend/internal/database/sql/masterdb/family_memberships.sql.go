@@ -14,7 +14,7 @@ const checkUserExistsInFamily = `-- name: CheckUserExistsInFamily :one
 SELECT COUNT(*) FROM family_memberships WHERE user_id = ?
 `
 
-func (q *Queries) CheckUserExistsInFamily(ctx context.Context, userID *string) (int64, error) {
+func (q *Queries) CheckUserExistsInFamily(ctx context.Context, userID *int64) (int64, error) {
 	row := q.db.QueryRowContext(ctx, checkUserExistsInFamily, userID)
 	var count int64
 	err := row.Scan(&count)
@@ -28,8 +28,8 @@ RETURNING family_id, user_id, role, joined_at
 `
 
 type CreateFamilyMembershipParams struct {
-	FamilyID *string   `json:"family_id"`
-	UserID   *string   `json:"user_id"`
+	FamilyID *int64    `json:"family_id"`
+	UserID   *int64    `json:"user_id"`
 	Role     string    `json:"role"`
 	JoinedAt time.Time `json:"joined_at"`
 }
@@ -56,8 +56,8 @@ DELETE FROM family_memberships WHERE family_id = ? AND user_id = ?
 `
 
 type DeleteFamilyMembershipParams struct {
-	FamilyID *string `json:"family_id"`
-	UserID   *string `json:"user_id"`
+	FamilyID *int64 `json:"family_id"`
+	UserID   *int64 `json:"user_id"`
 }
 
 func (q *Queries) DeleteFamilyMembership(ctx context.Context, arg DeleteFamilyMembershipParams) error {
@@ -70,8 +70,8 @@ SELECT family_id, user_id, role, joined_at FROM family_memberships WHERE family_
 `
 
 type GetFamilyMembershipParams struct {
-	FamilyID *string `json:"family_id"`
-	UserID   *string `json:"user_id"`
+	FamilyID *int64 `json:"family_id"`
+	UserID   *int64 `json:"user_id"`
 }
 
 func (q *Queries) GetFamilyMembership(ctx context.Context, arg GetFamilyMembershipParams) (*FamilyMembership, error) {
@@ -91,11 +91,11 @@ SELECT family_id, role FROM family_memberships WHERE user_id = ?
 `
 
 type GetUserFamilyInfoRow struct {
-	FamilyID *string `json:"family_id"`
-	Role     string  `json:"role"`
+	FamilyID *int64 `json:"family_id"`
+	Role     string `json:"role"`
 }
 
-func (q *Queries) GetUserFamilyInfo(ctx context.Context, userID *string) (*GetUserFamilyInfoRow, error) {
+func (q *Queries) GetUserFamilyInfo(ctx context.Context, userID *int64) (*GetUserFamilyInfoRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserFamilyInfo, userID)
 	var i GetUserFamilyInfoRow
 	err := row.Scan(&i.FamilyID, &i.Role)
@@ -106,7 +106,7 @@ const listFamilyMemberships = `-- name: ListFamilyMemberships :many
 SELECT family_id, user_id, role, joined_at FROM family_memberships WHERE family_id = ?
 `
 
-func (q *Queries) ListFamilyMemberships(ctx context.Context, familyID *string) ([]*FamilyMembership, error) {
+func (q *Queries) ListFamilyMemberships(ctx context.Context, familyID *int64) ([]*FamilyMembership, error) {
 	rows, err := q.db.QueryContext(ctx, listFamilyMemberships, familyID)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ const listUserMemberships = `-- name: ListUserMemberships :many
 SELECT family_id, user_id, role, joined_at FROM family_memberships WHERE user_id = ?
 `
 
-func (q *Queries) ListUserMemberships(ctx context.Context, userID *string) ([]*FamilyMembership, error) {
+func (q *Queries) ListUserMemberships(ctx context.Context, userID *int64) ([]*FamilyMembership, error) {
 	rows, err := q.db.QueryContext(ctx, listUserMemberships, userID)
 	if err != nil {
 		return nil, err
@@ -174,9 +174,9 @@ RETURNING family_id, user_id, role, joined_at
 `
 
 type UpdateFamilyMembershipRoleParams struct {
-	Role     string  `json:"role"`
-	FamilyID *string `json:"family_id"`
-	UserID   *string `json:"user_id"`
+	Role     string `json:"role"`
+	FamilyID *int64 `json:"family_id"`
+	UserID   *int64 `json:"user_id"`
 }
 
 func (q *Queries) UpdateFamilyMembershipRole(ctx context.Context, arg UpdateFamilyMembershipRoleParams) (*FamilyMembership, error) {

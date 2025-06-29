@@ -2,9 +2,7 @@ package auth
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
-	"encoding/hex"
 	"fmt"
 	"strings"
 	"time"
@@ -58,16 +56,9 @@ func (s *Service) register(ctx context.Context, req *authv1.RegisterRequest) (*m
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}
 
-	// Generate user ID
-	userID, err := s.generateID()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate user ID: %w", err)
-	}
-
 	// Create user
 	now := time.Now()
 	createParams := masterdb.CreateUserParams{
-		ID:           userID,
 		Email:        strings.ToLower(strings.TrimSpace(req.Email)),
 		Name:         strings.TrimSpace(req.Name),
 		PasswordHash: passwordHash,
@@ -86,7 +77,7 @@ func (s *Service) register(ctx context.Context, req *authv1.RegisterRequest) (*m
 		if err := s.joinExistingFamily(ctx, sqlcUser, req.InviteCode); err != nil {
 			s.logger.Warn("Failed to join family with invite code - user can join later",
 				err,
-				logger.Str("user_id", sqlcUser.ID),
+				logger.Int64("user_id", sqlcUser.ID),
 				logger.Str("email", sqlcUser.Email),
 				logger.Str("invite_code", req.InviteCode),
 			)
@@ -96,14 +87,14 @@ func (s *Service) register(ctx context.Context, req *authv1.RegisterRequest) (*m
 		if err := s.createNewFamily(ctx, sqlcUser); err != nil {
 			s.logger.Warn("Failed to create family for new user - user can create one later",
 				err,
-				logger.Str("user_id", sqlcUser.ID),
+				logger.Int64("user_id", sqlcUser.ID),
 				logger.Str("email", sqlcUser.Email),
 			)
 		}
 	}
 
 	s.logger.Info("User registered successfully",
-		logger.Str("user_id", sqlcUser.ID),
+		logger.Int64("user_id", sqlcUser.ID),
 		logger.Str("email", sqlcUser.Email),
 	)
 
@@ -136,7 +127,7 @@ func (s *Service) login(ctx context.Context, req *authv1.LoginRequest, userAgent
 	if err != nil {
 		// User might not have a family yet - that's okay for new users
 		s.logger.Debug("User has no family membership yet",
-			logger.Str("user_id", user.ID))
+			logger.Int64("user_id", user.ID))
 	}
 
 	// Create session
@@ -146,22 +137,22 @@ func (s *Service) login(ctx context.Context, req *authv1.LoginRequest, userAgent
 	}
 
 	s.logger.Info("User logged in successfully",
-		logger.Str("user_id", user.ID),
-		logger.Str("session_id", session.ID),
-		logger.Str("family_id", familyID),
+		logger.Int64("user_id", user.ID),
+		logger.Int64("session_id", session.ID),
+		logger.Int64("family_id", familyID),
 	)
 
 	return session, user, nil
 }
 
 // ValidateSessionInternal checks if a session is valid and returns session info (for internal use)
-func (s *Service) ValidateSessionInternal(ctx context.Context, sessionID string) (*authv1.SessionValidationResult, error) {
+func (s *Service) ValidateSessionInternal(ctx context.Context, sessionID int64) (*authv1.SessionValidationResult, error) {
 	return s.validateSession(ctx, sessionID)
 }
 
 // validateSession checks if a session is valid and returns session info
-func (s *Service) validateSession(ctx context.Context, sessionID string) (*authv1.SessionValidationResult, error) {
-	if sessionID == "" {
+func (s *Service) validateSession(ctx context.Context, sessionID int64) (*authv1.SessionValidationResult, error) {
+	if sessionID == 0 {
 		return &authv1.SessionValidationResult{
 			Valid: false,
 		}, nil
@@ -190,7 +181,7 @@ func (s *Service) validateSession(ctx context.Context, sessionID string) (*authv
 	// Update last active time
 	if err := s.updateSessionActivity(ctx, sessionID); err != nil {
 		s.logger.Warn("Failed to update session activity", err,
-			logger.Str("session_id", sessionID))
+			logger.Int64("session_id", sessionID))
 	}
 
 	// Get user info
@@ -208,19 +199,19 @@ func (s *Service) validateSession(ctx context.Context, sessionID string) (*authv
 }
 
 // logout invalidates a session
-func (s *Service) logout(ctx context.Context, sessionID string) error {
+func (s *Service) logout(ctx context.Context, sessionID int64) error {
 	if err := s.deleteSession(ctx, sessionID); err != nil {
 		return fmt.Errorf("failed to delete session: %w", err)
 	}
 
 	s.logger.Info("User logged out successfully",
-		logger.Str("session_id", sessionID))
+		logger.Int64("session_id", sessionID))
 
 	return nil
 }
 
 // refreshSession extends a session's expiry time
-func (s *Service) refreshSession(ctx context.Context, sessionID string) (*masterdb.UserSession, error) {
+func (s *Service) refreshSession(ctx context.Context, sessionID int64) (*masterdb.UserSession, error) {
 	// Get current session
 	session, err := s.getSession(ctx, sessionID)
 	if err != nil {
@@ -254,7 +245,7 @@ func (s *Service) refreshSession(ctx context.Context, sessionID string) (*master
 }
 
 // UpdateUserFamily updates the user's family association when they join/leave a family
-func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID, role string) error {
+func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID int64, role string) error {
 	// Update all active sessions for this user
 	updateParams := masterdb.UpdateUserFamilySessionsParams{
 		FamilyID:  familyID,
@@ -269,8 +260,8 @@ func (s *Service) UpdateUserFamily(ctx context.Context, userID, familyID, role s
 	}
 
 	s.logger.Info("Updated user family association in sessions",
-		logger.Str("user_id", userID),
-		logger.Str("family_id", familyID),
+		logger.Int64("user_id", userID),
+		logger.Int64("family_id", familyID),
 		logger.Str("role", role))
 
 	return nil
@@ -337,14 +328,6 @@ func (s *Service) verifyPassword(password, hash string) bool {
 	return err == nil
 }
 
-func (s *Service) generateID() (string, error) {
-	bytes := make([]byte, 16)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
-}
-
 func (s *Service) getUserByEmail(ctx context.Context, email string) (*masterdb.User, error) {
 	sqlcUser, err := s.dbManager.GetMasterQueries().GetUserByEmail(ctx, strings.ToLower(email))
 	if err != nil {
@@ -354,7 +337,7 @@ func (s *Service) getUserByEmail(ctx context.Context, email string) (*masterdb.U
 	return sqlcUser, nil
 }
 
-func (s *Service) getUserByID(ctx context.Context, userID string) (*masterdb.User, error) {
+func (s *Service) getUserByID(ctx context.Context, userID int64) (*masterdb.User, error) {
 	sqlcUser, err := s.dbManager.GetMasterQueries().GetUserByID(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -363,13 +346,13 @@ func (s *Service) getUserByID(ctx context.Context, userID string) (*masterdb.Use
 	return sqlcUser, nil
 }
 
-func (s *Service) getUserFamilyInfo(ctx context.Context, userID string) (familyID, role string, err error) {
+func (s *Service) getUserFamilyInfo(ctx context.Context, userID int64) (familyID int64, role string, err error) {
 	result, err := s.dbManager.GetMasterQueries().GetUserFamilyInfo(ctx, &userID)
 	if err != nil {
-		return "", "", err
+		return 0, "", err
 	}
 
-	var famID string
+	var famID int64
 	if result.FamilyID != nil {
 		famID = *result.FamilyID
 	}
@@ -377,17 +360,11 @@ func (s *Service) getUserFamilyInfo(ctx context.Context, userID string) (familyI
 	return famID, result.Role, nil
 }
 
-func (s *Service) createSession(ctx context.Context, userID, familyID, userRole, userAgent, ipAddress string) (*masterdb.UserSession, error) {
-	sessionID, err := s.generateID()
-	if err != nil {
-		return nil, err
-	}
-
+func (s *Service) createSession(ctx context.Context, userID, familyID int64, userRole, userAgent, ipAddress string) (*masterdb.UserSession, error) {
 	now := time.Now()
 	expiresAt := now.Add(24 * time.Hour) // 24 hour sessions
 
 	createParams := masterdb.CreateUserSessionParams{
-		ID:         sessionID,
 		UserID:     userID,
 		FamilyID:   familyID,
 		UserRole:   userRole,
@@ -406,7 +383,7 @@ func (s *Service) createSession(ctx context.Context, userID, familyID, userRole,
 	return sqlcSession, nil
 }
 
-func (s *Service) getSession(ctx context.Context, sessionID string) (*masterdb.UserSession, error) {
+func (s *Service) getSession(ctx context.Context, sessionID int64) (*masterdb.UserSession, error) {
 	sqlcSession, err := s.dbManager.GetMasterQueries().GetUserSession(ctx, sessionID)
 	if err != nil {
 		return nil, err
@@ -415,7 +392,7 @@ func (s *Service) getSession(ctx context.Context, sessionID string) (*masterdb.U
 	return sqlcSession, nil
 }
 
-func (s *Service) updateSessionActivity(ctx context.Context, sessionID string) error {
+func (s *Service) updateSessionActivity(ctx context.Context, sessionID int64) error {
 	updateParams := masterdb.UpdateSessionActivityParams{
 		LastActive: time.Now(),
 		ID:         sessionID,
@@ -424,7 +401,7 @@ func (s *Service) updateSessionActivity(ctx context.Context, sessionID string) e
 	return s.dbManager.GetMasterQueries().UpdateSessionActivity(ctx, updateParams)
 }
 
-func (s *Service) deleteSession(ctx context.Context, sessionID string) error {
+func (s *Service) deleteSession(ctx context.Context, sessionID int64) error {
 	return s.dbManager.GetMasterQueries().DeleteUserSession(ctx, sessionID)
 }
 
@@ -443,8 +420,8 @@ func (s *Service) joinExistingFamily(ctx context.Context, user *masterdb.User, i
 	}
 
 	s.logger.Info("User joined family during registration",
-		logger.Str("user_id", user.ID),
-		logger.Str("family_id", userFamily.ID),
+		logger.Int64("user_id", user.ID),
+		logger.Int64("family_id", userFamily.ID),
 		logger.Str("family_name", userFamily.Name),
 		logger.Str("invite_code", inviteCode),
 	)
@@ -453,8 +430,8 @@ func (s *Service) joinExistingFamily(ctx context.Context, user *masterdb.User, i
 	if err := s.UpdateUserFamily(ctx, user.ID, userFamily.ID, "member"); err != nil {
 		s.logger.Warn("Failed to update user sessions with family info",
 			err,
-			logger.Str("user_id", user.ID),
-			logger.Str("family_id", userFamily.ID),
+			logger.Int64("user_id", user.ID),
+			logger.Int64("family_id", userFamily.ID),
 		)
 	}
 
@@ -475,8 +452,8 @@ func (s *Service) createNewFamily(ctx context.Context, user *masterdb.User) erro
 	}
 
 	s.logger.Info("Family created for new user",
-		logger.Str("user_id", user.ID),
-		logger.Str("family_id", userFamily.ID),
+		logger.Int64("user_id", user.ID),
+		logger.Int64("family_id", userFamily.ID),
 		logger.Str("family_name", userFamily.Name),
 	)
 
@@ -484,8 +461,8 @@ func (s *Service) createNewFamily(ctx context.Context, user *masterdb.User) erro
 	if err := s.UpdateUserFamily(ctx, user.ID, userFamily.ID, "manager"); err != nil {
 		s.logger.Warn("Failed to update user sessions with family info",
 			err,
-			logger.Str("user_id", user.ID),
-			logger.Str("family_id", userFamily.ID),
+			logger.Int64("user_id", user.ID),
+			logger.Int64("family_id", userFamily.ID),
 		)
 	}
 

@@ -23,7 +23,7 @@ const (
 
 type Expense struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Amount        float64                `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	DayOfMonthDue int32                  `protobuf:"varint,4,opt,name=day_of_month_due,json=dayOfMonthDue,proto3" json:"day_of_month_due,omitempty"`
@@ -64,11 +64,11 @@ func (*Expense) Descriptor() ([]byte, []int) {
 	return file_expense_v1_expense_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Expense) GetId() string {
+func (x *Expense) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *Expense) GetName() string {
@@ -279,7 +279,7 @@ func (x *CreateExpenseResponse) GetExpense() *Expense {
 
 type GetExpenseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -314,11 +314,11 @@ func (*GetExpenseRequest) Descriptor() ([]byte, []int) {
 	return file_expense_v1_expense_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetExpenseRequest) GetId() string {
+func (x *GetExpenseRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 type GetExpenseResponse struct {
@@ -367,7 +367,7 @@ func (x *GetExpenseResponse) GetExpense() *Expense {
 
 type UpdateExpenseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Amount        float64                `protobuf:"fixed64,3,opt,name=amount,proto3" json:"amount,omitempty"`
 	DayOfMonthDue int32                  `protobuf:"varint,4,opt,name=day_of_month_due,json=dayOfMonthDue,proto3" json:"day_of_month_due,omitempty"`
@@ -406,11 +406,11 @@ func (*UpdateExpenseRequest) Descriptor() ([]byte, []int) {
 	return file_expense_v1_expense_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *UpdateExpenseRequest) GetId() string {
+func (x *UpdateExpenseRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *UpdateExpenseRequest) GetName() string {
@@ -487,7 +487,7 @@ func (x *UpdateExpenseResponse) GetExpense() *Expense {
 
 type DeleteExpenseRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -522,11 +522,11 @@ func (*DeleteExpenseRequest) Descriptor() ([]byte, []int) {
 	return file_expense_v1_expense_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *DeleteExpenseRequest) GetId() string {
+func (x *DeleteExpenseRequest) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 type DeleteExpenseResponse struct {
@@ -684,7 +684,7 @@ const file_expense_v1_expense_proto_rawDesc = "" +
 	"\x18expense/v1/expense.proto\x12\n" +
 	"expense.v1\"\xcb\x01\n" +
 	"\aExpense\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06amount\x18\x03 \x01(\x01R\x06amount\x12'\n" +
 	"\x10day_of_month_due\x18\x04 \x01(\x05R\rdayOfMonthDue\x12\x1d\n" +
@@ -706,11 +706,11 @@ const file_expense_v1_expense_proto_rawDesc = "" +
 	"\x15CreateExpenseResponse\x12-\n" +
 	"\aexpense\x18\x01 \x01(\v2\x13.expense.v1.ExpenseR\aexpense\"#\n" +
 	"\x11GetExpenseRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"C\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"C\n" +
 	"\x12GetExpenseResponse\x12-\n" +
 	"\aexpense\x18\x01 \x01(\v2\x13.expense.v1.ExpenseR\aexpense\"\x9a\x01\n" +
 	"\x14UpdateExpenseRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06amount\x18\x03 \x01(\x01R\x06amount\x12'\n" +
 	"\x10day_of_month_due\x18\x04 \x01(\x05R\rdayOfMonthDue\x12\x1d\n" +
@@ -719,7 +719,7 @@ const file_expense_v1_expense_proto_rawDesc = "" +
 	"\x15UpdateExpenseResponse\x12-\n" +
 	"\aexpense\x18\x01 \x01(\v2\x13.expense.v1.ExpenseR\aexpense\"&\n" +
 	"\x14DeleteExpenseRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"1\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"1\n" +
 	"\x15DeleteExpenseResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"Q\n" +
 	"\x13ListExpensesRequest\x12\x1b\n" +

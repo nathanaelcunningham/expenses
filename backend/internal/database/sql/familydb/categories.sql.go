@@ -17,7 +17,7 @@ RETURNING id, name, description, color, icon, created_at, updated_at
 `
 
 type CreateCategoryParams struct {
-	ID          string    `json:"id"`
+	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	Color       *string   `json:"color"`
@@ -53,7 +53,7 @@ const deleteCategory = `-- name: DeleteCategory :exec
 DELETE FROM categories WHERE id = ?
 `
 
-func (q *Queries) DeleteCategory(ctx context.Context, id string) error {
+func (q *Queries) DeleteCategory(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteCategory, id)
 	return err
 }
@@ -62,7 +62,7 @@ const getCategoryByID = `-- name: GetCategoryByID :one
 SELECT id, name, description, color, icon, created_at, updated_at FROM categories WHERE id = ?
 `
 
-func (q *Queries) GetCategoryByID(ctx context.Context, id string) (*Category, error) {
+func (q *Queries) GetCategoryByID(ctx context.Context, id int64) (*Category, error) {
 	row := q.db.QueryRowContext(ctx, getCategoryByID, id)
 	var i Category
 	err := row.Scan(
@@ -125,7 +125,7 @@ type UpdateCategoryParams struct {
 	Color       *string   `json:"color"`
 	Icon        *string   `json:"icon"`
 	UpdatedAt   time.Time `json:"updated_at"`
-	ID          string    `json:"id"`
+	ID          int64     `json:"id"`
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error) {

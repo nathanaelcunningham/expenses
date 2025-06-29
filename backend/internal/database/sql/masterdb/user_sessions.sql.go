@@ -20,15 +20,14 @@ func (q *Queries) CleanupExpiredSessions(ctx context.Context, expiresAt time.Tim
 }
 
 const createUserSession = `-- name: CreateUserSession :one
-INSERT INTO user_sessions (id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO user_sessions (user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address
 `
 
 type CreateUserSessionParams struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	FamilyID   string    `json:"family_id"`
+	UserID     int64     `json:"user_id"`
+	FamilyID   int64     `json:"family_id"`
 	UserRole   string    `json:"user_role"`
 	CreatedAt  time.Time `json:"created_at"`
 	LastActive time.Time `json:"last_active"`
@@ -39,7 +38,6 @@ type CreateUserSessionParams struct {
 
 func (q *Queries) CreateUserSession(ctx context.Context, arg CreateUserSessionParams) (*UserSession, error) {
 	row := q.db.QueryRowContext(ctx, createUserSession,
-		arg.ID,
 		arg.UserID,
 		arg.FamilyID,
 		arg.UserRole,
@@ -77,7 +75,7 @@ const deleteUserSession = `-- name: DeleteUserSession :exec
 DELETE FROM user_sessions WHERE id = ?
 `
 
-func (q *Queries) DeleteUserSession(ctx context.Context, id string) error {
+func (q *Queries) DeleteUserSession(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUserSession, id)
 	return err
 }
@@ -89,7 +87,7 @@ ORDER BY last_active DESC
 `
 
 type GetUserActiveSessionsParams struct {
-	UserID    string    `json:"user_id"`
+	UserID    int64     `json:"user_id"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 
@@ -130,7 +128,7 @@ const getUserSession = `-- name: GetUserSession :one
 SELECT id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address FROM user_sessions WHERE id = ?
 `
 
-func (q *Queries) GetUserSession(ctx context.Context, id string) (*UserSession, error) {
+func (q *Queries) GetUserSession(ctx context.Context, id int64) (*UserSession, error) {
 	row := q.db.QueryRowContext(ctx, getUserSession, id)
 	var i UserSession
 	err := row.Scan(
@@ -156,7 +154,7 @@ WHERE id = ?
 type RefreshSessionParams struct {
 	ExpiresAt  time.Time `json:"expires_at"`
 	LastActive time.Time `json:"last_active"`
-	ID         string    `json:"id"`
+	ID         int64     `json:"id"`
 }
 
 func (q *Queries) RefreshSession(ctx context.Context, arg RefreshSessionParams) error {
@@ -172,7 +170,7 @@ WHERE id = ?
 
 type UpdateSessionActivityParams struct {
 	LastActive time.Time `json:"last_active"`
-	ID         string    `json:"id"`
+	ID         int64     `json:"id"`
 }
 
 func (q *Queries) UpdateSessionActivity(ctx context.Context, arg UpdateSessionActivityParams) error {
@@ -187,9 +185,9 @@ WHERE user_id = ? AND expires_at > ?
 `
 
 type UpdateUserFamilySessionsParams struct {
-	FamilyID  string    `json:"family_id"`
+	FamilyID  int64     `json:"family_id"`
 	UserRole  string    `json:"user_role"`
-	UserID    string    `json:"user_id"`
+	UserID    int64     `json:"user_id"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
 

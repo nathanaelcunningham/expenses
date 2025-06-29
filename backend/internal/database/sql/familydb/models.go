@@ -9,7 +9,7 @@ import (
 )
 
 type Category struct {
-	ID          string    `json:"id"`
+	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
 	Description *string   `json:"description"`
 	Color       *string   `json:"color"`
@@ -19,8 +19,8 @@ type Category struct {
 }
 
 type Expense struct {
-	ID            string    `json:"id"`
-	CategoryID    *string   `json:"category_id"`
+	ID            int64     `json:"id"`
+	CategoryID    *int64    `json:"category_id"`
 	Amount        float64   `json:"amount"`
 	Name          string    `json:"name"`
 	DayOfMonthDue int64     `json:"day_of_month_due"`
@@ -30,7 +30,7 @@ type Expense struct {
 }
 
 type FamilyMember struct {
-	ID       string    `json:"id"`
+	ID       int64     `json:"id"`
 	Name     string    `json:"name"`
 	Email    string    `json:"email"`
 	Role     string    `json:"role"`

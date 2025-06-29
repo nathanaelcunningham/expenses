@@ -7,7 +7,6 @@ proto:
 # Build server and client
 build:
 	go build -o bin/server ./cmd/server
-	go build -o bin/client ./cmd/client
 
 # Run server
 run-server:
@@ -28,3 +27,9 @@ deps:
 
 # Generate proto and build
 all: proto build
+
+
+dbs:
+	turso db create --group expenses expenses-master
+	turso db create --group expenses family-seed
+

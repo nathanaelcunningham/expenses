@@ -59,7 +59,8 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 	}
 
 	// Check if user is already in a family
-	existingFamily, err := s.dbManager.GetMasterQueries().CheckUserExistsInFamily(ctx, &req.ManagerID)
+	userID := int64(req.ManagerID)
+	existingFamily, err := s.dbManager.GetMasterQueries().CheckUserExistsInFamily(ctx, &userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if user exists in family: %w", err)
 	}
@@ -68,11 +69,6 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 	}
 
 	// Generate unique family ID and invite code
-	familyID, err := s.generateID()
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate family ID: %w", err)
-	}
-
 	inviteCode, err := s.generateInviteCode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate invite code: %w", err)
@@ -95,13 +91,12 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 	}
 
 	s.logger.Info("Creating family and provisioning database",
-		logger.Str("family_id", familyID),
-		logger.Str("manager_id", req.ManagerID),
+		logger.Int64("manager_id", userID),
 		logger.Str("invite_code", inviteCode),
 	)
 
 	// Provision family database
-	familyDB, err := s.dbManager.ProvisionFamilyDatabase(ctx, familyID, req.Name)
+	familydb, err := s.dbManager.ProvisionFamilyDatabase(ctx, req.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision family database: %w", err)
 	}
@@ -114,11 +109,9 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 		// Create family
 		var schemaVersion int64 = 0
 		createFamilyParams := masterdb.CreateFamilyParams{
-			ID:            familyID,
 			Name:          req.Name,
 			InviteCode:    inviteCode,
-			DatabaseUrl:   familyDB.URL,
-			ManagerID:     req.ManagerID,
+			ManagerID:     userID,
 			SchemaVersion: &schemaVersion,
 			CreatedAt:     now,
 			UpdatedAt:     now,
@@ -128,10 +121,10 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 			return fmt.Errorf("failed to create family: %w", err)
 		}
 
-		// Create membership for manager
+		// Create membership for manager using the generated family ID
 		createMembershipParams := masterdb.CreateFamilyMembershipParams{
-			FamilyID: &familyID,
-			UserID:   &req.ManagerID,
+			FamilyID: &sqlcFamily.ID,
+			UserID:   &userID,
 			Role:     "manager",
 			JoinedAt: now,
 		}
@@ -147,17 +140,20 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 		return nil, err
 	}
 
+	// Add database to internal maps now that we have the family ID
+	s.dbManager.AddFamilyDB(int(family.ID), familydb)
+
 	// Add manager to family database
-	if err := s.addMemberToFamilyDatabase(ctx, familyID, req.ManagerID, req.ManagerName, req.ManagerEmail, "manager"); err != nil {
+	if err := s.addMemberToFamilyDatabase(ctx, int(family.ID), int(req.ManagerID), req.ManagerName, req.ManagerEmail, "manager"); err != nil {
 		s.logger.Warn("Failed to add manager to family database - this may cause issues",
 			err,
-			logger.Str("family_id", familyID),
-			logger.Str("manager_id", req.ManagerID),
+			logger.Int64("family_id", family.ID),
+			logger.Int64("manager_id", req.ManagerID),
 		)
 	}
 
 	s.logger.Info("Family created successfully",
-		logger.Str("family_id", familyID),
+		logger.Int64("family_id", family.ID),
 		logger.Str("family_name", req.Name),
 		logger.Str("invite_code", inviteCode),
 	)
@@ -168,12 +164,12 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 // JoinFamily allows a user to join a family using an invite code
 func (s *Service) JoinFamily(ctx context.Context, req JoinFamilyRequest) (*masterdb.Family, error) {
 	// Validate input
-	if req.InviteCode == "" || req.UserID == "" {
+	if req.InviteCode == "" || req.UserID == 0 {
 		return nil, &FamilyError{"INVALID_REQUEST", "Invite code and user ID are required"}
 	}
 
 	// Check if user is already in a family
-	existingFamily, err := s.GetUserFamily(ctx, req.UserID)
+	existingFamily, err := s.GetUserFamily(ctx, int(req.UserID))
 	if err == nil && existingFamily != nil {
 		return nil, ErrUserAlreadyInFamily
 	}
@@ -190,9 +186,10 @@ func (s *Service) JoinFamily(ctx context.Context, req JoinFamilyRequest) (*maste
 	now := time.Now()
 
 	// Add user to family
+	uID := int64(req.UserID)
 	createMembershipParams := masterdb.CreateFamilyMembershipParams{
 		FamilyID: &family.ID,
-		UserID:   &req.UserID,
+		UserID:   &uID,
 		Role:     "member",
 		JoinedAt: now,
 	}
@@ -202,19 +199,20 @@ func (s *Service) JoinFamily(ctx context.Context, req JoinFamilyRequest) (*maste
 	}
 
 	// Add member to family database
-	if err := s.addMemberToFamilyDatabase(ctx, family.ID, req.UserID, req.UserName, req.UserEmail, "member"); err != nil {
-		s.logger.Warn("Failed to add member to family database", err, logger.Str("family_id", family.ID), logger.Str("user_id", req.UserID))
+	if err := s.addMemberToFamilyDatabase(ctx, int(family.ID), int(req.UserID), req.UserName, req.UserEmail, "member"); err != nil {
+		s.logger.Warn("Failed to add member to family database", err, logger.Int64("family_id", family.ID), logger.Int64("user_id", req.UserID))
 	}
 
-	s.logger.Info("User joined family successfully", logger.Str("family_id", family.ID), logger.Str("user_id", req.UserID), logger.Str("invite_code", req.InviteCode))
+	s.logger.Info("User joined family successfully", logger.Int64("family_id", family.ID), logger.Int64("user_id", req.UserID), logger.Str("invite_code", req.InviteCode))
 
 	return family, nil
 }
 
 // GetUserFamily retrieves the family that a user belongs to
-func (s *Service) GetUserFamily(ctx context.Context, userID string) (*FamilyResponse, error) {
+func (s *Service) GetUserFamily(ctx context.Context, userID int) (*FamilyResponse, error) {
+	uID := int64(userID)
 	// Get user family info first
-	userFamilyInfo, err := s.dbManager.GetMasterQueries().GetUserFamilyInfo(ctx, &userID)
+	userFamilyInfo, err := s.dbManager.GetMasterQueries().GetUserFamilyInfo(ctx, &uID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil // User is not in any family
@@ -233,9 +231,9 @@ func (s *Service) GetUserFamily(ctx context.Context, userID string) (*FamilyResp
 	}
 
 	// Get family members
-	members, err := s.getFamilyMembers(ctx, sqlcFamily.ID)
+	members, err := s.getFamilyMembers(ctx, int(sqlcFamily.ID))
 	if err != nil {
-		s.logger.Warn("Failed to get family members", err, logger.Str("family_id", sqlcFamily.ID))
+		s.logger.Warn("Failed to get family members", err, logger.Int64("family_id", sqlcFamily.ID))
 		members = []MemberResponse{} // Empty slice on error
 	}
 
@@ -248,8 +246,8 @@ func (s *Service) GetUserFamily(ctx context.Context, userID string) (*FamilyResp
 }
 
 // GetFamilyByID retrieves a family by its ID
-func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*FamilyResponse, error) {
-	sqlcFamily, err := s.dbManager.GetMasterQueries().GetFamilyByID(ctx, familyID)
+func (s *Service) GetFamilyByID(ctx context.Context, familyID int) (*FamilyResponse, error) {
+	sqlcFamily, err := s.dbManager.GetMasterQueries().GetFamilyByID(ctx, int64(familyID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrFamilyNotFound
@@ -258,9 +256,9 @@ func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*FamilyRe
 	}
 
 	// Get family members
-	members, err := s.getFamilyMembers(ctx, sqlcFamily.ID)
+	members, err := s.getFamilyMembers(ctx, int(sqlcFamily.ID))
 	if err != nil {
-		s.logger.Warn("Failed to get family members", err, logger.Str("family_id", sqlcFamily.ID))
+		s.logger.Warn("Failed to get family members", err, logger.Int64("family_id", sqlcFamily.ID))
 		members = []MemberResponse{} // Empty slice on error
 	}
 
@@ -273,7 +271,7 @@ func (s *Service) GetFamilyByID(ctx context.Context, familyID string) (*FamilyRe
 }
 
 // RemoveFamilyMember removes a member from a family (manager only)
-func (s *Service) RemoveFamilyMember(ctx context.Context, familyID, managerID, memberID string) error {
+func (s *Service) RemoveFamilyMember(ctx context.Context, familyID, managerID, memberID int) error {
 	// Verify the requester is the family manager
 	if !s.isUserFamilyManager(ctx, familyID, managerID) {
 		return ErrNotFamilyManager
@@ -285,9 +283,11 @@ func (s *Service) RemoveFamilyMember(ctx context.Context, familyID, managerID, m
 	}
 
 	// Remove from master database
+	fID := int64(familyID)
+	mID := int64(memberID)
 	deleteMembershipParams := masterdb.DeleteFamilyMembershipParams{
-		FamilyID: &familyID,
-		UserID:   &memberID,
+		FamilyID: &fID,
+		UserID:   &mID,
 	}
 	err := s.dbManager.GetMasterQueries().DeleteFamilyMembership(ctx, deleteMembershipParams)
 	if err != nil {
@@ -296,20 +296,20 @@ func (s *Service) RemoveFamilyMember(ctx context.Context, familyID, managerID, m
 
 	// Remove from family database
 	if err := s.removeMemberFromFamilyDatabase(ctx, familyID, memberID); err != nil {
-		s.logger.Warn("Failed to remove member from family database", err, logger.Str("family_id", familyID), logger.Str("member_id", memberID))
+		s.logger.Warn("Failed to remove member from family database", err, logger.Int64("family_id", int64(familyID)), logger.Int64("member_id", int64(memberID)))
 	}
 
 	s.logger.Info("Family member removed successfully",
-		logger.Str("family_id", familyID),
-		logger.Str("member_id", memberID),
-		logger.Str("manager_id", managerID),
+		logger.Int64("family_id", int64(familyID)),
+		logger.Int64("member_id", int64(memberID)),
+		logger.Int64("manager_id", int64(managerID)),
 	)
 
 	return nil
 }
 
 // DeleteFamily completely removes a family and its database (manager only)
-func (s *Service) DeleteFamily(ctx context.Context, familyID, managerID string) error {
+func (s *Service) DeleteFamily(ctx context.Context, familyID, managerID int) error {
 	// Verify the requester is the family manager
 	if !s.isUserFamilyManager(ctx, familyID, managerID) {
 		return ErrNotFamilyManager
@@ -320,13 +320,13 @@ func (s *Service) DeleteFamily(ctx context.Context, familyID, managerID string) 
 		return fmt.Errorf("failed to delete family database: %w", err)
 	}
 
-	s.logger.Info("Family deleted successfully", logger.Str("family_id", familyID), logger.Str("manager_id", managerID))
+	s.logger.Info("Family deleted successfully", logger.Int64("family_id", int64(familyID)), logger.Int64("manager_id", int64(managerID)))
 
 	return nil
 }
 
 // RegenerateInviteCode generates a new invite code for a family (manager only)
-func (s *Service) RegenerateInviteCode(ctx context.Context, familyID, managerID string) (string, error) {
+func (s *Service) RegenerateInviteCode(ctx context.Context, familyID, managerID int) (string, error) {
 	// Verify the requester is the family manager
 	if !s.isUserFamilyManager(ctx, familyID, managerID) {
 		return "", ErrNotFamilyManager
@@ -362,21 +362,9 @@ func (s *Service) RegenerateInviteCode(ctx context.Context, familyID, managerID 
 		return "", fmt.Errorf("failed to update invite code: %w", err)
 	}
 
-	s.logger.Info("Family invite code regenerated", logger.Str("family_id", familyID), logger.Str("new_invite_code", newInviteCode))
+	s.logger.Info("Family invite code regenerated", logger.Int64("family_id", int64(familyID)), logger.Str("new_invite_code", newInviteCode))
 
 	return newInviteCode, nil
-}
-
-func (s *Service) generateID() (string, error) {
-	// Generate a random 16-byte ID
-	bytes := make([]byte, 16)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-
-	// Convert to hex string
-	id := fmt.Sprintf("%x", bytes)
-	return id, nil
 }
 
 func (s *Service) generateInviteCode() (string, error) {
@@ -412,9 +400,10 @@ func (s *Service) inviteCodeExists(ctx context.Context, inviteCode string) (bool
 	return true, nil // Code exists
 }
 
-func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]MemberResponse, error) {
+func (s *Service) getFamilyMembers(ctx context.Context, familyID int) ([]MemberResponse, error) {
+	fID := int64(familyID)
 	// Use SQLC to get family memberships
-	sqlcMemberships, err := s.dbManager.GetMasterQueries().ListFamilyMemberships(ctx, &familyID)
+	sqlcMemberships, err := s.dbManager.GetMasterQueries().ListFamilyMemberships(ctx, &fID)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +417,7 @@ func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]Memb
 		// Get user details for each membership
 		user, err := s.dbManager.GetMasterQueries().GetUserByID(ctx, *membership.UserID)
 		if err != nil {
-			s.logger.Warn("Failed to get user details for member", err, logger.Str("user_id", *membership.UserID))
+			s.logger.Warn("Failed to get user details for member", err, logger.Int64("user_id", *membership.UserID))
 			continue
 		}
 
@@ -446,16 +435,18 @@ func (s *Service) getFamilyMembers(ctx context.Context, familyID string) ([]Memb
 	return members, nil
 }
 
-func (s *Service) isUserFamilyManager(ctx context.Context, familyID, userID string) bool {
+func (s *Service) isUserFamilyManager(ctx context.Context, familyID, userID int) bool {
+	fID := int64(familyID)
+	uID := int64(userID)
 	getMembershipParams := masterdb.GetFamilyMembershipParams{
-		FamilyID: &familyID,
-		UserID:   &userID,
+		FamilyID: &fID,
+		UserID:   &uID,
 	}
 
 	membership, err := s.dbManager.GetMasterQueries().GetFamilyMembership(ctx, getMembershipParams)
 	if err != nil {
 		if err != sql.ErrNoRows {
-			s.logger.Error("Failed to check if user is family manager", err, logger.Str("family_id", familyID), logger.Str("user_id", userID))
+			s.logger.Error("Failed to check if user is family manager", err, logger.Int64("family_id", int64(familyID)), logger.Int64("user_id", int64(userID)))
 		}
 		return false
 	}
@@ -463,7 +454,7 @@ func (s *Service) isUserFamilyManager(ctx context.Context, familyID, userID stri
 	return membership.Role == "manager"
 }
 
-func (s *Service) addMemberToFamilyDatabase(ctx context.Context, familyID, userID, userName, userEmail, role string) error {
+func (s *Service) addMemberToFamilyDatabase(ctx context.Context, familyID, userID int, userName, userEmail, role string) error {
 	familyDB, err := s.dbManager.GetFamilyDB(familyID)
 	if err != nil {
 		return fmt.Errorf("failed to get family database: %w", err)
@@ -477,7 +468,7 @@ func (s *Service) addMemberToFamilyDatabase(ctx context.Context, familyID, userI
 	return err
 }
 
-func (s *Service) removeMemberFromFamilyDatabase(ctx context.Context, familyID, userID string) error {
+func (s *Service) removeMemberFromFamilyDatabase(ctx context.Context, familyID, userID int) error {
 	familyDB, err := s.dbManager.GetFamilyDB(familyID)
 	if err != nil {
 		return fmt.Errorf("failed to get family database: %w", err)

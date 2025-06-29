@@ -9,6 +9,7 @@ import (
 	"expenses-backend/internal/middleware"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
+	"strconv"
 	"time"
 
 	"connectrpc.com/connect"
@@ -64,7 +65,7 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
@@ -80,9 +81,9 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 	pbExpense := s.convertToProtoExpense(expenseResult)
 
 	s.logger.Info("Expense created successfully",
-		logger.Str("expense_id", expenseResult.ID),
-		logger.Str("user_id", authCtx.UserID),
-		logger.Str("family_id", authCtx.FamilyID))
+		logger.Int64("expense_id", expenseResult.ID),
+		logger.Int64("user_id", authCtx.UserID),
+		logger.Int64("family_id", authCtx.FamilyID))
 
 	return connect.NewResponse(&expensev1.CreateExpenseResponse{
 		Expense: pbExpense,
@@ -96,12 +97,12 @@ func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1
 		return nil, err
 	}
 
-	if req.Msg.Id == "" {
+	if req.Msg.Id == 0 {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
@@ -111,12 +112,12 @@ func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1
 	expenseResult, err := familyQueries.GetExpenseByID(ctx, req.Msg.Id)
 	if err != nil {
 		s.logger.Error("Failed to get expense", err,
-			logger.Str("expense_id", req.Msg.Id))
+			logger.Int64("expense_id", req.Msg.Id))
 		return nil, status.Error(codes.NotFound, "expense not found")
 	}
 
 	// Verify user has access to this expense (simplified for family-based access)
-	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, strconv.FormatInt(req.Msg.Id, 10), strconv.FormatInt(authCtx.UserID, 10))
 	if err != nil {
 		s.logger.Error("Failed to check expense access", err)
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -140,19 +141,19 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 		return nil, err
 	}
 
-	if req.Msg.Id == "" {
+	if req.Msg.Id == 0 {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
 	// Verify user has access to this expense
-	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, strconv.FormatInt(req.Msg.Id, 10), strconv.FormatInt(authCtx.UserID, 10))
 	if err != nil {
 		s.logger.Error("Failed to check expense access", err)
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -165,7 +166,7 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 	current, err := familyQueries.GetExpenseByID(ctx, req.Msg.Id)
 	if err != nil {
 		s.logger.Error("Failed to get current expense", err,
-			logger.Str("expense_id", req.Msg.Id))
+			logger.Int64("expense_id", req.Msg.Id))
 		return nil, status.Error(codes.NotFound, "expense not found")
 	}
 
@@ -198,7 +199,7 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 	expenseResult, err := familyQueries.UpdateExpense(ctx, updateParams)
 	if err != nil {
 		s.logger.Error("Failed to update expense", err,
-			logger.Str("expense_id", req.Msg.Id))
+			logger.Int64("expense_id", req.Msg.Id))
 		return nil, status.Error(codes.Internal, "failed to update expense")
 	}
 
@@ -206,8 +207,8 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 	pbExpense := s.convertToProtoExpense(expenseResult)
 
 	s.logger.Info("Expense updated successfully",
-		logger.Str("expense_id", req.Msg.Id),
-		logger.Str("user_id", authCtx.UserID))
+		logger.Int64("expense_id", req.Msg.Id),
+		logger.Int64("user_id", authCtx.UserID))
 
 	return connect.NewResponse(&expensev1.UpdateExpenseResponse{
 		Expense: pbExpense,
@@ -221,19 +222,19 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 		return nil, err
 	}
 
-	if req.Msg.Id == "" {
+	if req.Msg.Id == 0 {
 		return nil, status.Error(codes.InvalidArgument, "id is required")
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
 	}
 
 	// Verify user has access to this expense
-	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, req.Msg.Id, authCtx.UserID)
+	canAccess, err := s.userCanAccessExpense(ctx, familyQueries, strconv.FormatInt(req.Msg.Id, 10), strconv.FormatInt(authCtx.UserID, 10))
 	if err != nil {
 		s.logger.Error("Failed to check expense access", err)
 		return nil, status.Error(codes.Internal, "failed to verify access")
@@ -246,13 +247,13 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 	err = familyQueries.DeleteExpense(ctx, req.Msg.Id)
 	if err != nil {
 		s.logger.Error("Failed to delete expense", err,
-			logger.Str("expense_id", req.Msg.Id))
+			logger.Int64("expense_id", req.Msg.Id))
 		return nil, status.Error(codes.Internal, "failed to delete expense")
 	}
 
 	s.logger.Info("Expense deleted successfully",
-		logger.Str("expense_id", req.Msg.Id),
-		logger.Str("user_id", authCtx.UserID))
+		logger.Int64("expense_id", req.Msg.Id),
+		logger.Int64("user_id", authCtx.UserID))
 
 	return connect.NewResponse(&expensev1.DeleteExpenseResponse{
 		Success: true,
@@ -278,7 +279,7 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 	}
 
 	// Get family database queries
-	familyQueries, err := s.dbManager.GetFamilyQueries(authCtx.FamilyID)
+	familyQueries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
 	if err != nil {
 		s.logger.Error("Failed to get family database", err)
 		return nil, status.Error(codes.Internal, "failed to access family database")
@@ -328,7 +329,7 @@ func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expense
 
 	s.logger.Info("Listed expenses successfully",
 		logger.Int("expense_count", len(expenses)),
-		logger.Str("user_id", authCtx.UserID))
+		logger.Int64("user_id", authCtx.UserID))
 
 	return connect.NewResponse(&expensev1.ListExpensesResponse{
 		Expenses:      sortedExpenses,
@@ -355,7 +356,12 @@ func (s *Service) convertToProtoExpense(exp *familydb.Expense) *expensev1.Expens
 func (s *Service) userCanAccessExpense(ctx context.Context, queries *familydb.Queries, expenseID, userID string) (bool, error) {
 	// For family databases, all family members can access all expenses
 	// In a more complex system, you might check expense ownership or permissions
-	_, err := queries.GetExpenseByID(ctx, expenseID)
+	expenseIDInt, err := strconv.ParseInt(expenseID, 10, 64)
+	if err != nil {
+		return false, err
+	}
+	
+	_, err = queries.GetExpenseByID(ctx, expenseIDInt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

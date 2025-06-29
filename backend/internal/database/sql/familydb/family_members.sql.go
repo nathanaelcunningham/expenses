@@ -17,7 +17,7 @@ RETURNING id, name, email, role, joined_at, is_active
 `
 
 type CreateFamilyMemberParams struct {
-	ID       string    `json:"id"`
+	ID       int64     `json:"id"`
 	Name     string    `json:"name"`
 	Email    string    `json:"email"`
 	Role     string    `json:"role"`
@@ -52,7 +52,7 @@ SET is_active = FALSE
 WHERE id = ?
 `
 
-func (q *Queries) DeactivateFamilyMember(ctx context.Context, id string) error {
+func (q *Queries) DeactivateFamilyMember(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deactivateFamilyMember, id)
 	return err
 }
@@ -61,7 +61,7 @@ const deleteFamilyMember = `-- name: DeleteFamilyMember :exec
 DELETE FROM family_members WHERE id = ?
 `
 
-func (q *Queries) DeleteFamilyMember(ctx context.Context, id string) error {
+func (q *Queries) DeleteFamilyMember(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteFamilyMember, id)
 	return err
 }
@@ -88,7 +88,7 @@ const getFamilyMemberByID = `-- name: GetFamilyMemberByID :one
 SELECT id, name, email, role, joined_at, is_active FROM family_members WHERE id = ?
 `
 
-func (q *Queries) GetFamilyMemberByID(ctx context.Context, id string) (*FamilyMember, error) {
+func (q *Queries) GetFamilyMemberByID(ctx context.Context, id int64) (*FamilyMember, error) {
 	row := q.db.QueryRowContext(ctx, getFamilyMemberByID, id)
 	var i FamilyMember
 	err := row.Scan(
@@ -183,7 +183,7 @@ type UpdateFamilyMemberParams struct {
 	Name  string `json:"name"`
 	Email string `json:"email"`
 	Role  string `json:"role"`
-	ID    string `json:"id"`
+	ID    int64  `json:"id"`
 }
 
 func (q *Queries) UpdateFamilyMember(ctx context.Context, arg UpdateFamilyMemberParams) (*FamilyMember, error) {

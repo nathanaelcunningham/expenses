@@ -6,6 +6,7 @@ import (
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/database/migrations"
 	"expenses-backend/internal/database/sql/familydb"
+	"expenses-backend/internal/database/sql/masterdb"
 	"expenses-backend/internal/database/turso"
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
@@ -30,36 +31,6 @@ func main() {
 
 	log := logger.New(nil)
 
-	// migrationManager := migrations.NewMigrationManager(log)
-	//
-	// // Check/run migrations on master
-	// log.Info("Running migrations on master database")
-	// if err := migrationManager.RunMigrations(ctx, dbManager.GetMasterDatabase(), migrations.MasterMigration); err != nil {
-	// 	log.Fatal("Failed to run master migrations", err)
-	// }
-	//
-	// // Check/run migrations on family-seed
-	// log.Info("Running migrations on family-seed database")
-	// familySeedMigrated, err := dbManager.RunFamilySeedMigrations(ctx, migrationManager)
-	// if err != nil {
-	// 	log.Fatal("Failed to run family-seed migrations", err)
-	// }
-	//
-	// // If migrations run on family-seed, run migrations on all family databases
-	// if familySeedMigrated {
-	// 	log.Info("Family-seed migrations applied, updating all family databases")
-	// 	if err := dbManager.RunFamilyDatabaseMigrations(ctx, migrationManager); err != nil {
-	// 		log.Fatal("Failed to run migrations on family databases", err)
-	// 	}
-	// }
-	//
-	// // Initialize database factory
-	// dbFactory := database.NewFactory(dbManager)
-	//
-	// // Initialize services
-	// masterDB := dbManager.GetMasterDatabase()
-	// masterQueries := masterdb.New(masterDB)
-
 	tursoClient := turso.NewClient(turso.Config{
 		AuthToken:    os.Getenv("TURSO_AUTH_TOKEN"),
 		ApiToken:     os.Getenv("TURSO_API_TOKEN"),
@@ -76,16 +47,21 @@ func main() {
 	}
 	defer familyDB.Close()
 
-	dbManager := database.New(masterDB, tursoClient, log)
-	defer dbManager.Close()
-
 	familyQueries := familydb.New(familyDB)
+	migrationManager := migrations.NewMigrationManager(log, masterdb.New(masterDB), familyQueries)
 
-	migrationManager := migrations.NewMigrationManager(log, dbManager.GetMasterQueries(), familyQueries)
+	dbManager := database.New(masterDB, tursoClient, migrationManager, log)
+	defer dbManager.Close()
 
 	err = migrationManager.RunStartupMigrations(context.Background(), masterDB, familyDB)
 	if err != nil {
 		panic(err)
+	}
+
+	// Load existing family databases
+	err = dbManager.LoadExistingFamilyDatabases(context.Background())
+	if err != nil {
+		log.Warn("Failed to load existing family databases", err)
 	}
 
 	familyService := family.NewService(dbManager, log)

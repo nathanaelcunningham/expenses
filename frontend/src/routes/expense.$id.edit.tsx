@@ -11,9 +11,13 @@ export const Route = createFileRoute("/expense/$id/edit")({
 function EditExpense() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
     const { id } = Route.useParams();
-    const { data, isLoading, error } = useQuery(getExpense, { id }, { enabled: isAuthenticated });
+    const { data, isLoading, error } = useQuery(
+        getExpense,
+        { id },
+        { enabled: isAuthenticated },
+    );
 
-    if (authLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -22,22 +26,16 @@ function EditExpense() {
     }
 
     if (!isAuthenticated) {
-        window.location.href = '/login';
+        window.location.href = "/login";
         return null;
-    }
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-lg text-gray-600">Loading expense...</div>
-            </div>
-        );
     }
 
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-lg text-red-600">Error loading expense: {error.message}</div>
+                <div className="text-lg text-red-600">
+                    Error loading expense: {error.message}
+                </div>
             </div>
         );
     }
@@ -52,3 +50,4 @@ function EditExpense() {
 
     return <ExpenseForm mode="edit" initialData={data.expense} />;
 }
+

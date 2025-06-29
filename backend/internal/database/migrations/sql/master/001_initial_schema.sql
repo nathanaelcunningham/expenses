@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
@@ -9,11 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Families table for family groups
 CREATE TABLE IF NOT EXISTS families (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     invite_code TEXT UNIQUE NOT NULL,
     database_url TEXT NOT NULL,
-    manager_id TEXT NOT NULL REFERENCES users(id),
+    manager_id INTEGER NOT NULL REFERENCES users(id),
     schema_version INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS families (
 
 -- Family memberships to track who belongs to which family
 CREATE TABLE IF NOT EXISTS family_memberships (
-    family_id TEXT REFERENCES families(id) ON DELETE CASCADE,
-    user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+    family_id INTEGER REFERENCES families(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     role TEXT NOT NULL CHECK (role IN ('manager', 'member')),
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (family_id, user_id)
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS family_memberships (
 
 -- User sessions for authentication
 CREATE TABLE IF NOT EXISTS user_sessions (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    family_id TEXT NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    family_id INTEGER NOT NULL REFERENCES families(id) ON DELETE CASCADE,
     user_role TEXT NOT NULL CHECK (user_role IN ('manager', 'member')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

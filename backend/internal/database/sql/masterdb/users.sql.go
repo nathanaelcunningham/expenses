@@ -22,13 +22,12 @@ func (q *Queries) CheckUserExists(ctx context.Context, email string) (int64, err
 }
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (id, email, name, password_hash, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO users (email, name, password_hash, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?)
 RETURNING id, email, name, password_hash, created_at, updated_at
 `
 
 type CreateUserParams struct {
-	ID           string    `json:"id"`
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"password_hash"`
@@ -38,7 +37,6 @@ type CreateUserParams struct {
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (*User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
-		arg.ID,
 		arg.Email,
 		arg.Name,
 		arg.PasswordHash,
@@ -61,7 +59,7 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = ?
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) error {
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
@@ -88,7 +86,7 @@ const getUserByID = `-- name: GetUserByID :one
 SELECT id, email, name, password_hash, created_at, updated_at FROM users WHERE id = ?
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id string) (*User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
@@ -113,7 +111,7 @@ type UpdateUserParams struct {
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"password_hash"`
 	UpdatedAt    time.Time `json:"updated_at"`
-	ID           string    `json:"id"`
+	ID           int64     `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error) {

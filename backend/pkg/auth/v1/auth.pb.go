@@ -23,7 +23,7 @@ const (
 
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	CreatedAt     int64                  `protobuf:"varint,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
@@ -62,11 +62,11 @@ func (*User) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *User) GetId() string {
+func (x *User) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
 func (x *User) GetEmail() string {
@@ -99,9 +99,9 @@ func (x *User) GetUpdatedAt() int64 {
 
 type Session struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	FamilyId      string                 `protobuf:"bytes,3,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	FamilyId      int64                  `protobuf:"varint,3,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
 	UserRole      string                 `protobuf:"bytes,4,opt,name=user_role,json=userRole,proto3" json:"user_role,omitempty"`
 	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	LastActive    int64                  `protobuf:"varint,6,opt,name=last_active,json=lastActive,proto3" json:"last_active,omitempty"`
@@ -142,25 +142,25 @@ func (*Session) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Session) GetId() string {
+func (x *Session) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
-func (x *Session) GetUserId() string {
+func (x *Session) GetUserId() int64 {
 	if x != nil {
 		return x.UserId
 	}
-	return ""
+	return 0
 }
 
-func (x *Session) GetFamilyId() string {
+func (x *Session) GetFamilyId() int64 {
 	if x != nil {
 		return x.FamilyId
 	}
-	return ""
+	return 0
 }
 
 func (x *Session) GetUserRole() string {
@@ -491,7 +491,7 @@ func (x *LoginResponse) GetError() *AuthError {
 
 type LogoutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	SessionId     int64                  `protobuf:"varint,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -526,11 +526,11 @@ func (*LogoutRequest) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *LogoutRequest) GetSessionId() string {
+func (x *LogoutRequest) GetSessionId() int64 {
 	if x != nil {
 		return x.SessionId
 	}
-	return ""
+	return 0
 }
 
 type LogoutResponse struct {
@@ -587,7 +587,7 @@ func (x *LogoutResponse) GetError() *AuthError {
 
 type RefreshSessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	SessionId     int64                  `protobuf:"varint,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -622,11 +622,11 @@ func (*RefreshSessionRequest) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *RefreshSessionRequest) GetSessionId() string {
+func (x *RefreshSessionRequest) GetSessionId() int64 {
 	if x != nil {
 		return x.SessionId
 	}
-	return ""
+	return 0
 }
 
 type RefreshSessionResponse struct {
@@ -683,7 +683,7 @@ func (x *RefreshSessionResponse) GetError() *AuthError {
 
 type ValidateSessionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	SessionId     string                 `protobuf:"bytes,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	SessionId     int64                  `protobuf:"varint,1,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -718,11 +718,11 @@ func (*ValidateSessionRequest) Descriptor() ([]byte, []int) {
 	return file_auth_v1_auth_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *ValidateSessionRequest) GetSessionId() string {
+func (x *ValidateSessionRequest) GetSessionId() int64 {
 	if x != nil {
 		return x.SessionId
 	}
-	return ""
+	return 0
 }
 
 type SessionValidationResult struct {
@@ -730,7 +730,7 @@ type SessionValidationResult struct {
 	Valid         bool                   `protobuf:"varint,1,opt,name=valid,proto3" json:"valid,omitempty"`
 	Session       *Session               `protobuf:"bytes,2,opt,name=session,proto3" json:"session,omitempty"`
 	User          *User                  `protobuf:"bytes,3,opt,name=user,proto3" json:"user,omitempty"`
-	FamilyId      string                 `protobuf:"bytes,4,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
+	FamilyId      int64                  `protobuf:"varint,4,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -786,11 +786,11 @@ func (x *SessionValidationResult) GetUser() *User {
 	return nil
 }
 
-func (x *SessionValidationResult) GetFamilyId() string {
+func (x *SessionValidationResult) GetFamilyId() int64 {
 	if x != nil {
 		return x.FamilyId
 	}
-	return ""
+	return 0
 }
 
 type ValidateSessionResponse struct {
@@ -851,7 +851,7 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"\x12auth/v1/auth.proto\x12\aauth.v1\"~\n" +
 	"\x04User\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
@@ -859,9 +859,9 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\x05 \x01(\x03R\tupdatedAt\"\x89\x02\n" +
 	"\aSession\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1b\n" +
-	"\tfamily_id\x18\x03 \x01(\tR\bfamilyId\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tfamily_id\x18\x03 \x01(\x03R\bfamilyId\x12\x1b\n" +
 	"\tuser_role\x18\x04 \x01(\tR\buserRole\x12\x1d\n" +
 	"\n" +
 	"created_at\x18\x05 \x01(\x03R\tcreatedAt\x12\x1f\n" +
@@ -894,24 +894,24 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x05error\x18\x03 \x01(\v2\x12.auth.v1.AuthErrorR\x05error\".\n" +
 	"\rLogoutRequest\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x01 \x01(\tR\tsessionId\"T\n" +
+	"session_id\x18\x01 \x01(\x03R\tsessionId\"T\n" +
 	"\x0eLogoutResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12(\n" +
 	"\x05error\x18\x02 \x01(\v2\x12.auth.v1.AuthErrorR\x05error\"6\n" +
 	"\x15RefreshSessionRequest\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x01 \x01(\tR\tsessionId\"n\n" +
+	"session_id\x18\x01 \x01(\x03R\tsessionId\"n\n" +
 	"\x16RefreshSessionResponse\x12*\n" +
 	"\asession\x18\x01 \x01(\v2\x10.auth.v1.SessionR\asession\x12(\n" +
 	"\x05error\x18\x02 \x01(\v2\x12.auth.v1.AuthErrorR\x05error\"7\n" +
 	"\x16ValidateSessionRequest\x12\x1d\n" +
 	"\n" +
-	"session_id\x18\x01 \x01(\tR\tsessionId\"\x9b\x01\n" +
+	"session_id\x18\x01 \x01(\x03R\tsessionId\"\x9b\x01\n" +
 	"\x17SessionValidationResult\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12*\n" +
 	"\asession\x18\x02 \x01(\v2\x10.auth.v1.SessionR\asession\x12!\n" +
 	"\x04user\x18\x03 \x01(\v2\r.auth.v1.UserR\x04user\x12\x1b\n" +
-	"\tfamily_id\x18\x04 \x01(\tR\bfamilyId\"}\n" +
+	"\tfamily_id\x18\x04 \x01(\x03R\bfamilyId\"}\n" +
 	"\x17ValidateSessionResponse\x128\n" +
 	"\x06result\x18\x01 \x01(\v2 .auth.v1.SessionValidationResultR\x06result\x12(\n" +
 	"\x05error\x18\x02 \x01(\v2\x12.auth.v1.AuthErrorR\x05error2\xea\x02\n" +

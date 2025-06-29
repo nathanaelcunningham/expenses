@@ -11,17 +11,16 @@ import (
 )
 
 const createFamily = `-- name: CreateFamily :one
-INSERT INTO families (id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO families (name, invite_code, database_url, manager_id, schema_version, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 RETURNING id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at
 `
 
 type CreateFamilyParams struct {
-	ID            string    `json:"id"`
 	Name          string    `json:"name"`
 	InviteCode    string    `json:"invite_code"`
 	DatabaseUrl   string    `json:"database_url"`
-	ManagerID     string    `json:"manager_id"`
+	ManagerID     int64     `json:"manager_id"`
 	SchemaVersion *int64    `json:"schema_version"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
@@ -29,7 +28,6 @@ type CreateFamilyParams struct {
 
 func (q *Queries) CreateFamily(ctx context.Context, arg CreateFamilyParams) (*Family, error) {
 	row := q.db.QueryRowContext(ctx, createFamily,
-		arg.ID,
 		arg.Name,
 		arg.InviteCode,
 		arg.DatabaseUrl,
@@ -56,7 +54,7 @@ const deleteFamily = `-- name: DeleteFamily :exec
 DELETE FROM families WHERE id = ?
 `
 
-func (q *Queries) DeleteFamily(ctx context.Context, id string) error {
+func (q *Queries) DeleteFamily(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteFamily, id)
 	return err
 }
@@ -65,7 +63,7 @@ const getFamilyByID = `-- name: GetFamilyByID :one
 SELECT id, name, invite_code, database_url, manager_id, schema_version, created_at, updated_at FROM families WHERE id = ?
 `
 
-func (q *Queries) GetFamilyByID(ctx context.Context, id string) (*Family, error) {
+func (q *Queries) GetFamilyByID(ctx context.Context, id int64) (*Family, error) {
 	row := q.db.QueryRowContext(ctx, getFamilyByID, id)
 	var i Family
 	err := row.Scan(
@@ -113,7 +111,7 @@ type UpdateFamilyParams struct {
 	DatabaseUrl   string    `json:"database_url"`
 	SchemaVersion *int64    `json:"schema_version"`
 	UpdatedAt     time.Time `json:"updated_at"`
-	ID            string    `json:"id"`
+	ID            int64     `json:"id"`
 }
 
 func (q *Queries) UpdateFamily(ctx context.Context, arg UpdateFamilyParams) (*Family, error) {

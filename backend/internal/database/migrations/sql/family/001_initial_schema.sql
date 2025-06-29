@@ -1,6 +1,6 @@
 -- Categories for organizing expenses
 CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     description TEXT,
     color TEXT, -- Hex color for UI
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- Family members (denormalized from master DB for performance)
 CREATE TABLE IF NOT EXISTS family_members (
-    id TEXT PRIMARY KEY, -- Same as user ID in master DB
+    id INTEGER PRIMARY KEY AUTOINCREMENT, -- Same as user ID in master DB
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('manager', 'member')),
@@ -21,8 +21,8 @@ CREATE TABLE IF NOT EXISTS family_members (
 
 -- Expenses table - core expense tracking
 CREATE TABLE IF NOT EXISTS expenses (
-    id TEXT PRIMARY KEY,
-    category_id TEXT REFERENCES categories(id),
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER REFERENCES categories(id),
     amount DECIMAL(10, 2) NOT NULL,
     name TEXT NOT NULL,
     day_of_month_due INTEGER NOT NULL,
@@ -33,15 +33,15 @@ CREATE TABLE IF NOT EXISTS expenses (
 
 
 -- Default categories
-INSERT OR IGNORE INTO categories (id, name, description, color, icon) VALUES
-('cat_food', 'Food & Dining', 'Groceries, restaurants, takeout', '#FF6B6B', 'utensils'),
-('cat_transport', 'Transportation', 'Gas, public transit, rideshare', '#4ECDC4', 'car'),
-('cat_utilities', 'Utilities', 'Electricity, water, internet, phone', '#45B7D1', 'bolt'),
-('cat_entertainment', 'Entertainment', 'Movies, games, subscriptions', '#96CEB4', 'play'),
-('cat_shopping', 'Shopping', 'Clothing, household items', '#FFEAA7', 'shopping-bag'),
-('cat_health', 'Healthcare', 'Medical, dental, prescriptions', '#DDA0DD', 'heart'),
-('cat_education', 'Education', 'Books, courses, school supplies', '#98D8C8', 'book'),
-('cat_other', 'Other', 'Miscellaneous expenses', '#A8A8A8', 'more-horizontal');
+INSERT OR IGNORE INTO categories (name, description, color, icon) VALUES
+('Food & Dining', 'Groceries, restaurants, takeout', '#FF6B6B', 'utensils'),
+('Transportation', 'Gas, public transit, rideshare', '#4ECDC4', 'car'),
+('Utilities', 'Electricity, water, internet, phone', '#45B7D1', 'bolt'),
+('Entertainment', 'Movies, games, subscriptions', '#96CEB4', 'play'),
+('Shopping', 'Clothing, household items', '#FFEAA7', 'shopping-bag'),
+('Healthcare', 'Medical, dental, prescriptions', '#DDA0DD', 'heart'),
+('Education', 'Books, courses, school supplies', '#98D8C8', 'book'),
+('Other', 'Miscellaneous expenses', '#A8A8A8', 'more-horizontal');
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_expenses_category_created_at ON expenses(category_id, created_at);

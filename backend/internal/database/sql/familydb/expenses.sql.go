@@ -28,7 +28,7 @@ RETURNING id, category_id, amount, name, day_of_month_due, is_autopay, created_a
 `
 
 type CreateExpenseParams struct {
-	CategoryID    *string   `json:"category_id"`
+	CategoryID    *int64    `json:"category_id"`
 	Amount        float64   `json:"amount"`
 	Name          string    `json:"name"`
 	DayOfMonthDue int64     `json:"day_of_month_due"`
@@ -65,7 +65,7 @@ const deleteExpense = `-- name: DeleteExpense :exec
 DELETE FROM expenses WHERE id = ?
 `
 
-func (q *Queries) DeleteExpense(ctx context.Context, id string) error {
+func (q *Queries) DeleteExpense(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteExpense, id)
 	return err
 }
@@ -74,7 +74,7 @@ const getExpenseByID = `-- name: GetExpenseByID :one
 SELECT id, category_id, amount, name, day_of_month_due, is_autopay, created_at, updated_at FROM expenses WHERE id = ?
 `
 
-func (q *Queries) GetExpenseByID(ctx context.Context, id string) (*Expense, error) {
+func (q *Queries) GetExpenseByID(ctx context.Context, id int64) (*Expense, error) {
 	row := q.db.QueryRowContext(ctx, getExpenseByID, id)
 	var i Expense
 	err := row.Scan(
@@ -182,7 +182,7 @@ WHERE category_id = ?
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListExpensesByCategory(ctx context.Context, categoryID *string) ([]*Expense, error) {
+func (q *Queries) ListExpensesByCategory(ctx context.Context, categoryID *int64) ([]*Expense, error) {
 	rows, err := q.db.QueryContext(ctx, listExpensesByCategory, categoryID)
 	if err != nil {
 		return nil, err
@@ -222,13 +222,13 @@ RETURNING id, category_id, amount, name, day_of_month_due, is_autopay, created_a
 `
 
 type UpdateExpenseParams struct {
-	CategoryID    *string   `json:"category_id"`
+	CategoryID    *int64    `json:"category_id"`
 	Amount        float64   `json:"amount"`
 	Name          string    `json:"name"`
 	DayOfMonthDue int64     `json:"day_of_month_due"`
 	IsAutopay     bool      `json:"is_autopay"`
 	UpdatedAt     time.Time `json:"updated_at"`
-	ID            string    `json:"id"`
+	ID            int64     `json:"id"`
 }
 
 func (q *Queries) UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (*Expense, error) {

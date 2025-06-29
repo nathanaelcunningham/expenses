@@ -11,9 +11,13 @@ export const Route = createFileRoute("/")({
 
 function App() {
     const { isAuthenticated, isLoading: authLoading } = useAuth();
-    const { data, isLoading, error } = useQuery(listExpenses, {}, { enabled: isAuthenticated });
+    const { data, isLoading, error } = useQuery(
+        listExpenses,
+        {},
+        { enabled: isAuthenticated },
+    );
 
-    if (authLoading) {
+    if (authLoading || isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -22,20 +26,14 @@ function App() {
     }
 
     if (!isAuthenticated) {
-        window.location.href = '/login';
+        window.location.href = "/login";
         return null;
     }
 
-    if (isLoading) {
-        return <div>Loading expenses...</div>;
-    }
-
-    if (error) {
-        return <div>Error loading expenses: {error.message}</div>;
-    }
-
-    if (data === undefined) {
-        return <div>Error loading expenses</div>;
+    if (error || data === undefined) {
+        if (error) {
+            return <div>Error loading expenses: {error.message}</div>;
+        } else return <div>Error loading expenses</div>;
     }
 
     return (
@@ -83,4 +81,3 @@ function App() {
         </div>
     );
 }
-

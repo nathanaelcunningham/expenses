@@ -6,9 +6,12 @@ import { TransportProvider } from "@connectrpc/connect-query";
 
 import Header from "../components/Header";
 import { AuthProvider } from "../contexts/AuthContext";
+import { authInterceptor } from "../lib/authInterceptor";
+
 const url = import.meta.env.VITE_API_URL;
 const finalTransport = createConnectTransport({
     baseUrl: url,
+    interceptors: [authInterceptor],
 });
 
 const queryClient = new QueryClient();

@@ -1,6 +1,6 @@
 -- name: CreateUserSession :one
-INSERT INTO user_sessions (id, user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT INTO user_sessions (user_id, family_id, user_role, created_at, last_active, expires_at, user_agent, ip_address)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: GetUserSession :one
