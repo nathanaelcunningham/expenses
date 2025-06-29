@@ -144,7 +144,7 @@ func (dm *DatabaseManager) Close() error {
 }
 
 // ProvisionFamilyDatabase creates a new database for a family
-func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyName string) (*sql.DB, error) {
+func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyName string) (*sql.DB, *turso.DatabaseInfo, error) {
 	dm.log.Info("Provisioning family database",
 		logger.Str("family_name", familyName),
 	)
@@ -153,7 +153,7 @@ func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyNa
 	timestamp := time.Now().Format("20060102-150405")
 	randomBytes := make([]byte, 4)
 	if _, err := rand.Read(randomBytes); err != nil {
-		return nil, fmt.Errorf("failed to generate random suffix: %w", err)
+		return nil, nil, fmt.Errorf("failed to generate random suffix: %w", err)
 	}
 	randomSuffix := fmt.Sprintf("%x", randomBytes)
 	dbName := fmt.Sprintf("family-%s-%s", timestamp, randomSuffix)
@@ -161,7 +161,7 @@ func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyNa
 	// Create Turso database using family-seed as template
 	dbInfo, err := dm.tursoClient.CreateDatabase(ctx, dbName, "family-seed")
 	if err != nil {
-		return nil, fmt.Errorf("failed to create Turso database: %w", err)
+		return nil, nil, fmt.Errorf("failed to create Turso database: %w", err)
 	}
 
 	// Connect to the new database
@@ -172,7 +172,7 @@ func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyNa
 			dm.log.Warn("Failed to cleanup database after connection failure", deleteErr,
 				logger.Str("db_name", dbName))
 		}
-		return nil, fmt.Errorf("failed to connect to new family database: %w", err)
+		return nil, nil, fmt.Errorf("failed to connect to new family database: %w", err)
 	}
 
 	dm.log.Info("Family database provisioned successfully",
@@ -180,7 +180,7 @@ func (dm *DatabaseManager) ProvisionFamilyDatabase(ctx context.Context, familyNa
 		logger.Str("db_url", dbInfo.URL),
 	)
 
-	return db, nil
+	return db, dbInfo, nil
 }
 
 // DeleteFamilyDatabase removes a family database
@@ -373,11 +373,7 @@ func (dm *DatabaseManager) connectToFamilyDatabase(ctx context.Context, familyID
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
-	// Add to internal maps (using write lock)
-	dm.mu.Lock()
-	dm.familyDBs[int64(familyID)] = familyDB
-	dm.familyQueries[int64(familyID)] = familydb.New(familyDB)
-	dm.mu.Unlock()
+	dm.AddFamilyDB(familyID, familyDB)
 
 	return nil
 }

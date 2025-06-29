@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package transaction.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "expenses-backend/pkg/transaction/v1;transactionv1";
+
+service TransactionService {
+  rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse);
+}
+
+message Organization {
+  string domain = 1;
+  string name = 2;
+}
+
+message Transaction {
+  string id = 1;
+  google.protobuf.Timestamp posted = 2;
+  string amount = 3;
+  string description = 4;
+  optional google.protobuf.Timestamp transacted_at = 5;
+  optional bool pending = 6;
+}
+
+message Account {
+  string id = 1;
+  Organization org = 2;
+  string name = 3;
+  string currency = 4;
+  string balance = 5;
+  optional string available_balance = 6;
+  google.protobuf.Timestamp balance_date = 7;
+  repeated Transaction transactions = 8;
+}
+
+message GetAccountsRequest {}
+
+message GetAccountsResponse {
+  repeated Account accounts = 1;
+}

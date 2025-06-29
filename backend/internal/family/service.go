@@ -96,7 +96,7 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 	)
 
 	// Provision family database
-	familydb, err := s.dbManager.ProvisionFamilyDatabase(ctx, req.Name)
+	familydb, familydbInfo, err := s.dbManager.ProvisionFamilyDatabase(ctx, req.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to provision family database: %w", err)
 	}
@@ -115,6 +115,7 @@ func (s *Service) CreateFamily(ctx context.Context, req CreateFamilyRequest) (*m
 			SchemaVersion: &schemaVersion,
 			CreatedAt:     now,
 			UpdatedAt:     now,
+			DatabaseUrl:   familydbInfo.URL,
 		}
 		sqlcFamily, err := q.CreateFamily(ctx, createFamilyParams)
 		if err != nil {
