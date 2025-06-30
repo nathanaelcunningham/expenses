@@ -10,16 +10,16 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file expense/v1/expense.proto.
  */
 export const file_expense_v1_expense: GenFile = /*@__PURE__*/
-  fileDesc("ChhleHBlbnNlL3YxL2V4cGVuc2UucHJvdG8SCmV4cGVuc2UudjEiiQEKB0V4cGVuc2USCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIEhIKCmNyZWF0ZWRfYXQYBiABKAMSEgoKdXBkYXRlZF9hdBgHIAEoAyJDCg1Tb3J0ZWRFeHBlbnNlEgsKA2RheRgBIAEoBRIlCghleHBlbnNlcxgCIAMoCzITLmV4cGVuc2UudjEuRXhwZW5zZSJiChRDcmVhdGVFeHBlbnNlUmVxdWVzdBIMCgRuYW1lGAEgASgJEg4KBmFtb3VudBgCIAEoARIYChBkYXlfb2ZfbW9udGhfZHVlGAMgASgFEhIKCmlzX2F1dG9wYXkYBCABKAgiPQoVQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UiHwoRR2V0RXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkiOgoSR2V0RXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UibgoUVXBkYXRlRXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIIj0KFVVwZGF0ZUV4cGVuc2VSZXNwb25zZRIkCgdleHBlbnNlGAEgASgLMhMuZXhwZW5zZS52MS5FeHBlbnNlIiIKFERlbGV0ZUV4cGVuc2VSZXF1ZXN0EgoKAmlkGAEgASgJIigKFURlbGV0ZUV4cGVuc2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjwKE0xpc3RFeHBlbnNlc1JlcXVlc3QSEQoJcGFnZV9zaXplGAEgASgFEhIKCnBhZ2VfdG9rZW4YAiABKAkiXAoUTGlzdEV4cGVuc2VzUmVzcG9uc2USKwoIZXhwZW5zZXMYASADKAsyGS5leHBlbnNlLnYxLlNvcnRlZEV4cGVuc2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJMrIDCg5FeHBlbnNlU2VydmljZRJUCg1DcmVhdGVFeHBlbnNlEiAuZXhwZW5zZS52MS5DcmVhdGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEksKCkdldEV4cGVuc2USHS5leHBlbnNlLnYxLkdldEV4cGVuc2VSZXF1ZXN0Gh4uZXhwZW5zZS52MS5HZXRFeHBlbnNlUmVzcG9uc2USVAoNVXBkYXRlRXhwZW5zZRIgLmV4cGVuc2UudjEuVXBkYXRlRXhwZW5zZVJlcXVlc3QaIS5leHBlbnNlLnYxLlVwZGF0ZUV4cGVuc2VSZXNwb25zZRJUCg1EZWxldGVFeHBlbnNlEiAuZXhwZW5zZS52MS5EZWxldGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuRGVsZXRlRXhwZW5zZVJlc3BvbnNlElEKDExpc3RFeHBlbnNlcxIfLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVxdWVzdBogLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVzcG9uc2VCK1opZXhwZW5zZXMtYmFja2VuZC9wa2cvZXhwZW5zZS92MTtleHBlbnNldjFiBnByb3RvMw");
+  fileDesc("ChhleHBlbnNlL3YxL2V4cGVuc2UucHJvdG8SCmV4cGVuc2UudjEiiQEKB0V4cGVuc2USCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIEhIKCmNyZWF0ZWRfYXQYBiABKAMSEgoKdXBkYXRlZF9hdBgHIAEoAyJDCg1Tb3J0ZWRFeHBlbnNlEgsKA2RheRgBIAEoBRIlCghleHBlbnNlcxgCIAMoCzITLmV4cGVuc2UudjEuRXhwZW5zZSJiChRDcmVhdGVFeHBlbnNlUmVxdWVzdBIMCgRuYW1lGAEgASgJEg4KBmFtb3VudBgCIAEoARIYChBkYXlfb2ZfbW9udGhfZHVlGAMgASgFEhIKCmlzX2F1dG9wYXkYBCABKAgiPQoVQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UiHwoRR2V0RXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAMiOgoSR2V0RXhwZW5zZVJlc3BvbnNlEiQKB2V4cGVuc2UYASABKAsyEy5leHBlbnNlLnYxLkV4cGVuc2UibgoUVXBkYXRlRXhwZW5zZVJlcXVlc3QSCgoCaWQYASABKAMSDAoEbmFtZRgCIAEoCRIOCgZhbW91bnQYAyABKAESGAoQZGF5X29mX21vbnRoX2R1ZRgEIAEoBRISCgppc19hdXRvcGF5GAUgASgIIj0KFVVwZGF0ZUV4cGVuc2VSZXNwb25zZRIkCgdleHBlbnNlGAEgASgLMhMuZXhwZW5zZS52MS5FeHBlbnNlIiIKFERlbGV0ZUV4cGVuc2VSZXF1ZXN0EgoKAmlkGAEgASgDIigKFURlbGV0ZUV4cGVuc2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjwKE0xpc3RFeHBlbnNlc1JlcXVlc3QSEQoJcGFnZV9zaXplGAEgASgFEhIKCnBhZ2VfdG9rZW4YAiABKAkiXAoUTGlzdEV4cGVuc2VzUmVzcG9uc2USKwoIZXhwZW5zZXMYASADKAsyGS5leHBlbnNlLnYxLlNvcnRlZEV4cGVuc2USFwoPbmV4dF9wYWdlX3Rva2VuGAIgASgJMrIDCg5FeHBlbnNlU2VydmljZRJUCg1DcmVhdGVFeHBlbnNlEiAuZXhwZW5zZS52MS5DcmVhdGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuQ3JlYXRlRXhwZW5zZVJlc3BvbnNlEksKCkdldEV4cGVuc2USHS5leHBlbnNlLnYxLkdldEV4cGVuc2VSZXF1ZXN0Gh4uZXhwZW5zZS52MS5HZXRFeHBlbnNlUmVzcG9uc2USVAoNVXBkYXRlRXhwZW5zZRIgLmV4cGVuc2UudjEuVXBkYXRlRXhwZW5zZVJlcXVlc3QaIS5leHBlbnNlLnYxLlVwZGF0ZUV4cGVuc2VSZXNwb25zZRJUCg1EZWxldGVFeHBlbnNlEiAuZXhwZW5zZS52MS5EZWxldGVFeHBlbnNlUmVxdWVzdBohLmV4cGVuc2UudjEuRGVsZXRlRXhwZW5zZVJlc3BvbnNlElEKDExpc3RFeHBlbnNlcxIfLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVxdWVzdBogLmV4cGVuc2UudjEuTGlzdEV4cGVuc2VzUmVzcG9uc2VCK1opZXhwZW5zZXMtYmFja2VuZC9wa2cvZXhwZW5zZS92MTtleHBlbnNldjFiBnByb3RvMw");
 
 /**
  * @generated from message expense.v1.Expense
  */
 export type Expense = Message<"expense.v1.Expense"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 
   /**
    * @generated from field: string name = 2;
@@ -135,9 +135,9 @@ export const CreateExpenseResponseSchema: GenMessage<CreateExpenseResponse> = /*
  */
 export type GetExpenseRequest = Message<"expense.v1.GetExpenseRequest"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 };
 
 /**
@@ -169,9 +169,9 @@ export const GetExpenseResponseSchema: GenMessage<GetExpenseResponse> = /*@__PUR
  */
 export type UpdateExpenseRequest = Message<"expense.v1.UpdateExpenseRequest"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 
   /**
    * @generated from field: string name = 2;
@@ -223,9 +223,9 @@ export const UpdateExpenseResponseSchema: GenMessage<UpdateExpenseResponse> = /*
  */
 export type DeleteExpenseRequest = Message<"expense.v1.DeleteExpenseRequest"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 };
 
 /**

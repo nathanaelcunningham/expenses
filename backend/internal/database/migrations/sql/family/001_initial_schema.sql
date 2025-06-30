@@ -52,12 +52,12 @@ CREATE TRIGGER IF NOT EXISTS update_categories_timestamp
     AFTER UPDATE ON categories
     FOR EACH ROW
 BEGIN
-    UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    UPDATE categories SET updated_at = CURRENT_TIMESTAMP WHERE id = new.id;
 END;
 
 CREATE TRIGGER IF NOT EXISTS update_expenses_timestamp
     AFTER UPDATE ON expenses
     FOR EACH ROW
 BEGIN
-    UPDATE expenses SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    UPDATE expenses SET updated_at = CURRENT_TIMESTAMP WHERE id = new.id;
 END;

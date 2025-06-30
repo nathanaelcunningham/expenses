@@ -46,12 +46,12 @@ CREATE TRIGGER IF NOT EXISTS update_users_timestamp
     AFTER UPDATE ON users
     FOR EACH ROW
 BEGIN
-    UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = new.id;
 END;
 
 CREATE TRIGGER IF NOT EXISTS update_families_timestamp
     AFTER UPDATE ON families
     FOR EACH ROW
 BEGIN
-    UPDATE families SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    UPDATE families SET updated_at = CURRENT_TIMESTAMP WHERE id = new.id;
 END;

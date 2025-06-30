@@ -10,16 +10,16 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file auth/v1/auth.proto.
  */
 export const file_auth_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChJhdXRoL3YxL2F1dGgucHJvdG8SB2F1dGgudjEiVwoEVXNlchIKCgJpZBgBIAEoCRINCgVlbWFpbBgCIAEoCRIMCgRuYW1lGAMgASgJEhIKCmNyZWF0ZWRfYXQYBCABKAMSEgoKdXBkYXRlZF9hdBgFIAEoAyKxAQoHU2Vzc2lvbhIKCgJpZBgBIAEoCRIPCgd1c2VyX2lkGAIgASgJEhEKCWZhbWlseV9pZBgDIAEoCRIRCgl1c2VyX3JvbGUYBCABKAkSEgoKY3JlYXRlZF9hdBgFIAEoAxITCgtsYXN0X2FjdGl2ZRgGIAEoAxISCgpleHBpcmVzX2F0GAcgASgDEhIKCnVzZXJfYWdlbnQYCCABKAkSEgoKaXBfYWRkcmVzcxgJIAEoCSIqCglBdXRoRXJyb3ISDAoEY29kZRgBIAEoCRIPCgdtZXNzYWdlGAIgASgJIkAKD1JlZ2lzdGVyUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCHBhc3N3b3JkGAMgASgJIlIKEFJlZ2lzdGVyUmVzcG9uc2USGwoEdXNlchgBIAEoCzINLmF1dGgudjEuVXNlchIhCgVlcnJvchgCIAEoCzISLmF1dGgudjEuQXV0aEVycm9yIi8KDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSJyCg1Mb2dpblJlc3BvbnNlEiEKB3Nlc3Npb24YASABKAsyEC5hdXRoLnYxLlNlc3Npb24SGwoEdXNlchgCIAEoCzINLmF1dGgudjEuVXNlchIhCgVlcnJvchgDIAEoCzISLmF1dGgudjEuQXV0aEVycm9yIiMKDUxvZ291dFJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoCSJECg5Mb2dvdXRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEiEKBWVycm9yGAIgASgLMhIuYXV0aC52MS5BdXRoRXJyb3IiKwoVUmVmcmVzaFNlc3Npb25SZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAkiXgoWUmVmcmVzaFNlc3Npb25SZXNwb25zZRIhCgdzZXNzaW9uGAEgASgLMhAuYXV0aC52MS5TZXNzaW9uEiEKBWVycm9yGAIgASgLMhIuYXV0aC52MS5BdXRoRXJyb3IiLAoWVmFsaWRhdGVTZXNzaW9uUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgJInsKF1Nlc3Npb25WYWxpZGF0aW9uUmVzdWx0Eg0KBXZhbGlkGAEgASgIEiEKB3Nlc3Npb24YAiABKAsyEC5hdXRoLnYxLlNlc3Npb24SGwoEdXNlchgDIAEoCzINLmF1dGgudjEuVXNlchIRCglmYW1pbHlfaWQYBCABKAkibgoXVmFsaWRhdGVTZXNzaW9uUmVzcG9uc2USMAoGcmVzdWx0GAEgASgLMiAuYXV0aC52MS5TZXNzaW9uVmFsaWRhdGlvblJlc3VsdBIhCgVlcnJvchgCIAEoCzISLmF1dGgudjEuQXV0aEVycm9yMuoCCgtBdXRoU2VydmljZRI/CghSZWdpc3RlchIYLmF1dGgudjEuUmVnaXN0ZXJSZXF1ZXN0GhkuYXV0aC52MS5SZWdpc3RlclJlc3BvbnNlEjYKBUxvZ2luEhUuYXV0aC52MS5Mb2dpblJlcXVlc3QaFi5hdXRoLnYxLkxvZ2luUmVzcG9uc2USOQoGTG9nb3V0EhYuYXV0aC52MS5Mb2dvdXRSZXF1ZXN0GhcuYXV0aC52MS5Mb2dvdXRSZXNwb25zZRJRCg5SZWZyZXNoU2Vzc2lvbhIeLmF1dGgudjEuUmVmcmVzaFNlc3Npb25SZXF1ZXN0Gh8uYXV0aC52MS5SZWZyZXNoU2Vzc2lvblJlc3BvbnNlElQKD1ZhbGlkYXRlU2Vzc2lvbhIfLmF1dGgudjEuVmFsaWRhdGVTZXNzaW9uUmVxdWVzdBogLmF1dGgudjEuVmFsaWRhdGVTZXNzaW9uUmVzcG9uc2VCJVojZXhwZW5zZXMtYmFja2VuZC9wa2cvYXV0aC92MTthdXRodjFiBnByb3RvMw");
+  fileDesc("ChJhdXRoL3YxL2F1dGgucHJvdG8SB2F1dGgudjEiVwoEVXNlchIKCgJpZBgBIAEoAxINCgVlbWFpbBgCIAEoCRIMCgRuYW1lGAMgASgJEhIKCmNyZWF0ZWRfYXQYBCABKAMSEgoKdXBkYXRlZF9hdBgFIAEoAyKxAQoHU2Vzc2lvbhIKCgJpZBgBIAEoAxIPCgd1c2VyX2lkGAIgASgDEhEKCWZhbWlseV9pZBgDIAEoAxIRCgl1c2VyX3JvbGUYBCABKAkSEgoKY3JlYXRlZF9hdBgFIAEoAxITCgtsYXN0X2FjdGl2ZRgGIAEoAxISCgpleHBpcmVzX2F0GAcgASgDEhIKCnVzZXJfYWdlbnQYCCABKAkSEgoKaXBfYWRkcmVzcxgJIAEoCSIqCglBdXRoRXJyb3ISDAoEY29kZRgBIAEoCRIPCgdtZXNzYWdlGAIgASgJIlUKD1JlZ2lzdGVyUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIMCgRuYW1lGAIgASgJEhAKCHBhc3N3b3JkGAMgASgJEhMKC2ludml0ZV9jb2RlGAQgASgJIlIKEFJlZ2lzdGVyUmVzcG9uc2USGwoEdXNlchgBIAEoCzINLmF1dGgudjEuVXNlchIhCgVlcnJvchgCIAEoCzISLmF1dGgudjEuQXV0aEVycm9yIi8KDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSJyCg1Mb2dpblJlc3BvbnNlEiEKB3Nlc3Npb24YASABKAsyEC5hdXRoLnYxLlNlc3Npb24SGwoEdXNlchgCIAEoCzINLmF1dGgudjEuVXNlchIhCgVlcnJvchgDIAEoCzISLmF1dGgudjEuQXV0aEVycm9yIiMKDUxvZ291dFJlcXVlc3QSEgoKc2Vzc2lvbl9pZBgBIAEoAyJECg5Mb2dvdXRSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIEiEKBWVycm9yGAIgASgLMhIuYXV0aC52MS5BdXRoRXJyb3IiKwoVUmVmcmVzaFNlc3Npb25SZXF1ZXN0EhIKCnNlc3Npb25faWQYASABKAMiXgoWUmVmcmVzaFNlc3Npb25SZXNwb25zZRIhCgdzZXNzaW9uGAEgASgLMhAuYXV0aC52MS5TZXNzaW9uEiEKBWVycm9yGAIgASgLMhIuYXV0aC52MS5BdXRoRXJyb3IiLAoWVmFsaWRhdGVTZXNzaW9uUmVxdWVzdBISCgpzZXNzaW9uX2lkGAEgASgDInsKF1Nlc3Npb25WYWxpZGF0aW9uUmVzdWx0Eg0KBXZhbGlkGAEgASgIEiEKB3Nlc3Npb24YAiABKAsyEC5hdXRoLnYxLlNlc3Npb24SGwoEdXNlchgDIAEoCzINLmF1dGgudjEuVXNlchIRCglmYW1pbHlfaWQYBCABKAMibgoXVmFsaWRhdGVTZXNzaW9uUmVzcG9uc2USMAoGcmVzdWx0GAEgASgLMiAuYXV0aC52MS5TZXNzaW9uVmFsaWRhdGlvblJlc3VsdBIhCgVlcnJvchgCIAEoCzISLmF1dGgudjEuQXV0aEVycm9yMuoCCgtBdXRoU2VydmljZRI/CghSZWdpc3RlchIYLmF1dGgudjEuUmVnaXN0ZXJSZXF1ZXN0GhkuYXV0aC52MS5SZWdpc3RlclJlc3BvbnNlEjYKBUxvZ2luEhUuYXV0aC52MS5Mb2dpblJlcXVlc3QaFi5hdXRoLnYxLkxvZ2luUmVzcG9uc2USOQoGTG9nb3V0EhYuYXV0aC52MS5Mb2dvdXRSZXF1ZXN0GhcuYXV0aC52MS5Mb2dvdXRSZXNwb25zZRJRCg5SZWZyZXNoU2Vzc2lvbhIeLmF1dGgudjEuUmVmcmVzaFNlc3Npb25SZXF1ZXN0Gh8uYXV0aC52MS5SZWZyZXNoU2Vzc2lvblJlc3BvbnNlElQKD1ZhbGlkYXRlU2Vzc2lvbhIfLmF1dGgudjEuVmFsaWRhdGVTZXNzaW9uUmVxdWVzdBogLmF1dGgudjEuVmFsaWRhdGVTZXNzaW9uUmVzcG9uc2VCJVojZXhwZW5zZXMtYmFja2VuZC9wa2cvYXV0aC92MTthdXRodjFiBnByb3RvMw");
 
 /**
  * @generated from message auth.v1.User
  */
 export type User = Message<"auth.v1.User"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 
   /**
    * @generated from field: string email = 2;
@@ -54,19 +54,19 @@ export const UserSchema: GenMessage<User> = /*@__PURE__*/
  */
 export type Session = Message<"auth.v1.Session"> & {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id: string;
+  id: bigint;
 
   /**
-   * @generated from field: string user_id = 2;
+   * @generated from field: int64 user_id = 2;
    */
-  userId: string;
+  userId: bigint;
 
   /**
-   * @generated from field: string family_id = 3;
+   * @generated from field: int64 family_id = 3;
    */
-  familyId: string;
+  familyId: bigint;
 
   /**
    * @generated from field: string user_role = 4;
@@ -146,6 +146,13 @@ export type RegisterRequest = Message<"auth.v1.RegisterRequest"> & {
    * @generated from field: string password = 3;
    */
   password: string;
+
+  /**
+   * Optional: if provided, user joins existing family instead of creating new one
+   *
+   * @generated from field: string invite_code = 4;
+   */
+  inviteCode: string;
 };
 
 /**
@@ -231,9 +238,9 @@ export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
  */
 export type LogoutRequest = Message<"auth.v1.LogoutRequest"> & {
   /**
-   * @generated from field: string session_id = 1;
+   * @generated from field: int64 session_id = 1;
    */
-  sessionId: string;
+  sessionId: bigint;
 };
 
 /**
@@ -270,9 +277,9 @@ export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
  */
 export type RefreshSessionRequest = Message<"auth.v1.RefreshSessionRequest"> & {
   /**
-   * @generated from field: string session_id = 1;
+   * @generated from field: int64 session_id = 1;
    */
-  sessionId: string;
+  sessionId: bigint;
 };
 
 /**
@@ -309,9 +316,9 @@ export const RefreshSessionResponseSchema: GenMessage<RefreshSessionResponse> = 
  */
 export type ValidateSessionRequest = Message<"auth.v1.ValidateSessionRequest"> & {
   /**
-   * @generated from field: string session_id = 1;
+   * @generated from field: int64 session_id = 1;
    */
-  sessionId: string;
+  sessionId: bigint;
 };
 
 /**
@@ -341,9 +348,9 @@ export type SessionValidationResult = Message<"auth.v1.SessionValidationResult">
   user?: User;
 
   /**
-   * @generated from field: string family_id = 4;
+   * @generated from field: int64 family_id = 4;
    */
-  familyId: string;
+  familyId: bigint;
 };
 
 /**

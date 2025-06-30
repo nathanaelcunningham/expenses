@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS simplefin (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    access_token TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS accounts(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    simplefin_id INTEGER NOT NULL REFERENCES simplefin(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    posted_date TIMESTAMP NOT NULL,
+    description TEXT NOT NULL,
+    payee TEXT NOT NULL
+);

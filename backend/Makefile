@@ -4,6 +4,10 @@
 proto:
 	buf generate proto
 
+# Grpc Explorer
+grpcui:
+	grpcui --plaintext localhost:8080
+
 # Build server and client
 build:
 	go build -o bin/server ./cmd/server
