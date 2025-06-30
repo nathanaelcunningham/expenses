@@ -155,8 +155,8 @@ func (mm *MigrationManager) RunMigrations(ctx context.Context, db *sql.DB, migra
 		return nil
 	}
 
-	// Get current schema version
-	currentVersion := mm.getCurrentVersion(ctx, migrationType)
+	// Get current schema version using the provided database connection
+	currentVersion := mm.getCurrentVersion(ctx, db)
 
 	mm.logger.Info("Starting migration process", logger.Int("current_version", currentVersion), logger.Int("available_migrations", len(migrations)), logger.Str("type", string(migrationType)))
 
@@ -195,7 +195,7 @@ func (mm *MigrationManager) GetMigrationStatus(ctx context.Context, migrationTyp
 		return nil, fmt.Errorf("failed to create migrations table: %w", err)
 	}
 
-	currentVersion := mm.getCurrentVersion(ctx, migrationType)
+	currentVersion := mm.getCurrentVersionLegacy(ctx, migrationType)
 
 	appliedMigrations, err := mm.GetAppliedMigrations(ctx, migrationType)
 	if err != nil {
@@ -298,7 +298,7 @@ func (mm *MigrationManager) GetPendingMigrations(ctx context.Context, migrationT
 		return nil, err
 	}
 
-	currentVersion := mm.getCurrentVersion(ctx, migrationType)
+	currentVersion := mm.getCurrentVersionLegacy(ctx, migrationType)
 
 	var pendingMigrations []Migration
 	for _, migration := range allMigrations {
@@ -369,8 +369,24 @@ func (mm *MigrationManager) ensureMigrationsTable(ctx context.Context, migration
 	return nil
 }
 
-// getCurrentVersion gets the current schema version
-func (mm *MigrationManager) getCurrentVersion(ctx context.Context, migrationType MigrationType) int {
+// getCurrentVersion gets the current schema version using the provided database connection
+func (mm *MigrationManager) getCurrentVersion(ctx context.Context, db *sql.DB) int {
+	// Query the database directly using the provided connection
+	var version int64
+	query := "SELECT CAST(COALESCE(MAX(version), 0) AS INTEGER) FROM schema_migrations;"
+	
+	err := db.QueryRowContext(ctx, query).Scan(&version)
+	if err != nil {
+		// If the table doesn't exist or query fails, we're at version 0
+		mm.logger.Debug("Could not get current version, assuming 0 (this is normal for new databases)", logger.Err(err))
+		return 0
+	}
+
+	return int(version)
+}
+
+// getCurrentVersionLegacy gets the current schema version using queriers (kept for backward compatibility)
+func (mm *MigrationManager) getCurrentVersionLegacy(ctx context.Context, migrationType MigrationType) int {
 	var querier interface {
 		GetCurrentMigrationVersion(ctx context.Context) (int64, error)
 	}
