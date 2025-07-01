@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"expenses-backend/internal/auth"
+	appcontext "expenses-backend/internal/context"
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/logger"
 
@@ -24,21 +25,11 @@ type AuthInterceptor struct {
 	logger      logger.Logger
 }
 
-// AuthContext holds authentication information for the request
-type AuthContext struct {
-	UserID    int64   `json:"user_id"`
-	FamilyID  int64   `json:"family_id"`
-	UserRole  string  `json:"user_role"`
-	SessionID int64   `json:"session_id"`
-	FamilyDB  *sql.DB `json:"-"`
-}
-
 // ContextKey is used for storing auth context in request context
 type ContextKey string
 
 const (
-	AuthContextKey ContextKey = "auth_context"
-	SessionHeader  ContextKey = "Authorization"
+	SessionHeader ContextKey = "Authorization"
 )
 
 // NewAuthInterceptor creates a new authentication interceptor
@@ -67,7 +58,7 @@ func (ai *AuthInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 		}
 
 		// Add auth context to request context
-		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
+		ctx = context.WithValue(ctx, appcontext.AuthContextKey, authCtx)
 
 		ai.logger.Debug("Request authenticated successfully",
 			logger.Int64("user_id", authCtx.UserID),
@@ -103,7 +94,7 @@ func (ai *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFun
 		}
 
 		// Add auth context to request context
-		ctx = context.WithValue(ctx, AuthContextKey, authCtx)
+		ctx = context.WithValue(ctx, appcontext.AuthContextKey, authCtx)
 
 		ai.logger.Debug("Streaming connection authenticated successfully",
 			logger.Int64("user_id", authCtx.UserID),
@@ -115,7 +106,7 @@ func (ai *AuthInterceptor) WrapStreamingHandler(next connect.StreamingHandlerFun
 }
 
 // authenticateRequest extracts and validates the session from request headers
-func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http.Header) (*AuthContext, error) {
+func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http.Header) (*appcontext.AuthContext, error) {
 	// Extract session token from Authorization header
 	sessionToken := ai.extractSessionToken(headers)
 	if sessionToken == "" {
@@ -154,7 +145,7 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 		}
 	}
 
-	return &AuthContext{
+	return &appcontext.AuthContext{
 		UserID:    validation.User.Id,
 		FamilyID:  validation.FamilyId,
 		UserRole:  validation.Session.UserRole,
@@ -189,51 +180,6 @@ func (ai *AuthInterceptor) isPublicEndpoint(procedure string) bool {
 	return slices.Contains(publicEndpoints, procedure)
 }
 
-// GetAuthContext extracts the authentication context from the request context
-func GetAuthContext(ctx context.Context) (*AuthContext, bool) {
-	authCtx, ok := ctx.Value(AuthContextKey).(*AuthContext)
-	return authCtx, ok
-}
-
-// RequireAuth is a helper function that returns an error if no auth context is found
-func RequireAuth(ctx context.Context) (*AuthContext, error) {
-	authCtx, ok := GetAuthContext(ctx)
-	if !ok {
-		return nil, connect.NewError(connect.CodeUnauthenticated,
-			fmt.Errorf("authentication required"))
-	}
-	return authCtx, nil
-}
-
-// RequireFamily is a helper function that returns an error if user is not in a family
-func RequireFamily(ctx context.Context) (*AuthContext, error) {
-	authCtx, err := RequireAuth(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if authCtx.FamilyID == 0 {
-		return nil, connect.NewError(connect.CodeFailedPrecondition,
-			fmt.Errorf("user must be a member of a family to access this resource"))
-	}
-
-	return authCtx, nil
-}
-
-// RequireFamilyManager is a helper function that returns an error if user is not a family manager
-func RequireFamilyManager(ctx context.Context) (*AuthContext, error) {
-	authCtx, err := RequireFamily(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if authCtx.UserRole != "manager" {
-		return nil, connect.NewError(connect.CodePermissionDenied,
-			fmt.Errorf("only family managers can perform this action"))
-	}
-
-	return authCtx, nil
-}
 
 // LoggingInterceptor provides request logging for Connect RPC
 type LoggingInterceptor struct {
@@ -254,7 +200,7 @@ func (li *LoggingInterceptor) WrapUnary(next connect.UnaryFunc) connect.UnaryFun
 
 		// Get auth context if available
 		var userID, familyID int64
-		if authCtx, ok := GetAuthContext(ctx); ok {
+		if authCtx, ok := appcontext.GetAuthContext(ctx); ok {
 			userID = authCtx.UserID
 			familyID = authCtx.FamilyID
 		}
@@ -304,7 +250,7 @@ func (li *LoggingInterceptor) WrapStreamingHandler(next connect.StreamingHandler
 
 		// Get auth context if available
 		var userID, familyID int64
-		if authCtx, ok := GetAuthContext(ctx); ok {
+		if authCtx, ok := appcontext.GetAuthContext(ctx); ok {
 			userID = authCtx.UserID
 			familyID = authCtx.FamilyID
 		}

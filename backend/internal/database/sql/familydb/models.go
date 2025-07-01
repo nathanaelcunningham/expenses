@@ -8,6 +8,13 @@ import (
 	"time"
 )
 
+type Account struct {
+	ID          int64  `json:"id"`
+	AccountID   string `json:"account_id"`
+	Name        string `json:"name"`
+	SimplefinID int64  `json:"simplefin_id"`
+}
+
 type Category struct {
 	ID          int64     `json:"id"`
 	Name        string    `json:"name"`
@@ -38,6 +45,13 @@ type FamilyMember struct {
 	IsActive *bool     `json:"is_active"`
 }
 
+type FamilySetting struct {
+	ID           int64   `json:"id"`
+	SettingKey   string  `json:"setting_key"`
+	SettingValue *string `json:"setting_value"`
+	DataType     string  `json:"data_type"`
+}
+
 type SchemaMigration struct {
 	Version         int64      `json:"version"`
 	Name            string     `json:"name"`
@@ -48,4 +62,12 @@ type SchemaMigration struct {
 	ExecutionTimeMs *int64     `json:"execution_time_ms"`
 	MigrationType   *string    `json:"migration_type"`
 	AppliedBy       *string    `json:"applied_by"`
+}
+
+type Transaction struct {
+	ID          int64     `json:"id"`
+	AccountID   int64     `json:"account_id"`
+	PostedDate  time.Time `json:"posted_date"`
+	Description string    `json:"description"`
+	Payee       string    `json:"payee"`
 }

@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package family.v1;
+
+option go_package = "expenses-backend/pkg/family/v1;familyv1";
+
+service FamilySettingsService {
+  rpc CreateFamilySetting(CreateFamilySettingRequest) returns (CreateFamilySettingResponse);
+  rpc ListFamilySettings(ListFamilySettingsRequest) returns (ListFamilySettingsResponse);
+  rpc UpdateFamilySetting(UpdateFamilySettingRequest) returns (UpdateFamilySettingResponse);
+  rpc DeleteFamilySetting(DeleteFamilySettingRequest) returns (DeleteFamilySettingResponse);
+}
+
+message FamilySetting {
+  int64 id = 1;
+  string setting_key = 2;
+  optional string setting_value = 3;
+  string data_type = 4;
+}
+
+message CreateFamilySettingRequest {
+  string setting_key = 1;
+  optional string setting_value = 2;
+  string data_type = 3;
+}
+
+message CreateFamilySettingResponse {
+  FamilySetting family_setting = 1;
+}
+
+message ListFamilySettingsRequest {}
+
+message ListFamilySettingsResponse {
+  repeated FamilySetting family_settings = 1;
+}
+
+message UpdateFamilySettingRequest {
+  int64 id = 1;
+  optional string setting_value = 2;
+  string data_type = 3;
+}
+
+message UpdateFamilySettingResponse {
+  FamilySetting family_setting = 1;
+}
+
+message DeleteFamilySettingRequest {
+  int64 id = 1;
+}
+
+message DeleteFamilySettingResponse {
+  bool success = 1;
+}

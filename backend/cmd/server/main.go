@@ -15,6 +15,7 @@ import (
 	"expenses-backend/internal/transaction"
 	"expenses-backend/pkg/auth/v1/authv1connect"
 	"expenses-backend/pkg/expense/v1/expensev1connect"
+	"expenses-backend/pkg/family/v1/familyv1connect"
 	"expenses-backend/pkg/transaction/v1/transactionv1connect"
 	"net/http"
 	"os"
@@ -105,10 +106,14 @@ func main() {
 	transactionServicePath, transactionServiceHandler := transactionv1connect.NewTransactionServiceHandler(transactionService, interceptors)
 	mux.Handle(transactionServicePath, transactionServiceHandler)
 
+	familyServicePath, familyServiceHandler := familyv1connect.NewFamilySettingsServiceHandler(familyService, interceptors)
+	mux.Handle(familyServicePath, familyServiceHandler)
+
 	reflector := grpcreflect.NewStaticReflector(
 		"expense.v1.ExpenseService",
 		"auth.v1.AuthService",
 		"transaction.v1.TransactionService",
+		"family.v1.FamilySettingsService",
 	)
 
 	mux.Handle(grpcreflect.NewHandlerV1(reflector))

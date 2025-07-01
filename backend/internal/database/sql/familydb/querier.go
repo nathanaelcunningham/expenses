@@ -14,14 +14,20 @@ type Querier interface {
 	// We use a simple approach that works with sqlc
 	CheckMigrationsTableExists(ctx context.Context) (int64, error)
 	CountExpenses(ctx context.Context) (int64, error)
+	CreateAccount(ctx context.Context, arg CreateAccountParams) (*Account, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (*Category, error)
 	CreateExpense(ctx context.Context, arg CreateExpenseParams) (*Expense, error)
 	CreateFamilyMember(ctx context.Context, arg CreateFamilyMemberParams) (*FamilyMember, error)
+	CreateFamilySetting(ctx context.Context, arg CreateFamilySettingParams) (*FamilySetting, error)
 	CreateMigrationsTable(ctx context.Context) error
+	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (*Transaction, error)
 	DeactivateFamilyMember(ctx context.Context, id int64) error
+	DeleteAccount(ctx context.Context, id int64) error
 	DeleteCategory(ctx context.Context, id int64) error
 	DeleteExpense(ctx context.Context, id int64) error
 	DeleteFamilyMember(ctx context.Context, id int64) error
+	DeleteFamilySetting(ctx context.Context, id int64) error
+	GetAccounts(ctx context.Context) ([]*Account, error)
 	GetAppliedMigrations(ctx context.Context) ([]*GetAppliedMigrationsRow, error)
 	GetCategoryByID(ctx context.Context, id int64) (*Category, error)
 	// Migration-related queries for family database
@@ -30,15 +36,18 @@ type Querier interface {
 	GetExpensesByDateRange(ctx context.Context, arg GetExpensesByDateRangeParams) ([]*Expense, error)
 	GetFamilyMemberByEmail(ctx context.Context, email string) (*FamilyMember, error)
 	GetFamilyMemberByID(ctx context.Context, id int64) (*FamilyMember, error)
+	GetTransactionsByAccount(ctx context.Context, accountID int64) ([]*Transaction, error)
 	ListAllFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
 	ListCategories(ctx context.Context) ([]*Category, error)
 	ListExpenses(ctx context.Context, arg ListExpensesParams) ([]*Expense, error)
 	ListExpensesByCategory(ctx context.Context, categoryID *int64) ([]*Expense, error)
 	ListFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
+	ListFamilySettings(ctx context.Context) ([]*FamilySetting, error)
 	RecordMigration(ctx context.Context, arg RecordMigrationParams) error
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (*Category, error)
 	UpdateExpense(ctx context.Context, arg UpdateExpenseParams) (*Expense, error)
 	UpdateFamilyMember(ctx context.Context, arg UpdateFamilyMemberParams) (*FamilyMember, error)
+	UpdateFamilySetting(ctx context.Context, arg UpdateFamilySettingParams) (*FamilySetting, error)
 }
 
 var _ Querier = (*Queries)(nil)

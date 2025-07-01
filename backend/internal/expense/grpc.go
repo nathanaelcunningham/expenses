@@ -6,7 +6,7 @@ import (
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/database/sql/familydb"
 	"expenses-backend/internal/logger"
-	"expenses-backend/internal/middleware"
+	appcontext "expenses-backend/internal/context"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
 	"strconv"
@@ -33,7 +33,7 @@ func NewService(dbManager *database.DatabaseManager, log logger.Logger) *Service
 
 func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expensev1.CreateExpenseRequest]) (*connect.Response[expensev1.CreateExpenseResponse], error) {
 	// Get authentication context
-	authCtx, err := middleware.RequireFamily(ctx)
+	authCtx, err := appcontext.RequireFamily(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (s *Service) CreateExpense(ctx context.Context, req *connect.Request[expens
 
 func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1.GetExpenseRequest]) (*connect.Response[expensev1.GetExpenseResponse], error) {
 	// Get authentication context
-	authCtx, err := middleware.RequireFamily(ctx)
+	authCtx, err := appcontext.RequireFamily(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (s *Service) GetExpense(ctx context.Context, req *connect.Request[expensev1
 
 func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expensev1.UpdateExpenseRequest]) (*connect.Response[expensev1.UpdateExpenseResponse], error) {
 	// Get authentication context
-	authCtx, err := middleware.RequireFamily(ctx)
+	authCtx, err := appcontext.RequireFamily(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (s *Service) UpdateExpense(ctx context.Context, req *connect.Request[expens
 
 func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expensev1.DeleteExpenseRequest]) (*connect.Response[expensev1.DeleteExpenseResponse], error) {
 	// Get authentication context
-	authCtx, err := middleware.RequireFamily(ctx)
+	authCtx, err := appcontext.RequireFamily(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (s *Service) DeleteExpense(ctx context.Context, req *connect.Request[expens
 
 func (s *Service) ListExpenses(ctx context.Context, req *connect.Request[expensev1.ListExpensesRequest]) (*connect.Response[expensev1.ListExpensesResponse], error) {
 	// Get authentication context
-	authCtx, err := middleware.RequireFamily(ctx)
+	authCtx, err := appcontext.RequireFamily(ctx)
 	if err != nil {
 		return nil, err
 	}
