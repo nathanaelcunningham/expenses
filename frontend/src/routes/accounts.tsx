@@ -1,14 +1,15 @@
-import { getAccounts } from "@/gen/transaction/v1/transaction-TransactionService_connectquery";
+import { getFamilySettingByKey } from "@/gen/family/v1/family-FamilySettingsService_connectquery";
 import { useQuery } from "@connectrpc/connect-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/accounts")({
     component: TransactionAccounts,
 });
 
 function TransactionAccounts() {
-    const { data, isLoading, error } = useQuery(getAccounts);
-
+    const { data, isLoading, error } = useQuery(getFamilySettingByKey, {
+        key: "simplefin_token",
+    });
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -25,11 +26,22 @@ function TransactionAccounts() {
         } else return <div>Error loading tranaction accounts</div>;
     }
 
-    return (
-        <div className="flex flex-col">
-            {data.accounts.map((account) => (
-                <div>{account.name}</div>
-            ))}
-        </div>
-    );
+    if (!data.familySetting) {
+        return (
+            <div>
+                <p>You have not added a simplefin token.</p>
+                <button>
+                    <Link to={`/settings`}>Click here to go to settings</Link>
+                </button>
+            </div>
+        );
+    }
+    //
+    // return (
+    //     <div className="flex flex-col">
+    //         {data.accounts.map((account) => (
+    //             <div>{account.name}</div>
+    //         ))}
+    //     </div>
+    // );
 }

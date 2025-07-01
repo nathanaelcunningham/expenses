@@ -13,7 +13,7 @@ function EditExpense() {
     const { id } = Route.useParams();
     const { data, isLoading, error } = useQuery(
         getExpense,
-        { id },
+        { id: BigInt(id) },
         { enabled: isAuthenticated },
     );
 
@@ -50,4 +50,3 @@ function EditExpense() {
 
     return <ExpenseForm mode="edit" initialData={data.expense} />;
 }
-

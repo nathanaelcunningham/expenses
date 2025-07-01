@@ -11,6 +11,7 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SettingsImport } from './routes/settings'
 import { Route as RegisterImport } from './routes/register'
 import { Route as LoginImport } from './routes/login'
 import { Route as AccountsImport } from './routes/accounts'
@@ -19,6 +20,12 @@ import { Route as ExpenseCreateImport } from './routes/expense.create'
 import { Route as ExpenseIdEditImport } from './routes/expense.$id.edit'
 
 // Create/Update Routes
+
+const SettingsRoute = SettingsImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const RegisterRoute = RegisterImport.update({
   id: '/register',
@@ -88,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterImport
       parentRoute: typeof rootRoute
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsImport
+      parentRoute: typeof rootRoute
+    }
     '/expense/create': {
       id: '/expense/create'
       path: '/expense/create'
@@ -112,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/accounts': typeof AccountsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/expense/create': typeof ExpenseCreateRoute
   '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
@@ -121,6 +136,7 @@ export interface FileRoutesByTo {
   '/accounts': typeof AccountsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/expense/create': typeof ExpenseCreateRoute
   '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
@@ -131,6 +147,7 @@ export interface FileRoutesById {
   '/accounts': typeof AccountsRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/settings': typeof SettingsRoute
   '/expense/create': typeof ExpenseCreateRoute
   '/expense/$id/edit': typeof ExpenseIdEditRoute
 }
@@ -142,6 +159,7 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/login'
     | '/register'
+    | '/settings'
     | '/expense/create'
     | '/expense/$id/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -150,6 +168,7 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/login'
     | '/register'
+    | '/settings'
     | '/expense/create'
     | '/expense/$id/edit'
   id:
@@ -158,6 +177,7 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/login'
     | '/register'
+    | '/settings'
     | '/expense/create'
     | '/expense/$id/edit'
   fileRoutesById: FileRoutesById
@@ -168,6 +188,7 @@ export interface RootRouteChildren {
   AccountsRoute: typeof AccountsRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  SettingsRoute: typeof SettingsRoute
   ExpenseCreateRoute: typeof ExpenseCreateRoute
   ExpenseIdEditRoute: typeof ExpenseIdEditRoute
 }
@@ -177,6 +198,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountsRoute: AccountsRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  SettingsRoute: SettingsRoute,
   ExpenseCreateRoute: ExpenseCreateRoute,
   ExpenseIdEditRoute: ExpenseIdEditRoute,
 }
@@ -195,6 +217,7 @@ export const routeTree = rootRoute
         "/accounts",
         "/login",
         "/register",
+        "/settings",
         "/expense/create",
         "/expense/$id/edit"
       ]
@@ -210,6 +233,9 @@ export const routeTree = rootRoute
     },
     "/register": {
       "filePath": "register.tsx"
+    },
+    "/settings": {
+      "filePath": "settings.tsx"
     },
     "/expense/create": {
       "filePath": "expense.create.tsx"

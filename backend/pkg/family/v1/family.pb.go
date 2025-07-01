@@ -273,6 +273,94 @@ func (x *ListFamilySettingsResponse) GetFamilySettings() []*FamilySetting {
 	return nil
 }
 
+type GetFamilySettingByKeyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFamilySettingByKeyRequest) Reset() {
+	*x = GetFamilySettingByKeyRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFamilySettingByKeyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFamilySettingByKeyRequest) ProtoMessage() {}
+
+func (x *GetFamilySettingByKeyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFamilySettingByKeyRequest.ProtoReflect.Descriptor instead.
+func (*GetFamilySettingByKeyRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetFamilySettingByKeyRequest) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type GetFamilySettingByKeyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FamilySetting *FamilySetting         `protobuf:"bytes,1,opt,name=family_setting,json=familySetting,proto3,oneof" json:"family_setting,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFamilySettingByKeyResponse) Reset() {
+	*x = GetFamilySettingByKeyResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFamilySettingByKeyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFamilySettingByKeyResponse) ProtoMessage() {}
+
+func (x *GetFamilySettingByKeyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFamilySettingByKeyResponse.ProtoReflect.Descriptor instead.
+func (*GetFamilySettingByKeyResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetFamilySettingByKeyResponse) GetFamilySetting() *FamilySetting {
+	if x != nil {
+		return x.FamilySetting
+	}
+	return nil
+}
+
 type UpdateFamilySettingRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -284,7 +372,7 @@ type UpdateFamilySettingRequest struct {
 
 func (x *UpdateFamilySettingRequest) Reset() {
 	*x = UpdateFamilySettingRequest{}
-	mi := &file_family_v1_family_proto_msgTypes[5]
+	mi := &file_family_v1_family_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -296,7 +384,7 @@ func (x *UpdateFamilySettingRequest) String() string {
 func (*UpdateFamilySettingRequest) ProtoMessage() {}
 
 func (x *UpdateFamilySettingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_family_v1_family_proto_msgTypes[5]
+	mi := &file_family_v1_family_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -309,7 +397,7 @@ func (x *UpdateFamilySettingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateFamilySettingRequest.ProtoReflect.Descriptor instead.
 func (*UpdateFamilySettingRequest) Descriptor() ([]byte, []int) {
-	return file_family_v1_family_proto_rawDescGZIP(), []int{5}
+	return file_family_v1_family_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateFamilySettingRequest) GetId() int64 {
@@ -342,7 +430,7 @@ type UpdateFamilySettingResponse struct {
 
 func (x *UpdateFamilySettingResponse) Reset() {
 	*x = UpdateFamilySettingResponse{}
-	mi := &file_family_v1_family_proto_msgTypes[6]
+	mi := &file_family_v1_family_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -354,7 +442,7 @@ func (x *UpdateFamilySettingResponse) String() string {
 func (*UpdateFamilySettingResponse) ProtoMessage() {}
 
 func (x *UpdateFamilySettingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_family_v1_family_proto_msgTypes[6]
+	mi := &file_family_v1_family_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -367,7 +455,7 @@ func (x *UpdateFamilySettingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateFamilySettingResponse.ProtoReflect.Descriptor instead.
 func (*UpdateFamilySettingResponse) Descriptor() ([]byte, []int) {
-	return file_family_v1_family_proto_rawDescGZIP(), []int{6}
+	return file_family_v1_family_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateFamilySettingResponse) GetFamilySetting() *FamilySetting {
@@ -386,7 +474,7 @@ type DeleteFamilySettingRequest struct {
 
 func (x *DeleteFamilySettingRequest) Reset() {
 	*x = DeleteFamilySettingRequest{}
-	mi := &file_family_v1_family_proto_msgTypes[7]
+	mi := &file_family_v1_family_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -398,7 +486,7 @@ func (x *DeleteFamilySettingRequest) String() string {
 func (*DeleteFamilySettingRequest) ProtoMessage() {}
 
 func (x *DeleteFamilySettingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_family_v1_family_proto_msgTypes[7]
+	mi := &file_family_v1_family_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -411,7 +499,7 @@ func (x *DeleteFamilySettingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFamilySettingRequest.ProtoReflect.Descriptor instead.
 func (*DeleteFamilySettingRequest) Descriptor() ([]byte, []int) {
-	return file_family_v1_family_proto_rawDescGZIP(), []int{7}
+	return file_family_v1_family_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteFamilySettingRequest) GetId() int64 {
@@ -430,7 +518,7 @@ type DeleteFamilySettingResponse struct {
 
 func (x *DeleteFamilySettingResponse) Reset() {
 	*x = DeleteFamilySettingResponse{}
-	mi := &file_family_v1_family_proto_msgTypes[8]
+	mi := &file_family_v1_family_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -442,7 +530,7 @@ func (x *DeleteFamilySettingResponse) String() string {
 func (*DeleteFamilySettingResponse) ProtoMessage() {}
 
 func (x *DeleteFamilySettingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_family_v1_family_proto_msgTypes[8]
+	mi := &file_family_v1_family_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -455,7 +543,7 @@ func (x *DeleteFamilySettingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteFamilySettingResponse.ProtoReflect.Descriptor instead.
 func (*DeleteFamilySettingResponse) Descriptor() ([]byte, []int) {
-	return file_family_v1_family_proto_rawDescGZIP(), []int{8}
+	return file_family_v1_family_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteFamilySettingResponse) GetSuccess() bool {
@@ -487,7 +575,12 @@ const file_family_v1_family_proto_rawDesc = "" +
 	"\x0efamily_setting\x18\x01 \x01(\v2\x18.family.v1.FamilySettingR\rfamilySetting\"\x1b\n" +
 	"\x19ListFamilySettingsRequest\"_\n" +
 	"\x1aListFamilySettingsResponse\x12A\n" +
-	"\x0ffamily_settings\x18\x01 \x03(\v2\x18.family.v1.FamilySettingR\x0efamilySettings\"\x85\x01\n" +
+	"\x0ffamily_settings\x18\x01 \x03(\v2\x18.family.v1.FamilySettingR\x0efamilySettings\"0\n" +
+	"\x1cGetFamilySettingByKeyRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\"x\n" +
+	"\x1dGetFamilySettingByKeyResponse\x12D\n" +
+	"\x0efamily_setting\x18\x01 \x01(\v2\x18.family.v1.FamilySettingH\x00R\rfamilySetting\x88\x01\x01B\x11\n" +
+	"\x0f_family_setting\"\x85\x01\n" +
 	"\x1aUpdateFamilySettingRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12(\n" +
 	"\rsetting_value\x18\x02 \x01(\tH\x00R\fsettingValue\x88\x01\x01\x12\x1b\n" +
@@ -498,10 +591,11 @@ const file_family_v1_family_proto_rawDesc = "" +
 	"\x1aDeleteFamilySettingRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"7\n" +
 	"\x1bDeleteFamilySettingResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xac\x03\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\x98\x04\n" +
 	"\x15FamilySettingsService\x12d\n" +
 	"\x13CreateFamilySetting\x12%.family.v1.CreateFamilySettingRequest\x1a&.family.v1.CreateFamilySettingResponse\x12a\n" +
-	"\x12ListFamilySettings\x12$.family.v1.ListFamilySettingsRequest\x1a%.family.v1.ListFamilySettingsResponse\x12d\n" +
+	"\x12ListFamilySettings\x12$.family.v1.ListFamilySettingsRequest\x1a%.family.v1.ListFamilySettingsResponse\x12j\n" +
+	"\x15GetFamilySettingByKey\x12'.family.v1.GetFamilySettingByKeyRequest\x1a(.family.v1.GetFamilySettingByKeyResponse\x12d\n" +
 	"\x13UpdateFamilySetting\x12%.family.v1.UpdateFamilySettingRequest\x1a&.family.v1.UpdateFamilySettingResponse\x12d\n" +
 	"\x13DeleteFamilySetting\x12%.family.v1.DeleteFamilySettingRequest\x1a&.family.v1.DeleteFamilySettingResponseB)Z'expenses-backend/pkg/family/v1;familyv1b\x06proto3"
 
@@ -517,35 +611,40 @@ func file_family_v1_family_proto_rawDescGZIP() []byte {
 	return file_family_v1_family_proto_rawDescData
 }
 
-var file_family_v1_family_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_family_v1_family_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_family_v1_family_proto_goTypes = []any{
-	(*FamilySetting)(nil),               // 0: family.v1.FamilySetting
-	(*CreateFamilySettingRequest)(nil),  // 1: family.v1.CreateFamilySettingRequest
-	(*CreateFamilySettingResponse)(nil), // 2: family.v1.CreateFamilySettingResponse
-	(*ListFamilySettingsRequest)(nil),   // 3: family.v1.ListFamilySettingsRequest
-	(*ListFamilySettingsResponse)(nil),  // 4: family.v1.ListFamilySettingsResponse
-	(*UpdateFamilySettingRequest)(nil),  // 5: family.v1.UpdateFamilySettingRequest
-	(*UpdateFamilySettingResponse)(nil), // 6: family.v1.UpdateFamilySettingResponse
-	(*DeleteFamilySettingRequest)(nil),  // 7: family.v1.DeleteFamilySettingRequest
-	(*DeleteFamilySettingResponse)(nil), // 8: family.v1.DeleteFamilySettingResponse
+	(*FamilySetting)(nil),                 // 0: family.v1.FamilySetting
+	(*CreateFamilySettingRequest)(nil),    // 1: family.v1.CreateFamilySettingRequest
+	(*CreateFamilySettingResponse)(nil),   // 2: family.v1.CreateFamilySettingResponse
+	(*ListFamilySettingsRequest)(nil),     // 3: family.v1.ListFamilySettingsRequest
+	(*ListFamilySettingsResponse)(nil),    // 4: family.v1.ListFamilySettingsResponse
+	(*GetFamilySettingByKeyRequest)(nil),  // 5: family.v1.GetFamilySettingByKeyRequest
+	(*GetFamilySettingByKeyResponse)(nil), // 6: family.v1.GetFamilySettingByKeyResponse
+	(*UpdateFamilySettingRequest)(nil),    // 7: family.v1.UpdateFamilySettingRequest
+	(*UpdateFamilySettingResponse)(nil),   // 8: family.v1.UpdateFamilySettingResponse
+	(*DeleteFamilySettingRequest)(nil),    // 9: family.v1.DeleteFamilySettingRequest
+	(*DeleteFamilySettingResponse)(nil),   // 10: family.v1.DeleteFamilySettingResponse
 }
 var file_family_v1_family_proto_depIdxs = []int32{
-	0, // 0: family.v1.CreateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
-	0, // 1: family.v1.ListFamilySettingsResponse.family_settings:type_name -> family.v1.FamilySetting
-	0, // 2: family.v1.UpdateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
-	1, // 3: family.v1.FamilySettingsService.CreateFamilySetting:input_type -> family.v1.CreateFamilySettingRequest
-	3, // 4: family.v1.FamilySettingsService.ListFamilySettings:input_type -> family.v1.ListFamilySettingsRequest
-	5, // 5: family.v1.FamilySettingsService.UpdateFamilySetting:input_type -> family.v1.UpdateFamilySettingRequest
-	7, // 6: family.v1.FamilySettingsService.DeleteFamilySetting:input_type -> family.v1.DeleteFamilySettingRequest
-	2, // 7: family.v1.FamilySettingsService.CreateFamilySetting:output_type -> family.v1.CreateFamilySettingResponse
-	4, // 8: family.v1.FamilySettingsService.ListFamilySettings:output_type -> family.v1.ListFamilySettingsResponse
-	6, // 9: family.v1.FamilySettingsService.UpdateFamilySetting:output_type -> family.v1.UpdateFamilySettingResponse
-	8, // 10: family.v1.FamilySettingsService.DeleteFamilySetting:output_type -> family.v1.DeleteFamilySettingResponse
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	0,  // 0: family.v1.CreateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
+	0,  // 1: family.v1.ListFamilySettingsResponse.family_settings:type_name -> family.v1.FamilySetting
+	0,  // 2: family.v1.GetFamilySettingByKeyResponse.family_setting:type_name -> family.v1.FamilySetting
+	0,  // 3: family.v1.UpdateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
+	1,  // 4: family.v1.FamilySettingsService.CreateFamilySetting:input_type -> family.v1.CreateFamilySettingRequest
+	3,  // 5: family.v1.FamilySettingsService.ListFamilySettings:input_type -> family.v1.ListFamilySettingsRequest
+	5,  // 6: family.v1.FamilySettingsService.GetFamilySettingByKey:input_type -> family.v1.GetFamilySettingByKeyRequest
+	7,  // 7: family.v1.FamilySettingsService.UpdateFamilySetting:input_type -> family.v1.UpdateFamilySettingRequest
+	9,  // 8: family.v1.FamilySettingsService.DeleteFamilySetting:input_type -> family.v1.DeleteFamilySettingRequest
+	2,  // 9: family.v1.FamilySettingsService.CreateFamilySetting:output_type -> family.v1.CreateFamilySettingResponse
+	4,  // 10: family.v1.FamilySettingsService.ListFamilySettings:output_type -> family.v1.ListFamilySettingsResponse
+	6,  // 11: family.v1.FamilySettingsService.GetFamilySettingByKey:output_type -> family.v1.GetFamilySettingByKeyResponse
+	8,  // 12: family.v1.FamilySettingsService.UpdateFamilySetting:output_type -> family.v1.UpdateFamilySettingResponse
+	10, // 13: family.v1.FamilySettingsService.DeleteFamilySetting:output_type -> family.v1.DeleteFamilySettingResponse
+	9,  // [9:14] is the sub-list for method output_type
+	4,  // [4:9] is the sub-list for method input_type
+	4,  // [4:4] is the sub-list for extension type_name
+	4,  // [4:4] is the sub-list for extension extendee
+	0,  // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_family_v1_family_proto_init() }
@@ -555,14 +654,15 @@ func file_family_v1_family_proto_init() {
 	}
 	file_family_v1_family_proto_msgTypes[0].OneofWrappers = []any{}
 	file_family_v1_family_proto_msgTypes[1].OneofWrappers = []any{}
-	file_family_v1_family_proto_msgTypes[5].OneofWrappers = []any{}
+	file_family_v1_family_proto_msgTypes[6].OneofWrappers = []any{}
+	file_family_v1_family_proto_msgTypes[7].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_family_v1_family_proto_rawDesc), len(file_family_v1_family_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -42,6 +42,23 @@ func (q *Queries) DeleteFamilySetting(ctx context.Context, id int64) error {
 	return err
 }
 
+const getFamilySettingByKey = `-- name: GetFamilySettingByKey :one
+SELECT id, setting_key, setting_value, data_type FROM family_settings
+WHERE setting_key = ?
+`
+
+func (q *Queries) GetFamilySettingByKey(ctx context.Context, settingKey string) (*FamilySetting, error) {
+	row := q.db.QueryRowContext(ctx, getFamilySettingByKey, settingKey)
+	var i FamilySetting
+	err := row.Scan(
+		&i.ID,
+		&i.SettingKey,
+		&i.SettingValue,
+		&i.DataType,
+	)
+	return &i, err
+}
+
 const listFamilySettings = `-- name: ListFamilySettings :many
 SELECT id, setting_key, setting_value, data_type FROM family_settings
 `

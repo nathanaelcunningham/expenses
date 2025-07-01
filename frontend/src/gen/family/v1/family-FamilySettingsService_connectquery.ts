@@ -15,6 +15,11 @@ export const createFamilySetting = FamilySettingsService.method.createFamilySett
 export const listFamilySettings = FamilySettingsService.method.listFamilySettings;
 
 /**
+ * @generated from rpc family.v1.FamilySettingsService.GetFamilySettingByKey
+ */
+export const getFamilySettingByKey = FamilySettingsService.method.getFamilySettingByKey;
+
+/**
  * @generated from rpc family.v1.FamilySettingsService.UpdateFamilySetting
  */
 export const updateFamilySetting = FamilySettingsService.method.updateFamilySetting;

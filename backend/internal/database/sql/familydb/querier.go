@@ -36,6 +36,7 @@ type Querier interface {
 	GetExpensesByDateRange(ctx context.Context, arg GetExpensesByDateRangeParams) ([]*Expense, error)
 	GetFamilyMemberByEmail(ctx context.Context, email string) (*FamilyMember, error)
 	GetFamilyMemberByID(ctx context.Context, id int64) (*FamilyMember, error)
+	GetFamilySettingByKey(ctx context.Context, settingKey string) (*FamilySetting, error)
 	GetTransactionsByAccount(ctx context.Context, accountID int64) ([]*Transaction, error)
 	ListAllFamilyMembers(ctx context.Context) ([]*FamilyMember, error)
 	ListCategories(ctx context.Context) ([]*Category, error)

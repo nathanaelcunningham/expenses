@@ -48,16 +48,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get stored session ID
     const getStoredSessionId = () => {
         try {
-            return localStorage.getItem(SESSION_STORAGE_KEY);
+            const key = localStorage.getItem(SESSION_STORAGE_KEY);
+            return key ? BigInt(key) : BigInt(0);
         } catch {
             return null;
         }
     };
 
     // Store session ID
-    const storeSessionId = (sessionId: string) => {
+    const storeSessionId = (sessionId: BigInt) => {
         try {
-            localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+            localStorage.setItem(SESSION_STORAGE_KEY, sessionId.toString());
         } catch {
             // Handle localStorage not available
         }
@@ -75,7 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Validate session query
     const sessionValidationQuery = useQuery(
         validateSession,
-        { sessionId: getStoredSessionId() || "" },
+        {
+            sessionId: getStoredSessionId() || BigInt(0),
+        },
         {
             enabled: !!getStoredSessionId(),
             retry: false,
@@ -298,4 +301,3 @@ export function useAuth() {
     }
     return context;
 }
-

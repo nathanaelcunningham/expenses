@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file family/v1/family.proto.
  */
 export const file_family_v1_family: GenFile = /*@__PURE__*/
-  fileDesc("ChZmYW1pbHkvdjEvZmFtaWx5LnByb3RvEglmYW1pbHkudjEicQoNRmFtaWx5U2V0dGluZxIKCgJpZBgBIAEoAxITCgtzZXR0aW5nX2tleRgCIAEoCRIaCg1zZXR0aW5nX3ZhbHVlGAMgASgJSACIAQESEQoJZGF0YV90eXBlGAQgASgJQhAKDl9zZXR0aW5nX3ZhbHVlInIKGkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EhMKC3NldHRpbmdfa2V5GAEgASgJEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobQ3JlYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciGwoZTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdCJPChpMaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRIxCg9mYW1pbHlfc2V0dGluZ3MYASADKAsyGC5mYW1pbHkudjEuRmFtaWx5U2V0dGluZyJpChpVcGRhdGVGYW1pbHlTZXR0aW5nUmVxdWVzdBIKCgJpZBgBIAEoAxIaCg1zZXR0aW5nX3ZhbHVlGAIgASgJSACIAQESEQoJZGF0YV90eXBlGAMgASgJQhAKDl9zZXR0aW5nX3ZhbHVlIk8KG1VwZGF0ZUZhbWlseVNldHRpbmdSZXNwb25zZRIwCg5mYW1pbHlfc2V0dGluZxgBIAEoCzIYLmZhbWlseS52MS5GYW1pbHlTZXR0aW5nIigKGkRlbGV0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EgoKAmlkGAEgASgDIi4KG0RlbGV0ZUZhbWlseVNldHRpbmdSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIMqwDChVGYW1pbHlTZXR0aW5nc1NlcnZpY2USZAoTQ3JlYXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5DcmVhdGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5DcmVhdGVGYW1pbHlTZXR0aW5nUmVzcG9uc2USYQoSTGlzdEZhbWlseVNldHRpbmdzEiQuZmFtaWx5LnYxLkxpc3RGYW1pbHlTZXR0aW5nc1JlcXVlc3QaJS5mYW1pbHkudjEuTGlzdEZhbWlseVNldHRpbmdzUmVzcG9uc2USZAoTVXBkYXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5VcGRhdGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5VcGRhdGVGYW1pbHlTZXR0aW5nUmVzcG9uc2USZAoTRGVsZXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5EZWxldGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5EZWxldGVGYW1pbHlTZXR0aW5nUmVzcG9uc2VCKVonZXhwZW5zZXMtYmFja2VuZC9wa2cvZmFtaWx5L3YxO2ZhbWlseXYxYgZwcm90bzM");
+  fileDesc("ChZmYW1pbHkvdjEvZmFtaWx5LnByb3RvEglmYW1pbHkudjEicQoNRmFtaWx5U2V0dGluZxIKCgJpZBgBIAEoAxITCgtzZXR0aW5nX2tleRgCIAEoCRIaCg1zZXR0aW5nX3ZhbHVlGAMgASgJSACIAQESEQoJZGF0YV90eXBlGAQgASgJQhAKDl9zZXR0aW5nX3ZhbHVlInIKGkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EhMKC3NldHRpbmdfa2V5GAEgASgJEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobQ3JlYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciGwoZTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdCJPChpMaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRIxCg9mYW1pbHlfc2V0dGluZ3MYASADKAsyGC5mYW1pbHkudjEuRmFtaWx5U2V0dGluZyIrChxHZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXF1ZXN0EgsKA2tleRgBIAEoCSJpCh1HZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXNwb25zZRI1Cg5mYW1pbHlfc2V0dGluZxgBIAEoCzIYLmZhbWlseS52MS5GYW1pbHlTZXR0aW5nSACIAQFCEQoPX2ZhbWlseV9zZXR0aW5nImkKGlVwZGF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EgoKAmlkGAEgASgDEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobVXBkYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciKAoaRGVsZXRlRmFtaWx5U2V0dGluZ1JlcXVlc3QSCgoCaWQYASABKAMiLgobRGVsZXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgymAQKFUZhbWlseVNldHRpbmdzU2VydmljZRJkChNDcmVhdGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLkNyZWF0ZUZhbWlseVNldHRpbmdSZXNwb25zZRJhChJMaXN0RmFtaWx5U2V0dGluZ3MSJC5mYW1pbHkudjEuTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdBolLmZhbWlseS52MS5MaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRJqChVHZXRGYW1pbHlTZXR0aW5nQnlLZXkSJy5mYW1pbHkudjEuR2V0RmFtaWx5U2V0dGluZ0J5S2V5UmVxdWVzdBooLmZhbWlseS52MS5HZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXNwb25zZRJkChNVcGRhdGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLlVwZGF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLlVwZGF0ZUZhbWlseVNldHRpbmdSZXNwb25zZRJkChNEZWxldGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLkRlbGV0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLkRlbGV0ZUZhbWlseVNldHRpbmdSZXNwb25zZUIpWidleHBlbnNlcy1iYWNrZW5kL3BrZy9mYW1pbHkvdjE7ZmFtaWx5djFiBnByb3RvMw");
 
 /**
  * @generated from message family.v1.FamilySetting
@@ -119,6 +119,40 @@ export const ListFamilySettingsResponseSchema: GenMessage<ListFamilySettingsResp
   messageDesc(file_family_v1_family, 4);
 
 /**
+ * @generated from message family.v1.GetFamilySettingByKeyRequest
+ */
+export type GetFamilySettingByKeyRequest = Message<"family.v1.GetFamilySettingByKeyRequest"> & {
+  /**
+   * @generated from field: string key = 1;
+   */
+  key: string;
+};
+
+/**
+ * Describes the message family.v1.GetFamilySettingByKeyRequest.
+ * Use `create(GetFamilySettingByKeyRequestSchema)` to create a new message.
+ */
+export const GetFamilySettingByKeyRequestSchema: GenMessage<GetFamilySettingByKeyRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 5);
+
+/**
+ * @generated from message family.v1.GetFamilySettingByKeyResponse
+ */
+export type GetFamilySettingByKeyResponse = Message<"family.v1.GetFamilySettingByKeyResponse"> & {
+  /**
+   * @generated from field: optional family.v1.FamilySetting family_setting = 1;
+   */
+  familySetting?: FamilySetting;
+};
+
+/**
+ * Describes the message family.v1.GetFamilySettingByKeyResponse.
+ * Use `create(GetFamilySettingByKeyResponseSchema)` to create a new message.
+ */
+export const GetFamilySettingByKeyResponseSchema: GenMessage<GetFamilySettingByKeyResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 6);
+
+/**
  * @generated from message family.v1.UpdateFamilySettingRequest
  */
 export type UpdateFamilySettingRequest = Message<"family.v1.UpdateFamilySettingRequest"> & {
@@ -143,7 +177,7 @@ export type UpdateFamilySettingRequest = Message<"family.v1.UpdateFamilySettingR
  * Use `create(UpdateFamilySettingRequestSchema)` to create a new message.
  */
 export const UpdateFamilySettingRequestSchema: GenMessage<UpdateFamilySettingRequest> = /*@__PURE__*/
-  messageDesc(file_family_v1_family, 5);
+  messageDesc(file_family_v1_family, 7);
 
 /**
  * @generated from message family.v1.UpdateFamilySettingResponse
@@ -160,7 +194,7 @@ export type UpdateFamilySettingResponse = Message<"family.v1.UpdateFamilySetting
  * Use `create(UpdateFamilySettingResponseSchema)` to create a new message.
  */
 export const UpdateFamilySettingResponseSchema: GenMessage<UpdateFamilySettingResponse> = /*@__PURE__*/
-  messageDesc(file_family_v1_family, 6);
+  messageDesc(file_family_v1_family, 8);
 
 /**
  * @generated from message family.v1.DeleteFamilySettingRequest
@@ -177,7 +211,7 @@ export type DeleteFamilySettingRequest = Message<"family.v1.DeleteFamilySettingR
  * Use `create(DeleteFamilySettingRequestSchema)` to create a new message.
  */
 export const DeleteFamilySettingRequestSchema: GenMessage<DeleteFamilySettingRequest> = /*@__PURE__*/
-  messageDesc(file_family_v1_family, 7);
+  messageDesc(file_family_v1_family, 9);
 
 /**
  * @generated from message family.v1.DeleteFamilySettingResponse
@@ -194,7 +228,7 @@ export type DeleteFamilySettingResponse = Message<"family.v1.DeleteFamilySetting
  * Use `create(DeleteFamilySettingResponseSchema)` to create a new message.
  */
 export const DeleteFamilySettingResponseSchema: GenMessage<DeleteFamilySettingResponse> = /*@__PURE__*/
-  messageDesc(file_family_v1_family, 8);
+  messageDesc(file_family_v1_family, 10);
 
 /**
  * @generated from service family.v1.FamilySettingsService
@@ -215,6 +249,14 @@ export const FamilySettingsService: GenService<{
     methodKind: "unary";
     input: typeof ListFamilySettingsRequestSchema;
     output: typeof ListFamilySettingsResponseSchema;
+  },
+  /**
+   * @generated from rpc family.v1.FamilySettingsService.GetFamilySettingByKey
+   */
+  getFamilySettingByKey: {
+    methodKind: "unary";
+    input: typeof GetFamilySettingByKeyRequestSchema;
+    output: typeof GetFamilySettingByKeyResponseSchema;
   },
   /**
    * @generated from rpc family.v1.FamilySettingsService.UpdateFamilySetting

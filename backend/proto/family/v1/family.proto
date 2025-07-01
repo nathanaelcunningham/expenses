@@ -7,6 +7,7 @@ option go_package = "expenses-backend/pkg/family/v1;familyv1";
 service FamilySettingsService {
   rpc CreateFamilySetting(CreateFamilySettingRequest) returns (CreateFamilySettingResponse);
   rpc ListFamilySettings(ListFamilySettingsRequest) returns (ListFamilySettingsResponse);
+  rpc GetFamilySettingByKey(GetFamilySettingByKeyRequest) returns (GetFamilySettingByKeyResponse);
   rpc UpdateFamilySetting(UpdateFamilySettingRequest) returns (UpdateFamilySettingResponse);
   rpc DeleteFamilySetting(DeleteFamilySettingRequest) returns (DeleteFamilySettingResponse);
 }
@@ -32,6 +33,14 @@ message ListFamilySettingsRequest {}
 
 message ListFamilySettingsResponse {
   repeated FamilySetting family_settings = 1;
+}
+
+message GetFamilySettingByKeyRequest {
+  string key = 1;
+}
+
+message GetFamilySettingByKeyResponse {
+  optional FamilySetting family_setting = 1;
 }
 
 message UpdateFamilySettingRequest {

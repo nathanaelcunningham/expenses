@@ -39,6 +39,9 @@ const (
 	// FamilySettingsServiceListFamilySettingsProcedure is the fully-qualified name of the
 	// FamilySettingsService's ListFamilySettings RPC.
 	FamilySettingsServiceListFamilySettingsProcedure = "/family.v1.FamilySettingsService/ListFamilySettings"
+	// FamilySettingsServiceGetFamilySettingByKeyProcedure is the fully-qualified name of the
+	// FamilySettingsService's GetFamilySettingByKey RPC.
+	FamilySettingsServiceGetFamilySettingByKeyProcedure = "/family.v1.FamilySettingsService/GetFamilySettingByKey"
 	// FamilySettingsServiceUpdateFamilySettingProcedure is the fully-qualified name of the
 	// FamilySettingsService's UpdateFamilySetting RPC.
 	FamilySettingsServiceUpdateFamilySettingProcedure = "/family.v1.FamilySettingsService/UpdateFamilySetting"
@@ -51,6 +54,7 @@ const (
 type FamilySettingsServiceClient interface {
 	CreateFamilySetting(context.Context, *connect.Request[v1.CreateFamilySettingRequest]) (*connect.Response[v1.CreateFamilySettingResponse], error)
 	ListFamilySettings(context.Context, *connect.Request[v1.ListFamilySettingsRequest]) (*connect.Response[v1.ListFamilySettingsResponse], error)
+	GetFamilySettingByKey(context.Context, *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error)
 	UpdateFamilySetting(context.Context, *connect.Request[v1.UpdateFamilySettingRequest]) (*connect.Response[v1.UpdateFamilySettingResponse], error)
 	DeleteFamilySetting(context.Context, *connect.Request[v1.DeleteFamilySettingRequest]) (*connect.Response[v1.DeleteFamilySettingResponse], error)
 }
@@ -78,6 +82,12 @@ func NewFamilySettingsServiceClient(httpClient connect.HTTPClient, baseURL strin
 			connect.WithSchema(familySettingsServiceMethods.ByName("ListFamilySettings")),
 			connect.WithClientOptions(opts...),
 		),
+		getFamilySettingByKey: connect.NewClient[v1.GetFamilySettingByKeyRequest, v1.GetFamilySettingByKeyResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceGetFamilySettingByKeyProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("GetFamilySettingByKey")),
+			connect.WithClientOptions(opts...),
+		),
 		updateFamilySetting: connect.NewClient[v1.UpdateFamilySettingRequest, v1.UpdateFamilySettingResponse](
 			httpClient,
 			baseURL+FamilySettingsServiceUpdateFamilySettingProcedure,
@@ -95,10 +105,11 @@ func NewFamilySettingsServiceClient(httpClient connect.HTTPClient, baseURL strin
 
 // familySettingsServiceClient implements FamilySettingsServiceClient.
 type familySettingsServiceClient struct {
-	createFamilySetting *connect.Client[v1.CreateFamilySettingRequest, v1.CreateFamilySettingResponse]
-	listFamilySettings  *connect.Client[v1.ListFamilySettingsRequest, v1.ListFamilySettingsResponse]
-	updateFamilySetting *connect.Client[v1.UpdateFamilySettingRequest, v1.UpdateFamilySettingResponse]
-	deleteFamilySetting *connect.Client[v1.DeleteFamilySettingRequest, v1.DeleteFamilySettingResponse]
+	createFamilySetting   *connect.Client[v1.CreateFamilySettingRequest, v1.CreateFamilySettingResponse]
+	listFamilySettings    *connect.Client[v1.ListFamilySettingsRequest, v1.ListFamilySettingsResponse]
+	getFamilySettingByKey *connect.Client[v1.GetFamilySettingByKeyRequest, v1.GetFamilySettingByKeyResponse]
+	updateFamilySetting   *connect.Client[v1.UpdateFamilySettingRequest, v1.UpdateFamilySettingResponse]
+	deleteFamilySetting   *connect.Client[v1.DeleteFamilySettingRequest, v1.DeleteFamilySettingResponse]
 }
 
 // CreateFamilySetting calls family.v1.FamilySettingsService.CreateFamilySetting.
@@ -109,6 +120,11 @@ func (c *familySettingsServiceClient) CreateFamilySetting(ctx context.Context, r
 // ListFamilySettings calls family.v1.FamilySettingsService.ListFamilySettings.
 func (c *familySettingsServiceClient) ListFamilySettings(ctx context.Context, req *connect.Request[v1.ListFamilySettingsRequest]) (*connect.Response[v1.ListFamilySettingsResponse], error) {
 	return c.listFamilySettings.CallUnary(ctx, req)
+}
+
+// GetFamilySettingByKey calls family.v1.FamilySettingsService.GetFamilySettingByKey.
+func (c *familySettingsServiceClient) GetFamilySettingByKey(ctx context.Context, req *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error) {
+	return c.getFamilySettingByKey.CallUnary(ctx, req)
 }
 
 // UpdateFamilySetting calls family.v1.FamilySettingsService.UpdateFamilySetting.
@@ -125,6 +141,7 @@ func (c *familySettingsServiceClient) DeleteFamilySetting(ctx context.Context, r
 type FamilySettingsServiceHandler interface {
 	CreateFamilySetting(context.Context, *connect.Request[v1.CreateFamilySettingRequest]) (*connect.Response[v1.CreateFamilySettingResponse], error)
 	ListFamilySettings(context.Context, *connect.Request[v1.ListFamilySettingsRequest]) (*connect.Response[v1.ListFamilySettingsResponse], error)
+	GetFamilySettingByKey(context.Context, *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error)
 	UpdateFamilySetting(context.Context, *connect.Request[v1.UpdateFamilySettingRequest]) (*connect.Response[v1.UpdateFamilySettingResponse], error)
 	DeleteFamilySetting(context.Context, *connect.Request[v1.DeleteFamilySettingRequest]) (*connect.Response[v1.DeleteFamilySettingResponse], error)
 }
@@ -148,6 +165,12 @@ func NewFamilySettingsServiceHandler(svc FamilySettingsServiceHandler, opts ...c
 		connect.WithSchema(familySettingsServiceMethods.ByName("ListFamilySettings")),
 		connect.WithHandlerOptions(opts...),
 	)
+	familySettingsServiceGetFamilySettingByKeyHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceGetFamilySettingByKeyProcedure,
+		svc.GetFamilySettingByKey,
+		connect.WithSchema(familySettingsServiceMethods.ByName("GetFamilySettingByKey")),
+		connect.WithHandlerOptions(opts...),
+	)
 	familySettingsServiceUpdateFamilySettingHandler := connect.NewUnaryHandler(
 		FamilySettingsServiceUpdateFamilySettingProcedure,
 		svc.UpdateFamilySetting,
@@ -166,6 +189,8 @@ func NewFamilySettingsServiceHandler(svc FamilySettingsServiceHandler, opts ...c
 			familySettingsServiceCreateFamilySettingHandler.ServeHTTP(w, r)
 		case FamilySettingsServiceListFamilySettingsProcedure:
 			familySettingsServiceListFamilySettingsHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceGetFamilySettingByKeyProcedure:
+			familySettingsServiceGetFamilySettingByKeyHandler.ServeHTTP(w, r)
 		case FamilySettingsServiceUpdateFamilySettingProcedure:
 			familySettingsServiceUpdateFamilySettingHandler.ServeHTTP(w, r)
 		case FamilySettingsServiceDeleteFamilySettingProcedure:
@@ -185,6 +210,10 @@ func (UnimplementedFamilySettingsServiceHandler) CreateFamilySetting(context.Con
 
 func (UnimplementedFamilySettingsServiceHandler) ListFamilySettings(context.Context, *connect.Request[v1.ListFamilySettingsRequest]) (*connect.Response[v1.ListFamilySettingsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.ListFamilySettings is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) GetFamilySettingByKey(context.Context, *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.GetFamilySettingByKey is not implemented"))
 }
 
 func (UnimplementedFamilySettingsServiceHandler) UpdateFamilySetting(context.Context, *connect.Request[v1.UpdateFamilySettingRequest]) (*connect.Response[v1.UpdateFamilySettingResponse], error) {

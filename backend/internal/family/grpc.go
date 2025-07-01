@@ -2,6 +2,8 @@ package family
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	appcontext "expenses-backend/internal/context"
 	"expenses-backend/internal/database/sql/familydb"
@@ -66,6 +68,36 @@ func (s *Service) ListFamilySettings(ctx context.Context, req *connect.Request[v
 
 	return connect.NewResponse(&v1.ListFamilySettingsResponse{
 		FamilySettings: resp,
+	}), nil
+}
+
+func (s *Service) GetFamilySettingByKey(ctx context.Context, req *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error) {
+	authCtx, err := appcontext.RequireFamily(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	queries, err := s.dbManager.GetFamilyQueries(int(authCtx.FamilyID))
+	if err != nil {
+		return nil, err
+	}
+
+	setting, err := queries.GetFamilySettingByKey(ctx, req.Msg.Key)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return connect.NewResponse(&v1.GetFamilySettingByKeyResponse{}), nil
+		}
+
+		return nil, err
+	}
+
+	return connect.NewResponse(&v1.GetFamilySettingByKeyResponse{
+		FamilySetting: &v1.FamilySetting{
+			Id:           setting.ID,
+			SettingKey:   setting.SettingKey,
+			SettingValue: setting.SettingValue,
+			DataType:     setting.DataType,
+		},
 	}), nil
 }
 
