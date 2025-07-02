@@ -8,3 +8,13 @@ import { TransactionService } from "./transaction_pb";
  * @generated from rpc transaction.v1.TransactionService.GetAccounts
  */
 export const getAccounts = TransactionService.method.getAccounts;
+
+/**
+ * @generated from rpc transaction.v1.TransactionService.GetSimplefinAccounts
+ */
+export const getSimplefinAccounts = TransactionService.method.getSimplefinAccounts;
+
+/**
+ * @generated from rpc transaction.v1.TransactionService.AddAccount
+ */
+export const addAccount = TransactionService.method.addAccount;

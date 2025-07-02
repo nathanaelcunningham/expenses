@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file transaction/v1/transaction.proto.
  */
 export const file_transaction_v1_transaction: GenFile = /*@__PURE__*/
-  fileDesc("CiB0cmFuc2FjdGlvbi92MS90cmFuc2FjdGlvbi5wcm90bxIOdHJhbnNhY3Rpb24udjEiLAoMT3JnYW5pemF0aW9uEg4KBmRvbWFpbhgBIAEoCRIMCgRuYW1lGAIgASgJItYBCgtUcmFuc2FjdGlvbhIKCgJpZBgBIAEoCRIqCgZwb3N0ZWQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBmFtb3VudBgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRI2Cg10cmFuc2FjdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBEhQKB3BlbmRpbmcYBiABKAhIAYgBAUIQCg5fdHJhbnNhY3RlZF9hdEIKCghfcGVuZGluZyKMAgoHQWNjb3VudBIKCgJpZBgBIAEoCRIpCgNvcmcYAiABKAsyHC50cmFuc2FjdGlvbi52MS5Pcmdhbml6YXRpb24SDAoEbmFtZRgDIAEoCRIQCghjdXJyZW5jeRgEIAEoCRIPCgdiYWxhbmNlGAUgASgJEh4KEWF2YWlsYWJsZV9iYWxhbmNlGAYgASgJSACIAQESMAoMYmFsYW5jZV9kYXRlGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCgx0cmFuc2FjdGlvbnMYCCADKAsyGy50cmFuc2FjdGlvbi52MS5UcmFuc2FjdGlvbkIUChJfYXZhaWxhYmxlX2JhbGFuY2UiFAoSR2V0QWNjb3VudHNSZXF1ZXN0IkAKE0dldEFjY291bnRzUmVzcG9uc2USKQoIYWNjb3VudHMYASADKAsyFy50cmFuc2FjdGlvbi52MS5BY2NvdW50MmwKElRyYW5zYWN0aW9uU2VydmljZRJWCgtHZXRBY2NvdW50cxIiLnRyYW5zYWN0aW9uLnYxLkdldEFjY291bnRzUmVxdWVzdBojLnRyYW5zYWN0aW9uLnYxLkdldEFjY291bnRzUmVzcG9uc2VCM1oxZXhwZW5zZXMtYmFja2VuZC9wa2cvdHJhbnNhY3Rpb24vdjE7dHJhbnNhY3Rpb252MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("CiB0cmFuc2FjdGlvbi92MS90cmFuc2FjdGlvbi5wcm90bxIOdHJhbnNhY3Rpb24udjEiLAoMT3JnYW5pemF0aW9uEg4KBmRvbWFpbhgBIAEoCRIMCgRuYW1lGAIgASgJItYBCgtUcmFuc2FjdGlvbhIKCgJpZBgBIAEoCRIqCgZwb3N0ZWQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg4KBmFtb3VudBgDIAEoCRITCgtkZXNjcmlwdGlvbhgEIAEoCRI2Cg10cmFuc2FjdGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcEgAiAEBEhQKB3BlbmRpbmcYBiABKAhIAYgBAUIQCg5fdHJhbnNhY3RlZF9hdEIKCghfcGVuZGluZyI3CgdBY2NvdW50EgoKAmlkGAEgASgDEhIKCmFjY291bnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCSKVAgoQU2ltcGxlZmluQWNjb3VudBIKCgJpZBgBIAEoCRIpCgNvcmcYAiABKAsyHC50cmFuc2FjdGlvbi52MS5Pcmdhbml6YXRpb24SDAoEbmFtZRgDIAEoCRIQCghjdXJyZW5jeRgEIAEoCRIPCgdiYWxhbmNlGAUgASgJEh4KEWF2YWlsYWJsZV9iYWxhbmNlGAYgASgJSACIAQESMAoMYmFsYW5jZV9kYXRlGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIxCgx0cmFuc2FjdGlvbnMYCCADKAsyGy50cmFuc2FjdGlvbi52MS5UcmFuc2FjdGlvbkIUChJfYXZhaWxhYmxlX2JhbGFuY2UiHQobR2V0U2ltcGxlZmluQWNjb3VudHNSZXF1ZXN0IlIKHEdldFNpbXBsZWZpbkFjY291bnRzUmVzcG9uc2USMgoIYWNjb3VudHMYASADKAsyIC50cmFuc2FjdGlvbi52MS5TaW1wbGVmaW5BY2NvdW50IhQKEkdldEFjY291bnRzUmVxdWVzdCJAChNHZXRBY2NvdW50c1Jlc3BvbnNlEikKCGFjY291bnRzGAEgAygLMhcudHJhbnNhY3Rpb24udjEuQWNjb3VudCI1ChFBZGRBY2NvdW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEhIKCmFjY291bnRfaWQYAiABKAkiPgoSQWRkQWNjb3VudFJlc3BvbnNlEigKB2FjY291bnQYASABKAsyFy50cmFuc2FjdGlvbi52MS5BY2NvdW50MrQCChJUcmFuc2FjdGlvblNlcnZpY2USVgoLR2V0QWNjb3VudHMSIi50cmFuc2FjdGlvbi52MS5HZXRBY2NvdW50c1JlcXVlc3QaIy50cmFuc2FjdGlvbi52MS5HZXRBY2NvdW50c1Jlc3BvbnNlEnEKFEdldFNpbXBsZWZpbkFjY291bnRzEisudHJhbnNhY3Rpb24udjEuR2V0U2ltcGxlZmluQWNjb3VudHNSZXF1ZXN0GiwudHJhbnNhY3Rpb24udjEuR2V0U2ltcGxlZmluQWNjb3VudHNSZXNwb25zZRJTCgpBZGRBY2NvdW50EiEudHJhbnNhY3Rpb24udjEuQWRkQWNjb3VudFJlcXVlc3QaIi50cmFuc2FjdGlvbi52MS5BZGRBY2NvdW50UmVzcG9uc2VCM1oxZXhwZW5zZXMtYmFja2VuZC9wa2cvdHJhbnNhY3Rpb24vdjE7dHJhbnNhY3Rpb252MWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message transaction.v1.Organization
@@ -83,6 +83,33 @@ export const TransactionSchema: GenMessage<Transaction> = /*@__PURE__*/
  */
 export type Account = Message<"transaction.v1.Account"> & {
   /**
+   * @generated from field: int64 id = 1;
+   */
+  id: bigint;
+
+  /**
+   * @generated from field: string account_id = 2;
+   */
+  accountId: string;
+
+  /**
+   * @generated from field: string name = 3;
+   */
+  name: string;
+};
+
+/**
+ * Describes the message transaction.v1.Account.
+ * Use `create(AccountSchema)` to create a new message.
+ */
+export const AccountSchema: GenMessage<Account> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 2);
+
+/**
+ * @generated from message transaction.v1.SimplefinAccount
+ */
+export type SimplefinAccount = Message<"transaction.v1.SimplefinAccount"> & {
+  /**
    * @generated from field: string id = 1;
    */
   id: string;
@@ -124,11 +151,41 @@ export type Account = Message<"transaction.v1.Account"> & {
 };
 
 /**
- * Describes the message transaction.v1.Account.
- * Use `create(AccountSchema)` to create a new message.
+ * Describes the message transaction.v1.SimplefinAccount.
+ * Use `create(SimplefinAccountSchema)` to create a new message.
  */
-export const AccountSchema: GenMessage<Account> = /*@__PURE__*/
-  messageDesc(file_transaction_v1_transaction, 2);
+export const SimplefinAccountSchema: GenMessage<SimplefinAccount> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 3);
+
+/**
+ * @generated from message transaction.v1.GetSimplefinAccountsRequest
+ */
+export type GetSimplefinAccountsRequest = Message<"transaction.v1.GetSimplefinAccountsRequest"> & {
+};
+
+/**
+ * Describes the message transaction.v1.GetSimplefinAccountsRequest.
+ * Use `create(GetSimplefinAccountsRequestSchema)` to create a new message.
+ */
+export const GetSimplefinAccountsRequestSchema: GenMessage<GetSimplefinAccountsRequest> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 4);
+
+/**
+ * @generated from message transaction.v1.GetSimplefinAccountsResponse
+ */
+export type GetSimplefinAccountsResponse = Message<"transaction.v1.GetSimplefinAccountsResponse"> & {
+  /**
+   * @generated from field: repeated transaction.v1.SimplefinAccount accounts = 1;
+   */
+  accounts: SimplefinAccount[];
+};
+
+/**
+ * Describes the message transaction.v1.GetSimplefinAccountsResponse.
+ * Use `create(GetSimplefinAccountsResponseSchema)` to create a new message.
+ */
+export const GetSimplefinAccountsResponseSchema: GenMessage<GetSimplefinAccountsResponse> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 5);
 
 /**
  * @generated from message transaction.v1.GetAccountsRequest
@@ -141,7 +198,7 @@ export type GetAccountsRequest = Message<"transaction.v1.GetAccountsRequest"> & 
  * Use `create(GetAccountsRequestSchema)` to create a new message.
  */
 export const GetAccountsRequestSchema: GenMessage<GetAccountsRequest> = /*@__PURE__*/
-  messageDesc(file_transaction_v1_transaction, 3);
+  messageDesc(file_transaction_v1_transaction, 6);
 
 /**
  * @generated from message transaction.v1.GetAccountsResponse
@@ -158,7 +215,46 @@ export type GetAccountsResponse = Message<"transaction.v1.GetAccountsResponse"> 
  * Use `create(GetAccountsResponseSchema)` to create a new message.
  */
 export const GetAccountsResponseSchema: GenMessage<GetAccountsResponse> = /*@__PURE__*/
-  messageDesc(file_transaction_v1_transaction, 4);
+  messageDesc(file_transaction_v1_transaction, 7);
+
+/**
+ * @generated from message transaction.v1.AddAccountRequest
+ */
+export type AddAccountRequest = Message<"transaction.v1.AddAccountRequest"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string account_id = 2;
+   */
+  accountId: string;
+};
+
+/**
+ * Describes the message transaction.v1.AddAccountRequest.
+ * Use `create(AddAccountRequestSchema)` to create a new message.
+ */
+export const AddAccountRequestSchema: GenMessage<AddAccountRequest> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 8);
+
+/**
+ * @generated from message transaction.v1.AddAccountResponse
+ */
+export type AddAccountResponse = Message<"transaction.v1.AddAccountResponse"> & {
+  /**
+   * @generated from field: transaction.v1.Account account = 1;
+   */
+  account?: Account;
+};
+
+/**
+ * Describes the message transaction.v1.AddAccountResponse.
+ * Use `create(AddAccountResponseSchema)` to create a new message.
+ */
+export const AddAccountResponseSchema: GenMessage<AddAccountResponse> = /*@__PURE__*/
+  messageDesc(file_transaction_v1_transaction, 9);
 
 /**
  * @generated from service transaction.v1.TransactionService
@@ -171,6 +267,22 @@ export const TransactionService: GenService<{
     methodKind: "unary";
     input: typeof GetAccountsRequestSchema;
     output: typeof GetAccountsResponseSchema;
+  },
+  /**
+   * @generated from rpc transaction.v1.TransactionService.GetSimplefinAccounts
+   */
+  getSimplefinAccounts: {
+    methodKind: "unary";
+    input: typeof GetSimplefinAccountsRequestSchema;
+    output: typeof GetSimplefinAccountsResponseSchema;
+  },
+  /**
+   * @generated from rpc transaction.v1.TransactionService.AddAccount
+   */
+  addAccount: {
+    methodKind: "unary";
+    input: typeof AddAccountRequestSchema;
+    output: typeof AddAccountResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_transaction_v1_transaction, 0);

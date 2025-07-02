@@ -1,15 +1,36 @@
-import { getFamilySettingByKey } from "@/gen/family/v1/family-FamilySettingsService_connectquery";
-import { useQuery } from "@connectrpc/connect-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { AccountsWrapper } from "@/components/AccountWrapper";
+import {
+    addAccount,
+    getAccounts,
+} from "@/gen/transaction/v1/transaction-TransactionService_connectquery";
+import type { SimplefinAccount } from "@/gen/transaction/v1/transaction_pb";
+import { useMutation, useQuery } from "@connectrpc/connect-query";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/accounts")({
-    component: TransactionAccounts,
+    component: () => (
+        <AccountsWrapper>
+            <TransactionAccounts />
+        </AccountsWrapper>
+    ),
 });
 
 function TransactionAccounts() {
-    const { data, isLoading, error } = useQuery(getFamilySettingByKey, {
-        key: "simplefin_token",
-    });
+    const { data, isLoading, error } = useQuery(getAccounts);
+
+    const insertAccount = useMutation(addAccount);
+
+    async function handleInsertAccount(account: SimplefinAccount) {
+        try {
+            await insertAccount.mutateAsync({
+                accountId: account.id,
+                name: account.name,
+            });
+        } catch (e) {
+            window.alert(e);
+        }
+    }
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -26,22 +47,16 @@ function TransactionAccounts() {
         } else return <div>Error loading tranaction accounts</div>;
     }
 
-    if (!data.familySetting) {
-        return (
-            <div>
-                <p>You have not added a simplefin token.</p>
-                <button>
-                    <Link to={`/settings`}>Click here to go to settings</Link>
-                </button>
-            </div>
-        );
-    }
-    //
-    // return (
-    //     <div className="flex flex-col">
-    //         {data.accounts.map((account) => (
-    //             <div>{account.name}</div>
-    //         ))}
-    //     </div>
-    // );
+    return (
+        <div className="flex flex-col">
+            {data.accounts.map((account) => (
+                <>
+                    <div>{account.name}</div>
+                    <button onClick={() => handleInsertAccount(account)}>
+                        Add Account
+                    </button>
+                </>
+            ))}
+        </div>
+    );
 }

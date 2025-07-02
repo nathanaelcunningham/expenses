@@ -11,26 +11,20 @@ import (
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (account_id,name,simplefin_id)
-VALUES (?,?,?)
-RETURNING id, account_id, name, simplefin_id
+INSERT INTO accounts (account_id,name)
+VALUES (?,?)
+RETURNING id, account_id, name
 `
 
 type CreateAccountParams struct {
-	AccountID   string `json:"account_id"`
-	Name        string `json:"name"`
-	SimplefinID int64  `json:"simplefin_id"`
+	AccountID string `json:"account_id"`
+	Name      string `json:"name"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (*Account, error) {
-	row := q.db.QueryRowContext(ctx, createAccount, arg.AccountID, arg.Name, arg.SimplefinID)
+	row := q.db.QueryRowContext(ctx, createAccount, arg.AccountID, arg.Name)
 	var i Account
-	err := row.Scan(
-		&i.ID,
-		&i.AccountID,
-		&i.Name,
-		&i.SimplefinID,
-	)
+	err := row.Scan(&i.ID, &i.AccountID, &i.Name)
 	return &i, err
 }
 
@@ -75,7 +69,7 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 }
 
 const getAccounts = `-- name: GetAccounts :many
-SELECT id, account_id, name, simplefin_id FROM accounts
+SELECT id, account_id, name FROM accounts
 `
 
 func (q *Queries) GetAccounts(ctx context.Context) ([]*Account, error) {
@@ -87,12 +81,7 @@ func (q *Queries) GetAccounts(ctx context.Context) ([]*Account, error) {
 	items := []*Account{}
 	for rows.Next() {
 		var i Account
-		if err := rows.Scan(
-			&i.ID,
-			&i.AccountID,
-			&i.Name,
-			&i.SimplefinID,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.AccountID, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

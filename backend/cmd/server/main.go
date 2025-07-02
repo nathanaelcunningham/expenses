@@ -11,7 +11,6 @@ import (
 	"expenses-backend/internal/expense"
 	"expenses-backend/internal/family"
 	"expenses-backend/internal/middleware"
-	"expenses-backend/internal/simplefin"
 	"expenses-backend/internal/transaction"
 	"expenses-backend/pkg/auth/v1/authv1connect"
 	"expenses-backend/pkg/expense/v1/expensev1connect"
@@ -40,11 +39,6 @@ func main() {
 		ApiToken:     os.Getenv("TURSO_API_TOKEN"),
 		Organization: os.Getenv("TURSO_ORGANIZATION"),
 	})
-
-	simplefinClient, err := simplefin.NewClient(os.Getenv("SIMPLEFIN_ACCESS_TOKEN"))
-	if err != nil {
-		panic(err)
-	}
 
 	masterDB, err := tursoClient.Connect(context.Background(), os.Getenv("TURSO_MASTER_DB_URL"))
 	if err != nil {
@@ -76,7 +70,7 @@ func main() {
 	familyService := family.NewService(dbManager, log)
 	authService := auth.NewService(dbManager, familyService, log)
 	expenseService := expense.NewService(dbManager, log)
-	transactionService := transaction.NewService(dbManager, log, simplefinClient)
+	transactionService := transaction.NewService(dbManager, log)
 
 	// Initialize middleware
 	authInterceptor := middleware.NewAuthInterceptor(authService, dbManager, log)

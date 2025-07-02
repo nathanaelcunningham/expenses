@@ -8,6 +8,8 @@ option go_package = "expenses-backend/pkg/transaction/v1;transactionv1";
 
 service TransactionService {
   rpc GetAccounts(GetAccountsRequest) returns (GetAccountsResponse);
+  rpc GetSimplefinAccounts(GetSimplefinAccountsRequest) returns (GetSimplefinAccountsResponse);
+  rpc AddAccount(AddAccountRequest) returns (AddAccountResponse);
 }
 
 message Organization {
@@ -25,6 +27,12 @@ message Transaction {
 }
 
 message Account {
+  int64 id = 1;
+  string account_id = 2;
+  string name = 3;
+}
+
+message SimplefinAccount {
   string id = 1;
   Organization org = 2;
   string name = 3;
@@ -35,8 +43,23 @@ message Account {
   repeated Transaction transactions = 8;
 }
 
+message GetSimplefinAccountsRequest {}
+
+message GetSimplefinAccountsResponse {
+  repeated SimplefinAccount accounts = 1;
+}
+
 message GetAccountsRequest {}
 
 message GetAccountsResponse {
   repeated Account accounts = 1;
+}
+
+message AddAccountRequest {
+  string name = 1;
+  string account_id = 2;
+}
+
+message AddAccountResponse {
+  Account account = 1;
 }

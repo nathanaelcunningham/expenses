@@ -1,6 +1,6 @@
 -- name: CreateAccount :one
-INSERT INTO accounts (account_id,name,simplefin_id)
-VALUES (?,?,?)
+INSERT INTO accounts (account_id,name)
+VALUES (?,?)
 RETURNING *;
 
 -- name: GetAccounts :many

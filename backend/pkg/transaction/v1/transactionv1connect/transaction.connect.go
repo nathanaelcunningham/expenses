@@ -36,11 +36,19 @@ const (
 	// TransactionServiceGetAccountsProcedure is the fully-qualified name of the TransactionService's
 	// GetAccounts RPC.
 	TransactionServiceGetAccountsProcedure = "/transaction.v1.TransactionService/GetAccounts"
+	// TransactionServiceGetSimplefinAccountsProcedure is the fully-qualified name of the
+	// TransactionService's GetSimplefinAccounts RPC.
+	TransactionServiceGetSimplefinAccountsProcedure = "/transaction.v1.TransactionService/GetSimplefinAccounts"
+	// TransactionServiceAddAccountProcedure is the fully-qualified name of the TransactionService's
+	// AddAccount RPC.
+	TransactionServiceAddAccountProcedure = "/transaction.v1.TransactionService/AddAccount"
 )
 
 // TransactionServiceClient is a client for the transaction.v1.TransactionService service.
 type TransactionServiceClient interface {
 	GetAccounts(context.Context, *connect.Request[v1.GetAccountsRequest]) (*connect.Response[v1.GetAccountsResponse], error)
+	GetSimplefinAccounts(context.Context, *connect.Request[v1.GetSimplefinAccountsRequest]) (*connect.Response[v1.GetSimplefinAccountsResponse], error)
+	AddAccount(context.Context, *connect.Request[v1.AddAccountRequest]) (*connect.Response[v1.AddAccountResponse], error)
 }
 
 // NewTransactionServiceClient constructs a client for the transaction.v1.TransactionService
@@ -60,12 +68,26 @@ func NewTransactionServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(transactionServiceMethods.ByName("GetAccounts")),
 			connect.WithClientOptions(opts...),
 		),
+		getSimplefinAccounts: connect.NewClient[v1.GetSimplefinAccountsRequest, v1.GetSimplefinAccountsResponse](
+			httpClient,
+			baseURL+TransactionServiceGetSimplefinAccountsProcedure,
+			connect.WithSchema(transactionServiceMethods.ByName("GetSimplefinAccounts")),
+			connect.WithClientOptions(opts...),
+		),
+		addAccount: connect.NewClient[v1.AddAccountRequest, v1.AddAccountResponse](
+			httpClient,
+			baseURL+TransactionServiceAddAccountProcedure,
+			connect.WithSchema(transactionServiceMethods.ByName("AddAccount")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // transactionServiceClient implements TransactionServiceClient.
 type transactionServiceClient struct {
-	getAccounts *connect.Client[v1.GetAccountsRequest, v1.GetAccountsResponse]
+	getAccounts          *connect.Client[v1.GetAccountsRequest, v1.GetAccountsResponse]
+	getSimplefinAccounts *connect.Client[v1.GetSimplefinAccountsRequest, v1.GetSimplefinAccountsResponse]
+	addAccount           *connect.Client[v1.AddAccountRequest, v1.AddAccountResponse]
 }
 
 // GetAccounts calls transaction.v1.TransactionService.GetAccounts.
@@ -73,9 +95,21 @@ func (c *transactionServiceClient) GetAccounts(ctx context.Context, req *connect
 	return c.getAccounts.CallUnary(ctx, req)
 }
 
+// GetSimplefinAccounts calls transaction.v1.TransactionService.GetSimplefinAccounts.
+func (c *transactionServiceClient) GetSimplefinAccounts(ctx context.Context, req *connect.Request[v1.GetSimplefinAccountsRequest]) (*connect.Response[v1.GetSimplefinAccountsResponse], error) {
+	return c.getSimplefinAccounts.CallUnary(ctx, req)
+}
+
+// AddAccount calls transaction.v1.TransactionService.AddAccount.
+func (c *transactionServiceClient) AddAccount(ctx context.Context, req *connect.Request[v1.AddAccountRequest]) (*connect.Response[v1.AddAccountResponse], error) {
+	return c.addAccount.CallUnary(ctx, req)
+}
+
 // TransactionServiceHandler is an implementation of the transaction.v1.TransactionService service.
 type TransactionServiceHandler interface {
 	GetAccounts(context.Context, *connect.Request[v1.GetAccountsRequest]) (*connect.Response[v1.GetAccountsResponse], error)
+	GetSimplefinAccounts(context.Context, *connect.Request[v1.GetSimplefinAccountsRequest]) (*connect.Response[v1.GetSimplefinAccountsResponse], error)
+	AddAccount(context.Context, *connect.Request[v1.AddAccountRequest]) (*connect.Response[v1.AddAccountResponse], error)
 }
 
 // NewTransactionServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -91,10 +125,26 @@ func NewTransactionServiceHandler(svc TransactionServiceHandler, opts ...connect
 		connect.WithSchema(transactionServiceMethods.ByName("GetAccounts")),
 		connect.WithHandlerOptions(opts...),
 	)
+	transactionServiceGetSimplefinAccountsHandler := connect.NewUnaryHandler(
+		TransactionServiceGetSimplefinAccountsProcedure,
+		svc.GetSimplefinAccounts,
+		connect.WithSchema(transactionServiceMethods.ByName("GetSimplefinAccounts")),
+		connect.WithHandlerOptions(opts...),
+	)
+	transactionServiceAddAccountHandler := connect.NewUnaryHandler(
+		TransactionServiceAddAccountProcedure,
+		svc.AddAccount,
+		connect.WithSchema(transactionServiceMethods.ByName("AddAccount")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/transaction.v1.TransactionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TransactionServiceGetAccountsProcedure:
 			transactionServiceGetAccountsHandler.ServeHTTP(w, r)
+		case TransactionServiceGetSimplefinAccountsProcedure:
+			transactionServiceGetSimplefinAccountsHandler.ServeHTTP(w, r)
+		case TransactionServiceAddAccountProcedure:
+			transactionServiceAddAccountHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -106,4 +156,12 @@ type UnimplementedTransactionServiceHandler struct{}
 
 func (UnimplementedTransactionServiceHandler) GetAccounts(context.Context, *connect.Request[v1.GetAccountsRequest]) (*connect.Response[v1.GetAccountsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("transaction.v1.TransactionService.GetAccounts is not implemented"))
+}
+
+func (UnimplementedTransactionServiceHandler) GetSimplefinAccounts(context.Context, *connect.Request[v1.GetSimplefinAccountsRequest]) (*connect.Response[v1.GetSimplefinAccountsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("transaction.v1.TransactionService.GetSimplefinAccounts is not implemented"))
+}
+
+func (UnimplementedTransactionServiceHandler) AddAccount(context.Context, *connect.Request[v1.AddAccountRequest]) (*connect.Response[v1.AddAccountResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("transaction.v1.TransactionService.AddAccount is not implemented"))
 }

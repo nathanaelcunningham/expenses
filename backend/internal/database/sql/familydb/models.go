@@ -9,10 +9,9 @@ import (
 )
 
 type Account struct {
-	ID          int64  `json:"id"`
-	AccountID   string `json:"account_id"`
-	Name        string `json:"name"`
-	SimplefinID int64  `json:"simplefin_id"`
+	ID        int64  `json:"id"`
+	AccountID string `json:"account_id"`
+	Name      string `json:"name"`
 }
 
 type Category struct {

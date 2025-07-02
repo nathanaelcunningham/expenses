@@ -159,17 +159,12 @@ func (x *Transaction) GetPending() bool {
 }
 
 type Account struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Org              *Organization          `protobuf:"bytes,2,opt,name=org,proto3" json:"org,omitempty"`
-	Name             string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	Currency         string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
-	Balance          string                 `protobuf:"bytes,5,opt,name=balance,proto3" json:"balance,omitempty"`
-	AvailableBalance *string                `protobuf:"bytes,6,opt,name=available_balance,json=availableBalance,proto3,oneof" json:"available_balance,omitempty"`
-	BalanceDate      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=balance_date,json=balanceDate,proto3" json:"balance_date,omitempty"`
-	Transactions     []*Transaction         `protobuf:"bytes,8,rep,name=transactions,proto3" json:"transactions,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Account) Reset() {
@@ -202,18 +197,18 @@ func (*Account) Descriptor() ([]byte, []int) {
 	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *Account) GetId() string {
+func (x *Account) GetId() int64 {
 	if x != nil {
 		return x.Id
 	}
-	return ""
+	return 0
 }
 
-func (x *Account) GetOrg() *Organization {
+func (x *Account) GetAccountId() string {
 	if x != nil {
-		return x.Org
+		return x.AccountId
 	}
-	return nil
+	return ""
 }
 
 func (x *Account) GetName() string {
@@ -223,37 +218,182 @@ func (x *Account) GetName() string {
 	return ""
 }
 
-func (x *Account) GetCurrency() string {
+type SimplefinAccount struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Org              *Organization          `protobuf:"bytes,2,opt,name=org,proto3" json:"org,omitempty"`
+	Name             string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	Currency         string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	Balance          string                 `protobuf:"bytes,5,opt,name=balance,proto3" json:"balance,omitempty"`
+	AvailableBalance *string                `protobuf:"bytes,6,opt,name=available_balance,json=availableBalance,proto3,oneof" json:"available_balance,omitempty"`
+	BalanceDate      *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=balance_date,json=balanceDate,proto3" json:"balance_date,omitempty"`
+	Transactions     []*Transaction         `protobuf:"bytes,8,rep,name=transactions,proto3" json:"transactions,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *SimplefinAccount) Reset() {
+	*x = SimplefinAccount{}
+	mi := &file_transaction_v1_transaction_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimplefinAccount) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimplefinAccount) ProtoMessage() {}
+
+func (x *SimplefinAccount) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_v1_transaction_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimplefinAccount.ProtoReflect.Descriptor instead.
+func (*SimplefinAccount) Descriptor() ([]byte, []int) {
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SimplefinAccount) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SimplefinAccount) GetOrg() *Organization {
+	if x != nil {
+		return x.Org
+	}
+	return nil
+}
+
+func (x *SimplefinAccount) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *SimplefinAccount) GetCurrency() string {
 	if x != nil {
 		return x.Currency
 	}
 	return ""
 }
 
-func (x *Account) GetBalance() string {
+func (x *SimplefinAccount) GetBalance() string {
 	if x != nil {
 		return x.Balance
 	}
 	return ""
 }
 
-func (x *Account) GetAvailableBalance() string {
+func (x *SimplefinAccount) GetAvailableBalance() string {
 	if x != nil && x.AvailableBalance != nil {
 		return *x.AvailableBalance
 	}
 	return ""
 }
 
-func (x *Account) GetBalanceDate() *timestamppb.Timestamp {
+func (x *SimplefinAccount) GetBalanceDate() *timestamppb.Timestamp {
 	if x != nil {
 		return x.BalanceDate
 	}
 	return nil
 }
 
-func (x *Account) GetTransactions() []*Transaction {
+func (x *SimplefinAccount) GetTransactions() []*Transaction {
 	if x != nil {
 		return x.Transactions
+	}
+	return nil
+}
+
+type GetSimplefinAccountsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSimplefinAccountsRequest) Reset() {
+	*x = GetSimplefinAccountsRequest{}
+	mi := &file_transaction_v1_transaction_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSimplefinAccountsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSimplefinAccountsRequest) ProtoMessage() {}
+
+func (x *GetSimplefinAccountsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_v1_transaction_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSimplefinAccountsRequest.ProtoReflect.Descriptor instead.
+func (*GetSimplefinAccountsRequest) Descriptor() ([]byte, []int) {
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{4}
+}
+
+type GetSimplefinAccountsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Accounts      []*SimplefinAccount    `protobuf:"bytes,1,rep,name=accounts,proto3" json:"accounts,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetSimplefinAccountsResponse) Reset() {
+	*x = GetSimplefinAccountsResponse{}
+	mi := &file_transaction_v1_transaction_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetSimplefinAccountsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetSimplefinAccountsResponse) ProtoMessage() {}
+
+func (x *GetSimplefinAccountsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_v1_transaction_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetSimplefinAccountsResponse.ProtoReflect.Descriptor instead.
+func (*GetSimplefinAccountsResponse) Descriptor() ([]byte, []int) {
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetSimplefinAccountsResponse) GetAccounts() []*SimplefinAccount {
+	if x != nil {
+		return x.Accounts
 	}
 	return nil
 }
@@ -266,7 +406,7 @@ type GetAccountsRequest struct {
 
 func (x *GetAccountsRequest) Reset() {
 	*x = GetAccountsRequest{}
-	mi := &file_transaction_v1_transaction_proto_msgTypes[3]
+	mi := &file_transaction_v1_transaction_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -278,7 +418,7 @@ func (x *GetAccountsRequest) String() string {
 func (*GetAccountsRequest) ProtoMessage() {}
 
 func (x *GetAccountsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_v1_transaction_proto_msgTypes[3]
+	mi := &file_transaction_v1_transaction_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,7 +431,7 @@ func (x *GetAccountsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccountsRequest.ProtoReflect.Descriptor instead.
 func (*GetAccountsRequest) Descriptor() ([]byte, []int) {
-	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{3}
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{6}
 }
 
 type GetAccountsResponse struct {
@@ -303,7 +443,7 @@ type GetAccountsResponse struct {
 
 func (x *GetAccountsResponse) Reset() {
 	*x = GetAccountsResponse{}
-	mi := &file_transaction_v1_transaction_proto_msgTypes[4]
+	mi := &file_transaction_v1_transaction_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -315,7 +455,7 @@ func (x *GetAccountsResponse) String() string {
 func (*GetAccountsResponse) ProtoMessage() {}
 
 func (x *GetAccountsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_transaction_v1_transaction_proto_msgTypes[4]
+	mi := &file_transaction_v1_transaction_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -328,12 +468,108 @@ func (x *GetAccountsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAccountsResponse.ProtoReflect.Descriptor instead.
 func (*GetAccountsResponse) Descriptor() ([]byte, []int) {
-	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{4}
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetAccountsResponse) GetAccounts() []*Account {
 	if x != nil {
 		return x.Accounts
+	}
+	return nil
+}
+
+type AddAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	AccountId     string                 `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"account_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddAccountRequest) Reset() {
+	*x = AddAccountRequest{}
+	mi := &file_transaction_v1_transaction_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAccountRequest) ProtoMessage() {}
+
+func (x *AddAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_v1_transaction_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAccountRequest.ProtoReflect.Descriptor instead.
+func (*AddAccountRequest) Descriptor() ([]byte, []int) {
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *AddAccountRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *AddAccountRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type AddAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Account       *Account               `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddAccountResponse) Reset() {
+	*x = AddAccountResponse{}
+	mi := &file_transaction_v1_transaction_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddAccountResponse) ProtoMessage() {}
+
+func (x *AddAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_transaction_v1_transaction_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddAccountResponse.ProtoReflect.Descriptor instead.
+func (*AddAccountResponse) Descriptor() ([]byte, []int) {
+	return file_transaction_v1_transaction_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *AddAccountResponse) GetAccount() *Account {
+	if x != nil {
+		return x.Account
 	}
 	return nil
 }
@@ -355,8 +591,13 @@ const file_transaction_v1_transaction_proto_rawDesc = "" +
 	"\apending\x18\x06 \x01(\bH\x01R\apending\x88\x01\x01B\x10\n" +
 	"\x0e_transacted_atB\n" +
 	"\n" +
-	"\b_pending\"\xdb\x02\n" +
+	"\b_pending\"L\n" +
 	"\aAccount\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\x12\x12\n" +
+	"\x04name\x18\x03 \x01(\tR\x04name\"\xe4\x02\n" +
+	"\x10SimplefinAccount\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x03org\x18\x02 \x01(\v2\x1c.transaction.v1.OrganizationR\x03org\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1a\n" +
@@ -365,12 +606,24 @@ const file_transaction_v1_transaction_proto_rawDesc = "" +
 	"\x11available_balance\x18\x06 \x01(\tH\x00R\x10availableBalance\x88\x01\x01\x12=\n" +
 	"\fbalance_date\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\vbalanceDate\x12?\n" +
 	"\ftransactions\x18\b \x03(\v2\x1b.transaction.v1.TransactionR\ftransactionsB\x14\n" +
-	"\x12_available_balance\"\x14\n" +
+	"\x12_available_balance\"\x1d\n" +
+	"\x1bGetSimplefinAccountsRequest\"\\\n" +
+	"\x1cGetSimplefinAccountsResponse\x12<\n" +
+	"\baccounts\x18\x01 \x03(\v2 .transaction.v1.SimplefinAccountR\baccounts\"\x14\n" +
 	"\x12GetAccountsRequest\"J\n" +
 	"\x13GetAccountsResponse\x123\n" +
-	"\baccounts\x18\x01 \x03(\v2\x17.transaction.v1.AccountR\baccounts2l\n" +
+	"\baccounts\x18\x01 \x03(\v2\x17.transaction.v1.AccountR\baccounts\"F\n" +
+	"\x11AddAccountRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
+	"\n" +
+	"account_id\x18\x02 \x01(\tR\taccountId\"G\n" +
+	"\x12AddAccountResponse\x121\n" +
+	"\aaccount\x18\x01 \x01(\v2\x17.transaction.v1.AccountR\aaccount2\xb4\x02\n" +
 	"\x12TransactionService\x12V\n" +
-	"\vGetAccounts\x12\".transaction.v1.GetAccountsRequest\x1a#.transaction.v1.GetAccountsResponseB3Z1expenses-backend/pkg/transaction/v1;transactionv1b\x06proto3"
+	"\vGetAccounts\x12\".transaction.v1.GetAccountsRequest\x1a#.transaction.v1.GetAccountsResponse\x12q\n" +
+	"\x14GetSimplefinAccounts\x12+.transaction.v1.GetSimplefinAccountsRequest\x1a,.transaction.v1.GetSimplefinAccountsResponse\x12S\n" +
+	"\n" +
+	"AddAccount\x12!.transaction.v1.AddAccountRequest\x1a\".transaction.v1.AddAccountResponseB3Z1expenses-backend/pkg/transaction/v1;transactionv1b\x06proto3"
 
 var (
 	file_transaction_v1_transaction_proto_rawDescOnce sync.Once
@@ -384,29 +637,40 @@ func file_transaction_v1_transaction_proto_rawDescGZIP() []byte {
 	return file_transaction_v1_transaction_proto_rawDescData
 }
 
-var file_transaction_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_transaction_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_transaction_v1_transaction_proto_goTypes = []any{
-	(*Organization)(nil),          // 0: transaction.v1.Organization
-	(*Transaction)(nil),           // 1: transaction.v1.Transaction
-	(*Account)(nil),               // 2: transaction.v1.Account
-	(*GetAccountsRequest)(nil),    // 3: transaction.v1.GetAccountsRequest
-	(*GetAccountsResponse)(nil),   // 4: transaction.v1.GetAccountsResponse
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*Organization)(nil),                 // 0: transaction.v1.Organization
+	(*Transaction)(nil),                  // 1: transaction.v1.Transaction
+	(*Account)(nil),                      // 2: transaction.v1.Account
+	(*SimplefinAccount)(nil),             // 3: transaction.v1.SimplefinAccount
+	(*GetSimplefinAccountsRequest)(nil),  // 4: transaction.v1.GetSimplefinAccountsRequest
+	(*GetSimplefinAccountsResponse)(nil), // 5: transaction.v1.GetSimplefinAccountsResponse
+	(*GetAccountsRequest)(nil),           // 6: transaction.v1.GetAccountsRequest
+	(*GetAccountsResponse)(nil),          // 7: transaction.v1.GetAccountsResponse
+	(*AddAccountRequest)(nil),            // 8: transaction.v1.AddAccountRequest
+	(*AddAccountResponse)(nil),           // 9: transaction.v1.AddAccountResponse
+	(*timestamppb.Timestamp)(nil),        // 10: google.protobuf.Timestamp
 }
 var file_transaction_v1_transaction_proto_depIdxs = []int32{
-	5, // 0: transaction.v1.Transaction.posted:type_name -> google.protobuf.Timestamp
-	5, // 1: transaction.v1.Transaction.transacted_at:type_name -> google.protobuf.Timestamp
-	0, // 2: transaction.v1.Account.org:type_name -> transaction.v1.Organization
-	5, // 3: transaction.v1.Account.balance_date:type_name -> google.protobuf.Timestamp
-	1, // 4: transaction.v1.Account.transactions:type_name -> transaction.v1.Transaction
-	2, // 5: transaction.v1.GetAccountsResponse.accounts:type_name -> transaction.v1.Account
-	3, // 6: transaction.v1.TransactionService.GetAccounts:input_type -> transaction.v1.GetAccountsRequest
-	4, // 7: transaction.v1.TransactionService.GetAccounts:output_type -> transaction.v1.GetAccountsResponse
-	7, // [7:8] is the sub-list for method output_type
-	6, // [6:7] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	10, // 0: transaction.v1.Transaction.posted:type_name -> google.protobuf.Timestamp
+	10, // 1: transaction.v1.Transaction.transacted_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: transaction.v1.SimplefinAccount.org:type_name -> transaction.v1.Organization
+	10, // 3: transaction.v1.SimplefinAccount.balance_date:type_name -> google.protobuf.Timestamp
+	1,  // 4: transaction.v1.SimplefinAccount.transactions:type_name -> transaction.v1.Transaction
+	3,  // 5: transaction.v1.GetSimplefinAccountsResponse.accounts:type_name -> transaction.v1.SimplefinAccount
+	2,  // 6: transaction.v1.GetAccountsResponse.accounts:type_name -> transaction.v1.Account
+	2,  // 7: transaction.v1.AddAccountResponse.account:type_name -> transaction.v1.Account
+	6,  // 8: transaction.v1.TransactionService.GetAccounts:input_type -> transaction.v1.GetAccountsRequest
+	4,  // 9: transaction.v1.TransactionService.GetSimplefinAccounts:input_type -> transaction.v1.GetSimplefinAccountsRequest
+	8,  // 10: transaction.v1.TransactionService.AddAccount:input_type -> transaction.v1.AddAccountRequest
+	7,  // 11: transaction.v1.TransactionService.GetAccounts:output_type -> transaction.v1.GetAccountsResponse
+	5,  // 12: transaction.v1.TransactionService.GetSimplefinAccounts:output_type -> transaction.v1.GetSimplefinAccountsResponse
+	9,  // 13: transaction.v1.TransactionService.AddAccount:output_type -> transaction.v1.AddAccountResponse
+	11, // [11:14] is the sub-list for method output_type
+	8,  // [8:11] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_transaction_v1_transaction_proto_init() }
@@ -415,14 +679,14 @@ func file_transaction_v1_transaction_proto_init() {
 		return
 	}
 	file_transaction_v1_transaction_proto_msgTypes[1].OneofWrappers = []any{}
-	file_transaction_v1_transaction_proto_msgTypes[2].OneofWrappers = []any{}
+	file_transaction_v1_transaction_proto_msgTypes[3].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_transaction_v1_transaction_proto_rawDesc), len(file_transaction_v1_transaction_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
