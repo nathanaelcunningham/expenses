@@ -485,7 +485,7 @@ func (s *Service) removeMemberFromFamilyDatabase(ctx context.Context, familyID, 
 // Income management methods
 
 // GetMonthlyIncomeInternal retrieves the family's monthly income
-func (s *Service) GetMonthlyIncomeInternal(ctx context.Context, familyID int) (*MonthlyIncome, error) {
+func (s *Service) getMonthlyIncomeInternal(ctx context.Context, familyID int) (*MonthlyIncome, error) {
 	familyDB, err := s.dbManager.GetFamilyDB(familyID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get family database: %w", err)
@@ -587,7 +587,7 @@ func (s *Service) setMonthlyIncomeInternal(ctx context.Context, familyID int, in
 
 // addIncomeSourceInternal adds a new income source to the family
 func (s *Service) addIncomeSourceInternal(ctx context.Context, familyID int, source IncomeSource) error {
-	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	income, err := s.getMonthlyIncomeInternal(ctx, familyID)
 	if err != nil {
 		return fmt.Errorf("failed to get current income: %w", err)
 	}
@@ -599,7 +599,7 @@ func (s *Service) addIncomeSourceInternal(ctx context.Context, familyID int, sou
 
 // removeIncomeSourceInternal removes an income source from the family
 func (s *Service) removeIncomeSourceInternal(ctx context.Context, familyID int, sourceName string) error {
-	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	income, err := s.getMonthlyIncomeInternal(ctx, familyID)
 	if err != nil {
 		return fmt.Errorf("failed to get current income: %w", err)
 	}
@@ -617,7 +617,7 @@ func (s *Service) removeIncomeSourceInternal(ctx context.Context, familyID int, 
 
 // updateIncomeSourceInternal updates an existing income source
 func (s *Service) updateIncomeSourceInternal(ctx context.Context, familyID int, sourceName string, updatedSource IncomeSource) error {
-	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	income, err := s.getMonthlyIncomeInternal(ctx, familyID)
 	if err != nil {
 		return fmt.Errorf("failed to get current income: %w", err)
 	}

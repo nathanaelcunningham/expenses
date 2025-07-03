@@ -146,7 +146,7 @@ func (s *Service) GetMonthlyIncome(ctx context.Context, req *connect.Request[v1.
 		return nil, err
 	}
 
-	income, err := s.GetMonthlyIncomeInternal(ctx, int(authCtx.FamilyID))
+	income, err := s.getMonthlyIncomeInternal(ctx, int(authCtx.FamilyID))
 	if err != nil {
 		return nil, err
 	}
