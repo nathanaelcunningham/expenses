@@ -48,13 +48,14 @@ type User struct {
 }
 
 type UserSession struct {
-	ID         int64     `json:"id"`
-	UserID     int64     `json:"user_id"`
-	FamilyID   int64     `json:"family_id"`
-	UserRole   string    `json:"user_role"`
-	CreatedAt  time.Time `json:"created_at"`
-	LastActive time.Time `json:"last_active"`
-	ExpiresAt  time.Time `json:"expires_at"`
-	UserAgent  *string   `json:"user_agent"`
-	IpAddress  *string   `json:"ip_address"`
+	ID           int64     `json:"id"`
+	UserID       int64     `json:"user_id"`
+	FamilyID     int64     `json:"family_id"`
+	UserRole     string    `json:"user_role"`
+	CreatedAt    time.Time `json:"created_at"`
+	LastActive   time.Time `json:"last_active"`
+	ExpiresAt    time.Time `json:"expires_at"`
+	UserAgent    *string   `json:"user_agent"`
+	IpAddress    *string   `json:"ip_address"`
+	SessionToken *string   `json:"session_token"`
 }

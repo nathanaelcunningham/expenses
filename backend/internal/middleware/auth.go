@@ -114,18 +114,23 @@ func (ai *AuthInterceptor) authenticateRequest(ctx context.Context, headers http
 			fmt.Errorf("missing or invalid session token"))
 	}
 
-	// Convert session token to int64
-	sessionID, err := strconv.ParseInt(sessionToken, 10, 64)
-	if err != nil {
-		return nil, connect.NewError(connect.CodeUnauthenticated,
-			fmt.Errorf("invalid session token format"))
-	}
-
-	// Validate session
-	validation, err := ai.authService.ValidateSessionInternal(ctx, sessionID)
+	// Try token-based authentication first (new secure method)
+	validation, err := ai.authService.ValidateSessionByToken(ctx, sessionToken)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal,
 			fmt.Errorf("failed to validate session: %w", err))
+	}
+
+	// If token-based validation fails, try legacy ID-based validation for backward compatibility
+	if !validation.Valid {
+		// Check if it's a numeric ID (legacy format)
+		if sessionID, parseErr := strconv.ParseInt(sessionToken, 10, 64); parseErr == nil {
+			validation, err = ai.authService.ValidateSessionInternal(ctx, sessionID)
+			if err != nil {
+				return nil, connect.NewError(connect.CodeInternal,
+					fmt.Errorf("failed to validate session: %w", err))
+			}
+		}
 	}
 
 	if !validation.Valid {

@@ -100,14 +100,15 @@ func (x *User) GetUpdatedAt() int64 {
 type Session struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	FamilyId      int64                  `protobuf:"varint,3,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
-	UserRole      string                 `protobuf:"bytes,4,opt,name=user_role,json=userRole,proto3" json:"user_role,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	LastActive    int64                  `protobuf:"varint,6,opt,name=last_active,json=lastActive,proto3" json:"last_active,omitempty"`
-	ExpiresAt     int64                  `protobuf:"varint,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
-	UserAgent     string                 `protobuf:"bytes,8,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
-	IpAddress     string                 `protobuf:"bytes,9,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
+	SessionToken  string                 `protobuf:"bytes,2,opt,name=session_token,json=sessionToken,proto3" json:"session_token,omitempty"`
+	UserId        int64                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	FamilyId      int64                  `protobuf:"varint,4,opt,name=family_id,json=familyId,proto3" json:"family_id,omitempty"`
+	UserRole      string                 `protobuf:"bytes,5,opt,name=user_role,json=userRole,proto3" json:"user_role,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastActive    int64                  `protobuf:"varint,7,opt,name=last_active,json=lastActive,proto3" json:"last_active,omitempty"`
+	ExpiresAt     int64                  `protobuf:"varint,8,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	UserAgent     string                 `protobuf:"bytes,9,opt,name=user_agent,json=userAgent,proto3" json:"user_agent,omitempty"`
+	IpAddress     string                 `protobuf:"bytes,10,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,6 +148,13 @@ func (x *Session) GetId() int64 {
 		return x.Id
 	}
 	return 0
+}
+
+func (x *Session) GetSessionToken() string {
+	if x != nil {
+		return x.SessionToken
+	}
+	return ""
 }
 
 func (x *Session) GetUserId() int64 {
@@ -857,22 +865,24 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x04 \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x05 \x01(\x03R\tupdatedAt\"\x89\x02\n" +
+	"updated_at\x18\x05 \x01(\x03R\tupdatedAt\"\xae\x02\n" +
 	"\aSession\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x17\n" +
-	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x1b\n" +
-	"\tfamily_id\x18\x03 \x01(\x03R\bfamilyId\x12\x1b\n" +
-	"\tuser_role\x18\x04 \x01(\tR\buserRole\x12\x1d\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12#\n" +
+	"\rsession_token\x18\x02 \x01(\tR\fsessionToken\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\x03R\x06userId\x12\x1b\n" +
+	"\tfamily_id\x18\x04 \x01(\x03R\bfamilyId\x12\x1b\n" +
+	"\tuser_role\x18\x05 \x01(\tR\buserRole\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\x03R\tcreatedAt\x12\x1f\n" +
-	"\vlast_active\x18\x06 \x01(\x03R\n" +
+	"created_at\x18\x06 \x01(\x03R\tcreatedAt\x12\x1f\n" +
+	"\vlast_active\x18\a \x01(\x03R\n" +
 	"lastActive\x12\x1d\n" +
 	"\n" +
-	"expires_at\x18\a \x01(\x03R\texpiresAt\x12\x1d\n" +
+	"expires_at\x18\b \x01(\x03R\texpiresAt\x12\x1d\n" +
 	"\n" +
-	"user_agent\x18\b \x01(\tR\tuserAgent\x12\x1d\n" +
+	"user_agent\x18\t \x01(\tR\tuserAgent\x12\x1d\n" +
 	"\n" +
-	"ip_address\x18\t \x01(\tR\tipAddress\"9\n" +
+	"ip_address\x18\n" +
+	" \x01(\tR\tipAddress\"9\n" +
 	"\tAuthError\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"x\n" +

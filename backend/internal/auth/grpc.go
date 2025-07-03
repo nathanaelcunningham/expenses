@@ -175,16 +175,24 @@ func (s *Service) sessionToProto(session *masterdb.UserSession) *authv1.Session 
 	if session.IpAddress != nil {
 		ipAddress = *session.IpAddress
 	}
+	
+	// Use session token if available, otherwise fall back to ID for backward compatibility
+	sessionToken := ""
+	if session.SessionToken != nil {
+		sessionToken = *session.SessionToken
+	}
+	
 	return &authv1.Session{
-		Id:         session.ID,
-		UserId:     session.UserID,
-		FamilyId:   session.FamilyID,
-		UserRole:   session.UserRole,
-		CreatedAt:  session.CreatedAt.Unix(),
-		LastActive: session.LastActive.Unix(),
-		ExpiresAt:  session.ExpiresAt.Unix(),
-		UserAgent:  userAgent,
-		IpAddress:  ipAddress,
+		Id:           session.ID,
+		SessionToken: sessionToken,
+		UserId:       session.UserID,
+		FamilyId:     session.FamilyID,
+		UserRole:     session.UserRole,
+		CreatedAt:    session.CreatedAt.Unix(),
+		LastActive:   session.LastActive.Unix(),
+		ExpiresAt:    session.ExpiresAt.Unix(),
+		UserAgent:    userAgent,
+		IpAddress:    ipAddress,
 	}
 }
 

@@ -10,6 +10,7 @@ import (
 	"expenses-backend/internal/database/sql/masterdb"
 	"expenses-backend/internal/family"
 	"expenses-backend/internal/logger"
+	"expenses-backend/internal/security"
 	authv1 "expenses-backend/pkg/auth/v1"
 
 	"golang.org/x/crypto/bcrypt"
@@ -150,6 +151,11 @@ func (s *Service) ValidateSessionInternal(ctx context.Context, sessionID int64) 
 	return s.validateSession(ctx, sessionID)
 }
 
+// ValidateSessionByToken checks if a session token is valid and returns session info
+func (s *Service) ValidateSessionByToken(ctx context.Context, sessionToken string) (*authv1.SessionValidationResult, error) {
+	return s.validateSessionByToken(ctx, sessionToken)
+}
+
 // validateSession checks if a session is valid and returns session info
 func (s *Service) validateSession(ctx context.Context, sessionID int64) (*authv1.SessionValidationResult, error) {
 	if sessionID == 0 {
@@ -182,6 +188,61 @@ func (s *Service) validateSession(ctx context.Context, sessionID int64) (*authv1
 	if err := s.updateSessionActivity(ctx, sessionID); err != nil {
 		s.logger.Warn("Failed to update session activity", err,
 			logger.Int64("session_id", sessionID))
+	}
+
+	// Get user info
+	user, err := s.getUserByID(ctx, session.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+
+	return &authv1.SessionValidationResult{
+		Valid:    true,
+		Session:  s.sessionToProto(session),
+		User:     s.userToProto(user),
+		FamilyId: session.FamilyID,
+	}, nil
+}
+
+// validateSessionByToken checks if a session token is valid and returns session info
+func (s *Service) validateSessionByToken(ctx context.Context, sessionToken string) (*authv1.SessionValidationResult, error) {
+	if sessionToken == "" {
+		return &authv1.SessionValidationResult{
+			Valid: false,
+		}, nil
+	}
+
+	// Validate token format
+	if err := security.ValidateTokenFormat(sessionToken); err != nil {
+		return &authv1.SessionValidationResult{
+			Valid: false,
+		}, nil
+	}
+
+	// Get session from database
+	session, err := s.getSessionByToken(ctx, sessionToken)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return &authv1.SessionValidationResult{
+				Valid: false,
+			}, nil
+		}
+		return nil, fmt.Errorf("failed to get session by token: %w", err)
+	}
+
+	// Check if session is expired
+	if time.Now().After(session.ExpiresAt) {
+		// Clean up expired session
+		s.deleteSessionByToken(ctx, sessionToken)
+		return &authv1.SessionValidationResult{
+			Valid: false,
+		}, nil
+	}
+
+	// Update last active time
+	if err := s.updateSessionActivityByToken(ctx, sessionToken); err != nil {
+		s.logger.Warn("Failed to update session activity", err,
+			logger.Str("session_token", sessionToken[:8]+"...")) // Log only first 8 chars for security
 	}
 
 	// Get user info
@@ -234,6 +295,40 @@ func (s *Service) refreshSession(ctx context.Context, sessionID int64) (*masterd
 	}
 
 	err = s.dbManager.GetMasterQueries().RefreshSession(ctx, refreshParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to refresh session: %w", err)
+	}
+
+	session.ExpiresAt = newExpiresAt
+	session.LastActive = now
+
+	return session, nil
+}
+
+// refreshSessionByToken extends a session's expiry time using the session token
+func (s *Service) refreshSessionByToken(ctx context.Context, sessionToken string) (*masterdb.UserSession, error) {
+	// Get current session
+	session, err := s.getSessionByToken(ctx, sessionToken)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+
+	// Check if session is expired
+	if time.Now().After(session.ExpiresAt) {
+		return nil, ErrInvalidSession
+	}
+
+	// Extend expiry
+	now := time.Now()
+	newExpiresAt := now.Add(24 * time.Hour)
+
+	refreshParams := masterdb.RefreshSessionByTokenParams{
+		ExpiresAt:    newExpiresAt,
+		LastActive:   now,
+		SessionToken: &sessionToken,
+	}
+
+	err = s.dbManager.GetMasterQueries().RefreshSessionByToken(ctx, refreshParams)
 	if err != nil {
 		return nil, fmt.Errorf("failed to refresh session: %w", err)
 	}
@@ -364,15 +459,22 @@ func (s *Service) createSession(ctx context.Context, userID, familyID int64, use
 	now := time.Now()
 	expiresAt := now.Add(24 * time.Hour) // 24 hour sessions
 
+	// Generate secure session token
+	sessionToken, err := security.GenerateSessionToken()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate session token: %w", err)
+	}
+
 	createParams := masterdb.CreateUserSessionParams{
-		UserID:     userID,
-		FamilyID:   familyID,
-		UserRole:   userRole,
-		CreatedAt:  now,
-		LastActive: now,
-		ExpiresAt:  expiresAt,
-		UserAgent:  &userAgent,
-		IpAddress:  &ipAddress,
+		UserID:       userID,
+		FamilyID:     familyID,
+		UserRole:     userRole,
+		SessionToken: &sessionToken,
+		CreatedAt:    now,
+		LastActive:   now,
+		ExpiresAt:    expiresAt,
+		UserAgent:    &userAgent,
+		IpAddress:    &ipAddress,
 	}
 
 	sqlcSession, err := s.dbManager.GetMasterQueries().CreateUserSession(ctx, createParams)
@@ -392,6 +494,15 @@ func (s *Service) getSession(ctx context.Context, sessionID int64) (*masterdb.Us
 	return sqlcSession, nil
 }
 
+func (s *Service) getSessionByToken(ctx context.Context, sessionToken string) (*masterdb.UserSession, error) {
+	sqlcSession, err := s.dbManager.GetMasterQueries().GetUserSessionByToken(ctx, &sessionToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return sqlcSession, nil
+}
+
 func (s *Service) updateSessionActivity(ctx context.Context, sessionID int64) error {
 	updateParams := masterdb.UpdateSessionActivityParams{
 		LastActive: time.Now(),
@@ -401,8 +512,21 @@ func (s *Service) updateSessionActivity(ctx context.Context, sessionID int64) er
 	return s.dbManager.GetMasterQueries().UpdateSessionActivity(ctx, updateParams)
 }
 
+func (s *Service) updateSessionActivityByToken(ctx context.Context, sessionToken string) error {
+	updateParams := masterdb.UpdateSessionActivityByTokenParams{
+		LastActive:   time.Now(),
+		SessionToken: &sessionToken,
+	}
+
+	return s.dbManager.GetMasterQueries().UpdateSessionActivityByToken(ctx, updateParams)
+}
+
 func (s *Service) deleteSession(ctx context.Context, sessionID int64) error {
 	return s.dbManager.GetMasterQueries().DeleteUserSession(ctx, sessionID)
+}
+
+func (s *Service) deleteSessionByToken(ctx context.Context, sessionToken string) error {
+	return s.dbManager.GetMasterQueries().DeleteUserSessionByToken(ctx, &sessionToken)
 }
 
 // joinExistingFamily handles joining an existing family with invite code

@@ -27,6 +27,7 @@ type Querier interface {
 	DeleteFamilyMembership(ctx context.Context, arg DeleteFamilyMembershipParams) error
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteUserSession(ctx context.Context, id int64) error
+	DeleteUserSessionByToken(ctx context.Context, sessionToken *string) error
 	GetAppliedMigrations(ctx context.Context) ([]*GetAppliedMigrationsRow, error)
 	// Migration-related queries for master database
 	GetCurrentMigrationVersion(ctx context.Context) (int64, error)
@@ -38,13 +39,16 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id int64) (*User, error)
 	GetUserFamilyInfo(ctx context.Context, userID *int64) (*GetUserFamilyInfoRow, error)
 	GetUserSession(ctx context.Context, id int64) (*UserSession, error)
+	GetUserSessionByToken(ctx context.Context, sessionToken *string) (*UserSession, error)
 	ListFamilyMemberships(ctx context.Context, familyID *int64) ([]*FamilyMembership, error)
 	ListUserMemberships(ctx context.Context, userID *int64) ([]*FamilyMembership, error)
 	RecordMigration(ctx context.Context, arg RecordMigrationParams) error
 	RefreshSession(ctx context.Context, arg RefreshSessionParams) error
+	RefreshSessionByToken(ctx context.Context, arg RefreshSessionByTokenParams) error
 	UpdateFamily(ctx context.Context, arg UpdateFamilyParams) (*Family, error)
 	UpdateFamilyMembershipRole(ctx context.Context, arg UpdateFamilyMembershipRoleParams) (*FamilyMembership, error)
 	UpdateSessionActivity(ctx context.Context, arg UpdateSessionActivityParams) error
+	UpdateSessionActivityByToken(ctx context.Context, arg UpdateSessionActivityByTokenParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (*User, error)
 	UpdateUserFamilySessions(ctx context.Context, arg UpdateUserFamilySessionsParams) error
 }
