@@ -69,7 +69,7 @@ func main() {
 
 	familyService := family.NewService(dbManager, log)
 	authService := auth.NewService(dbManager, familyService, log)
-	expenseService := expense.NewService(dbManager, log)
+	expenseService := expense.NewService(dbManager, familyService, log)
 	transactionService := transaction.NewService(dbManager, log)
 
 	// Initialize middleware

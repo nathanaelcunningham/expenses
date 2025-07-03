@@ -44,3 +44,20 @@ type MemberResponse struct {
 	JoinedAt time.Time `json:"joined_at"`
 	IsActive bool      `json:"is_active"`
 }
+
+// Income management types
+
+// IncomeSource represents a source of income
+type IncomeSource struct {
+	Name        string  `json:"name"`
+	Amount      float64 `json:"amount"`
+	Description string  `json:"description,omitempty"`
+	IsActive    bool    `json:"is_active"`
+}
+
+// MonthlyIncome represents the family's monthly income
+type MonthlyIncome struct {
+	TotalAmount float64        `json:"total_amount"`
+	Sources     []IncomeSource `json:"sources"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+}

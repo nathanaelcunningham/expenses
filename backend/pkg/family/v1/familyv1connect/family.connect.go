@@ -48,6 +48,21 @@ const (
 	// FamilySettingsServiceDeleteFamilySettingProcedure is the fully-qualified name of the
 	// FamilySettingsService's DeleteFamilySetting RPC.
 	FamilySettingsServiceDeleteFamilySettingProcedure = "/family.v1.FamilySettingsService/DeleteFamilySetting"
+	// FamilySettingsServiceGetMonthlyIncomeProcedure is the fully-qualified name of the
+	// FamilySettingsService's GetMonthlyIncome RPC.
+	FamilySettingsServiceGetMonthlyIncomeProcedure = "/family.v1.FamilySettingsService/GetMonthlyIncome"
+	// FamilySettingsServiceSetMonthlyIncomeProcedure is the fully-qualified name of the
+	// FamilySettingsService's SetMonthlyIncome RPC.
+	FamilySettingsServiceSetMonthlyIncomeProcedure = "/family.v1.FamilySettingsService/SetMonthlyIncome"
+	// FamilySettingsServiceAddIncomeSourceProcedure is the fully-qualified name of the
+	// FamilySettingsService's AddIncomeSource RPC.
+	FamilySettingsServiceAddIncomeSourceProcedure = "/family.v1.FamilySettingsService/AddIncomeSource"
+	// FamilySettingsServiceRemoveIncomeSourceProcedure is the fully-qualified name of the
+	// FamilySettingsService's RemoveIncomeSource RPC.
+	FamilySettingsServiceRemoveIncomeSourceProcedure = "/family.v1.FamilySettingsService/RemoveIncomeSource"
+	// FamilySettingsServiceUpdateIncomeSourceProcedure is the fully-qualified name of the
+	// FamilySettingsService's UpdateIncomeSource RPC.
+	FamilySettingsServiceUpdateIncomeSourceProcedure = "/family.v1.FamilySettingsService/UpdateIncomeSource"
 )
 
 // FamilySettingsServiceClient is a client for the family.v1.FamilySettingsService service.
@@ -57,6 +72,12 @@ type FamilySettingsServiceClient interface {
 	GetFamilySettingByKey(context.Context, *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error)
 	UpdateFamilySetting(context.Context, *connect.Request[v1.UpdateFamilySettingRequest]) (*connect.Response[v1.UpdateFamilySettingResponse], error)
 	DeleteFamilySetting(context.Context, *connect.Request[v1.DeleteFamilySettingRequest]) (*connect.Response[v1.DeleteFamilySettingResponse], error)
+	// Income management endpoints
+	GetMonthlyIncome(context.Context, *connect.Request[v1.GetMonthlyIncomeRequest]) (*connect.Response[v1.GetMonthlyIncomeResponse], error)
+	SetMonthlyIncome(context.Context, *connect.Request[v1.SetMonthlyIncomeRequest]) (*connect.Response[v1.SetMonthlyIncomeResponse], error)
+	AddIncomeSource(context.Context, *connect.Request[v1.AddIncomeSourceRequest]) (*connect.Response[v1.AddIncomeSourceResponse], error)
+	RemoveIncomeSource(context.Context, *connect.Request[v1.RemoveIncomeSourceRequest]) (*connect.Response[v1.RemoveIncomeSourceResponse], error)
+	UpdateIncomeSource(context.Context, *connect.Request[v1.UpdateIncomeSourceRequest]) (*connect.Response[v1.UpdateIncomeSourceResponse], error)
 }
 
 // NewFamilySettingsServiceClient constructs a client for the family.v1.FamilySettingsService
@@ -100,6 +121,36 @@ func NewFamilySettingsServiceClient(httpClient connect.HTTPClient, baseURL strin
 			connect.WithSchema(familySettingsServiceMethods.ByName("DeleteFamilySetting")),
 			connect.WithClientOptions(opts...),
 		),
+		getMonthlyIncome: connect.NewClient[v1.GetMonthlyIncomeRequest, v1.GetMonthlyIncomeResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceGetMonthlyIncomeProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("GetMonthlyIncome")),
+			connect.WithClientOptions(opts...),
+		),
+		setMonthlyIncome: connect.NewClient[v1.SetMonthlyIncomeRequest, v1.SetMonthlyIncomeResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceSetMonthlyIncomeProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("SetMonthlyIncome")),
+			connect.WithClientOptions(opts...),
+		),
+		addIncomeSource: connect.NewClient[v1.AddIncomeSourceRequest, v1.AddIncomeSourceResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceAddIncomeSourceProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("AddIncomeSource")),
+			connect.WithClientOptions(opts...),
+		),
+		removeIncomeSource: connect.NewClient[v1.RemoveIncomeSourceRequest, v1.RemoveIncomeSourceResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceRemoveIncomeSourceProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("RemoveIncomeSource")),
+			connect.WithClientOptions(opts...),
+		),
+		updateIncomeSource: connect.NewClient[v1.UpdateIncomeSourceRequest, v1.UpdateIncomeSourceResponse](
+			httpClient,
+			baseURL+FamilySettingsServiceUpdateIncomeSourceProcedure,
+			connect.WithSchema(familySettingsServiceMethods.ByName("UpdateIncomeSource")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -110,6 +161,11 @@ type familySettingsServiceClient struct {
 	getFamilySettingByKey *connect.Client[v1.GetFamilySettingByKeyRequest, v1.GetFamilySettingByKeyResponse]
 	updateFamilySetting   *connect.Client[v1.UpdateFamilySettingRequest, v1.UpdateFamilySettingResponse]
 	deleteFamilySetting   *connect.Client[v1.DeleteFamilySettingRequest, v1.DeleteFamilySettingResponse]
+	getMonthlyIncome      *connect.Client[v1.GetMonthlyIncomeRequest, v1.GetMonthlyIncomeResponse]
+	setMonthlyIncome      *connect.Client[v1.SetMonthlyIncomeRequest, v1.SetMonthlyIncomeResponse]
+	addIncomeSource       *connect.Client[v1.AddIncomeSourceRequest, v1.AddIncomeSourceResponse]
+	removeIncomeSource    *connect.Client[v1.RemoveIncomeSourceRequest, v1.RemoveIncomeSourceResponse]
+	updateIncomeSource    *connect.Client[v1.UpdateIncomeSourceRequest, v1.UpdateIncomeSourceResponse]
 }
 
 // CreateFamilySetting calls family.v1.FamilySettingsService.CreateFamilySetting.
@@ -137,6 +193,31 @@ func (c *familySettingsServiceClient) DeleteFamilySetting(ctx context.Context, r
 	return c.deleteFamilySetting.CallUnary(ctx, req)
 }
 
+// GetMonthlyIncome calls family.v1.FamilySettingsService.GetMonthlyIncome.
+func (c *familySettingsServiceClient) GetMonthlyIncome(ctx context.Context, req *connect.Request[v1.GetMonthlyIncomeRequest]) (*connect.Response[v1.GetMonthlyIncomeResponse], error) {
+	return c.getMonthlyIncome.CallUnary(ctx, req)
+}
+
+// SetMonthlyIncome calls family.v1.FamilySettingsService.SetMonthlyIncome.
+func (c *familySettingsServiceClient) SetMonthlyIncome(ctx context.Context, req *connect.Request[v1.SetMonthlyIncomeRequest]) (*connect.Response[v1.SetMonthlyIncomeResponse], error) {
+	return c.setMonthlyIncome.CallUnary(ctx, req)
+}
+
+// AddIncomeSource calls family.v1.FamilySettingsService.AddIncomeSource.
+func (c *familySettingsServiceClient) AddIncomeSource(ctx context.Context, req *connect.Request[v1.AddIncomeSourceRequest]) (*connect.Response[v1.AddIncomeSourceResponse], error) {
+	return c.addIncomeSource.CallUnary(ctx, req)
+}
+
+// RemoveIncomeSource calls family.v1.FamilySettingsService.RemoveIncomeSource.
+func (c *familySettingsServiceClient) RemoveIncomeSource(ctx context.Context, req *connect.Request[v1.RemoveIncomeSourceRequest]) (*connect.Response[v1.RemoveIncomeSourceResponse], error) {
+	return c.removeIncomeSource.CallUnary(ctx, req)
+}
+
+// UpdateIncomeSource calls family.v1.FamilySettingsService.UpdateIncomeSource.
+func (c *familySettingsServiceClient) UpdateIncomeSource(ctx context.Context, req *connect.Request[v1.UpdateIncomeSourceRequest]) (*connect.Response[v1.UpdateIncomeSourceResponse], error) {
+	return c.updateIncomeSource.CallUnary(ctx, req)
+}
+
 // FamilySettingsServiceHandler is an implementation of the family.v1.FamilySettingsService service.
 type FamilySettingsServiceHandler interface {
 	CreateFamilySetting(context.Context, *connect.Request[v1.CreateFamilySettingRequest]) (*connect.Response[v1.CreateFamilySettingResponse], error)
@@ -144,6 +225,12 @@ type FamilySettingsServiceHandler interface {
 	GetFamilySettingByKey(context.Context, *connect.Request[v1.GetFamilySettingByKeyRequest]) (*connect.Response[v1.GetFamilySettingByKeyResponse], error)
 	UpdateFamilySetting(context.Context, *connect.Request[v1.UpdateFamilySettingRequest]) (*connect.Response[v1.UpdateFamilySettingResponse], error)
 	DeleteFamilySetting(context.Context, *connect.Request[v1.DeleteFamilySettingRequest]) (*connect.Response[v1.DeleteFamilySettingResponse], error)
+	// Income management endpoints
+	GetMonthlyIncome(context.Context, *connect.Request[v1.GetMonthlyIncomeRequest]) (*connect.Response[v1.GetMonthlyIncomeResponse], error)
+	SetMonthlyIncome(context.Context, *connect.Request[v1.SetMonthlyIncomeRequest]) (*connect.Response[v1.SetMonthlyIncomeResponse], error)
+	AddIncomeSource(context.Context, *connect.Request[v1.AddIncomeSourceRequest]) (*connect.Response[v1.AddIncomeSourceResponse], error)
+	RemoveIncomeSource(context.Context, *connect.Request[v1.RemoveIncomeSourceRequest]) (*connect.Response[v1.RemoveIncomeSourceResponse], error)
+	UpdateIncomeSource(context.Context, *connect.Request[v1.UpdateIncomeSourceRequest]) (*connect.Response[v1.UpdateIncomeSourceResponse], error)
 }
 
 // NewFamilySettingsServiceHandler builds an HTTP handler from the service implementation. It
@@ -183,6 +270,36 @@ func NewFamilySettingsServiceHandler(svc FamilySettingsServiceHandler, opts ...c
 		connect.WithSchema(familySettingsServiceMethods.ByName("DeleteFamilySetting")),
 		connect.WithHandlerOptions(opts...),
 	)
+	familySettingsServiceGetMonthlyIncomeHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceGetMonthlyIncomeProcedure,
+		svc.GetMonthlyIncome,
+		connect.WithSchema(familySettingsServiceMethods.ByName("GetMonthlyIncome")),
+		connect.WithHandlerOptions(opts...),
+	)
+	familySettingsServiceSetMonthlyIncomeHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceSetMonthlyIncomeProcedure,
+		svc.SetMonthlyIncome,
+		connect.WithSchema(familySettingsServiceMethods.ByName("SetMonthlyIncome")),
+		connect.WithHandlerOptions(opts...),
+	)
+	familySettingsServiceAddIncomeSourceHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceAddIncomeSourceProcedure,
+		svc.AddIncomeSource,
+		connect.WithSchema(familySettingsServiceMethods.ByName("AddIncomeSource")),
+		connect.WithHandlerOptions(opts...),
+	)
+	familySettingsServiceRemoveIncomeSourceHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceRemoveIncomeSourceProcedure,
+		svc.RemoveIncomeSource,
+		connect.WithSchema(familySettingsServiceMethods.ByName("RemoveIncomeSource")),
+		connect.WithHandlerOptions(opts...),
+	)
+	familySettingsServiceUpdateIncomeSourceHandler := connect.NewUnaryHandler(
+		FamilySettingsServiceUpdateIncomeSourceProcedure,
+		svc.UpdateIncomeSource,
+		connect.WithSchema(familySettingsServiceMethods.ByName("UpdateIncomeSource")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/family.v1.FamilySettingsService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case FamilySettingsServiceCreateFamilySettingProcedure:
@@ -195,6 +312,16 @@ func NewFamilySettingsServiceHandler(svc FamilySettingsServiceHandler, opts ...c
 			familySettingsServiceUpdateFamilySettingHandler.ServeHTTP(w, r)
 		case FamilySettingsServiceDeleteFamilySettingProcedure:
 			familySettingsServiceDeleteFamilySettingHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceGetMonthlyIncomeProcedure:
+			familySettingsServiceGetMonthlyIncomeHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceSetMonthlyIncomeProcedure:
+			familySettingsServiceSetMonthlyIncomeHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceAddIncomeSourceProcedure:
+			familySettingsServiceAddIncomeSourceHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceRemoveIncomeSourceProcedure:
+			familySettingsServiceRemoveIncomeSourceHandler.ServeHTTP(w, r)
+		case FamilySettingsServiceUpdateIncomeSourceProcedure:
+			familySettingsServiceUpdateIncomeSourceHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -222,4 +349,24 @@ func (UnimplementedFamilySettingsServiceHandler) UpdateFamilySetting(context.Con
 
 func (UnimplementedFamilySettingsServiceHandler) DeleteFamilySetting(context.Context, *connect.Request[v1.DeleteFamilySettingRequest]) (*connect.Response[v1.DeleteFamilySettingResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.DeleteFamilySetting is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) GetMonthlyIncome(context.Context, *connect.Request[v1.GetMonthlyIncomeRequest]) (*connect.Response[v1.GetMonthlyIncomeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.GetMonthlyIncome is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) SetMonthlyIncome(context.Context, *connect.Request[v1.SetMonthlyIncomeRequest]) (*connect.Response[v1.SetMonthlyIncomeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.SetMonthlyIncome is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) AddIncomeSource(context.Context, *connect.Request[v1.AddIncomeSourceRequest]) (*connect.Response[v1.AddIncomeSourceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.AddIncomeSource is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) RemoveIncomeSource(context.Context, *connect.Request[v1.RemoveIncomeSourceRequest]) (*connect.Response[v1.RemoveIncomeSourceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.RemoveIncomeSource is not implemented"))
+}
+
+func (UnimplementedFamilySettingsServiceHandler) UpdateIncomeSource(context.Context, *connect.Request[v1.UpdateIncomeSourceRequest]) (*connect.Response[v1.UpdateIncomeSourceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("family.v1.FamilySettingsService.UpdateIncomeSource is not implemented"))
 }

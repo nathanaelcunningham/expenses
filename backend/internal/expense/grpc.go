@@ -3,10 +3,11 @@ package expense
 import (
 	"context"
 	"database/sql"
+	appcontext "expenses-backend/internal/context"
 	"expenses-backend/internal/database"
 	"expenses-backend/internal/database/sql/familydb"
+	"expenses-backend/internal/family"
 	"expenses-backend/internal/logger"
-	appcontext "expenses-backend/internal/context"
 	expensev1 "expenses-backend/pkg/expense/v1"
 	"slices"
 	"strconv"
@@ -19,15 +20,17 @@ import (
 
 // Service handles expense operations using database queries
 type Service struct {
-	dbManager *database.DatabaseManager
-	logger    logger.Logger
+	dbManager     *database.DatabaseManager
+	familyService *family.Service
+	logger        logger.Logger
 }
 
 // NewService creates a new expense service
-func NewService(dbManager *database.DatabaseManager, log logger.Logger) *Service {
+func NewService(dbManager *database.DatabaseManager, familyService *family.Service, log logger.Logger) *Service {
 	return &Service{
-		dbManager: dbManager,
-		logger:    log.With(logger.Str("component", "expense-service")),
+		dbManager:     dbManager,
+		familyService: familyService,
+		logger:        log.With(logger.Str("component", "expense-service")),
 	}
 }
 
@@ -360,7 +363,7 @@ func (s *Service) userCanAccessExpense(ctx context.Context, queries *familydb.Qu
 	if err != nil {
 		return false, err
 	}
-	
+
 	_, err = queries.GetExpenseByID(ctx, expenseIDInt)
 	if err != nil {
 		if err == sql.ErrNoRows {

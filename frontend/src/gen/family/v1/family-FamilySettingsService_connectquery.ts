@@ -28,3 +28,30 @@ export const updateFamilySetting = FamilySettingsService.method.updateFamilySett
  * @generated from rpc family.v1.FamilySettingsService.DeleteFamilySetting
  */
 export const deleteFamilySetting = FamilySettingsService.method.deleteFamilySetting;
+
+/**
+ * Income management endpoints
+ *
+ * @generated from rpc family.v1.FamilySettingsService.GetMonthlyIncome
+ */
+export const getMonthlyIncome = FamilySettingsService.method.getMonthlyIncome;
+
+/**
+ * @generated from rpc family.v1.FamilySettingsService.SetMonthlyIncome
+ */
+export const setMonthlyIncome = FamilySettingsService.method.setMonthlyIncome;
+
+/**
+ * @generated from rpc family.v1.FamilySettingsService.AddIncomeSource
+ */
+export const addIncomeSource = FamilySettingsService.method.addIncomeSource;
+
+/**
+ * @generated from rpc family.v1.FamilySettingsService.RemoveIncomeSource
+ */
+export const removeIncomeSource = FamilySettingsService.method.removeIncomeSource;
+
+/**
+ * @generated from rpc family.v1.FamilySettingsService.UpdateIncomeSource
+ */
+export const updateIncomeSource = FamilySettingsService.method.updateIncomeSource;

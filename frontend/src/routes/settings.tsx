@@ -126,6 +126,8 @@ function SettingsContent({ settings }: { settings: FamilySetting[] }) {
         <div className="space-y-6">
             <SimpleFin setting={simplefinSetting} onEdit={handleEdit} />
             
+            <MonthlyIncome settings={settings} />
+            
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-medium text-gray-900">All Settings</h2>
@@ -144,31 +146,60 @@ function SettingsContent({ settings }: { settings: FamilySetting[] }) {
                     </div>
                 ) : (
                     <div className="bg-gray-50 rounded-lg">
-                        {settings.map((setting) => (
-                            <div key={setting.id.toString()} className="flex items-center justify-between p-4 border-b last:border-b-0">
-                                <div>
-                                    <div className="font-medium text-gray-900">{setting.settingKey}</div>
-                                    <div className="text-sm text-gray-600">
-                                        {setting.settingValue || <em>No value</em>} 
-                                        <span className="ml-2 text-xs text-gray-400">({setting.dataType})</span>
+                        {settings.map((setting) => {
+                            const renderSettingValue = () => {
+                                if (!setting.settingValue) {
+                                    return <em>No value</em>;
+                                }
+                                
+                                // Special handling for different setting types
+                                if (setting.settingKey === "simplefin_token") {
+                                    return `${setting.settingValue.substring(0, 12)}...`;
+                                }
+                                
+                                if (setting.settingKey === "monthly_income") {
+                                    try {
+                                        const income = JSON.parse(setting.settingValue);
+                                        return `Total: $${income.total_amount?.toLocaleString() || 0} (${income.sources?.length || 0} sources)`;
+                                    } catch {
+                                        return "Invalid JSON";
+                                    }
+                                }
+                                
+                                // For other settings, truncate if too long
+                                if (setting.settingValue.length > 50) {
+                                    return `${setting.settingValue.substring(0, 50)}...`;
+                                }
+                                
+                                return setting.settingValue;
+                            };
+                            
+                            return (
+                                <div key={setting.id.toString()} className="flex items-center justify-between p-4 border-b last:border-b-0">
+                                    <div className="flex-1 min-w-0 mr-4">
+                                        <div className="font-medium text-gray-900">{setting.settingKey}</div>
+                                        <div className="text-sm text-gray-600 break-words">
+                                            {renderSettingValue()}
+                                            <span className="ml-2 text-xs text-gray-400">({setting.dataType})</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                        <button
+                                            onClick={() => handleEdit(setting)}
+                                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(setting.id)}
+                                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                        >
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => handleEdit(setting)}
-                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(setting.id)}
-                                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
 
@@ -322,6 +353,255 @@ function SimpleFin({ setting, onEdit }: {
                     <p className="text-sm text-yellow-800">
                         You haven't configured your SimpleFin token yet. This is required to import bank transactions automatically.
                     </p>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function MonthlyIncome({ settings }: { settings: FamilySetting[] }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [incomeSources, setIncomeSources] = useState<Array<{ name: string; amount: number; description: string; is_active: boolean }>>([]);
+    
+    const createMutation = useMutation(createFamilySetting);
+    const updateMutation = useMutation(updateFamilySetting);
+    
+    const incomeSetting = settings.find(s => s.settingKey === "monthly_income");
+    
+    // Parse existing income data
+    const existingIncome = incomeSetting?.settingValue 
+        ? JSON.parse(incomeSetting.settingValue)
+        : { total_amount: 0, sources: [], updated_at: new Date().toISOString() };
+    
+    // Initialize income sources when editing starts
+    const startEditing = () => {
+        setIncomeSources(existingIncome.sources || []);
+        setIsEditing(true);
+    };
+    
+    const cancelEditing = () => {
+        setIncomeSources([]);
+        setIsEditing(false);
+    };
+    
+    const saveIncome = async () => {
+        console.log("Submitting income data:", incomeSources);
+        try {
+            const incomeData = {
+                total_amount: incomeSources.reduce((sum: number, source: any) => sum + (source.is_active ? source.amount : 0), 0),
+                sources: incomeSources,
+                updated_at: new Date().toISOString(),
+            };
+            
+            console.log("Prepared income data:", incomeData);
+            const incomeValue = JSON.stringify(incomeData);
+            
+            if (incomeSetting) {
+                console.log("Updating existing setting:", incomeSetting.id);
+                await updateMutation.mutateAsync({
+                    id: incomeSetting.id,
+                    settingValue: incomeValue,
+                    dataType: "json",
+                });
+            } else {
+                console.log("Creating new setting");
+                await createMutation.mutateAsync({
+                    settingKey: "monthly_income",
+                    settingValue: incomeValue,
+                    dataType: "json",
+                });
+            }
+            
+            setIsEditing(false);
+            window.location.reload();
+        } catch (error) {
+            console.error("Error saving income:", error);
+            alert("Error saving income: " + (error as Error).message);
+        }
+    };
+    
+    const addIncomeSource = () => {
+        const newSources = [...incomeSources, { name: "", amount: 0, description: "", is_active: true }];
+        console.log("Adding income source, new sources:", newSources);
+        setIncomeSources(newSources);
+    };
+    
+    const removeIncomeSource = (index: number) => {
+        setIncomeSources(incomeSources.filter((_: any, i: number) => i !== index));
+    };
+    
+    const updateIncomeSource = (index: number, field: string, value: any) => {
+        const newSources = [...incomeSources];
+        newSources[index] = { ...newSources[index], [field]: value };
+        setIncomeSources(newSources);
+    };
+    
+    const totalIncome = existingIncome.sources.reduce((sum: number, source: any) => sum + (source.is_active ? source.amount : 0), 0);
+    
+    return (
+        <div className="border rounded-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+                <div>
+                    <h2 className="text-lg font-medium text-gray-900">Monthly Income</h2>
+                    <p className="text-sm text-gray-600">
+                        Track your family's monthly income sources
+                    </p>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">
+                            ${totalIncome.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-gray-500">Total Monthly</div>
+                    </div>
+                    <button
+                        onClick={isEditing ? cancelEditing : startEditing}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                    >
+                        {isEditing ? "Cancel" : "Edit Income"}
+                    </button>
+                </div>
+            </div>
+            
+            {!isEditing ? (
+                <div className="space-y-3">
+                    {existingIncome.sources.length === 0 ? (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3">
+                            <p className="text-sm text-yellow-800">
+                                No income sources configured yet. Click "Edit Income" to add your income sources.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-2">
+                            {existingIncome.sources.map((source: any, index: number) => (
+                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                    <div className="flex-1">
+                                        <div className="font-medium text-gray-900">{source.name}</div>
+                                        {source.description && (
+                                            <div className="text-sm text-gray-600">{source.description}</div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                            source.is_active 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {source.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                        <div className="text-lg font-semibold text-gray-900">
+                                            ${source.amount.toLocaleString()}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    <div>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-medium text-gray-900">Income Sources</h3>
+                                <button
+                                    type="button"
+                                    onClick={addIncomeSource}
+                                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium"
+                                >
+                                    Add Source
+                                </button>
+                            </div>
+                            
+                            {incomeSources.map((source: any, index: number) => (
+                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h4 className="font-medium text-gray-900">Income Source {index + 1}</h4>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeIncomeSource(index)}
+                                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Source Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={source.name}
+                                                onChange={(e) => updateIncomeSource(index, "name", e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="e.g., Salary, Freelance"
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Monthly Amount
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={source.amount}
+                                                onChange={(e) => updateIncomeSource(index, "amount", parseFloat(e.target.value) || 0)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="0.00"
+                                                min="0"
+                                                step="0.01"
+                                            />
+                                        </div>
+                                        
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Description (optional)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={source.description}
+                                                onChange={(e) => updateIncomeSource(index, "description", e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                                placeholder="Additional details about this income source"
+                                            />
+                                        </div>
+                                        
+                                        <div className="md:col-span-2">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={source.is_active}
+                                                    onChange={(e) => updateIncomeSource(index, "is_active", e.target.checked)}
+                                                    className="mr-2"
+                                                />
+                                                <span className="text-sm text-gray-700">Active income source</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={saveIncome}
+                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-md text-sm font-medium"
+                                >
+                                    {createMutation.isPending || updateMutation.isPending ? "Saving..." : "Save Income"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={cancelEditing}
+                                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm font-medium"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

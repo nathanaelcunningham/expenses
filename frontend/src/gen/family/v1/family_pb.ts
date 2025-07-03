@@ -10,7 +10,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file family/v1/family.proto.
  */
 export const file_family_v1_family: GenFile = /*@__PURE__*/
-  fileDesc("ChZmYW1pbHkvdjEvZmFtaWx5LnByb3RvEglmYW1pbHkudjEicQoNRmFtaWx5U2V0dGluZxIKCgJpZBgBIAEoAxITCgtzZXR0aW5nX2tleRgCIAEoCRIaCg1zZXR0aW5nX3ZhbHVlGAMgASgJSACIAQESEQoJZGF0YV90eXBlGAQgASgJQhAKDl9zZXR0aW5nX3ZhbHVlInIKGkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EhMKC3NldHRpbmdfa2V5GAEgASgJEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobQ3JlYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciGwoZTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdCJPChpMaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRIxCg9mYW1pbHlfc2V0dGluZ3MYASADKAsyGC5mYW1pbHkudjEuRmFtaWx5U2V0dGluZyIrChxHZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXF1ZXN0EgsKA2tleRgBIAEoCSJpCh1HZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXNwb25zZRI1Cg5mYW1pbHlfc2V0dGluZxgBIAEoCzIYLmZhbWlseS52MS5GYW1pbHlTZXR0aW5nSACIAQFCEQoPX2ZhbWlseV9zZXR0aW5nImkKGlVwZGF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EgoKAmlkGAEgASgDEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobVXBkYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciKAoaRGVsZXRlRmFtaWx5U2V0dGluZ1JlcXVlc3QSCgoCaWQYASABKAMiLgobRGVsZXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgymAQKFUZhbWlseVNldHRpbmdzU2VydmljZRJkChNDcmVhdGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLkNyZWF0ZUZhbWlseVNldHRpbmdSZXNwb25zZRJhChJMaXN0RmFtaWx5U2V0dGluZ3MSJC5mYW1pbHkudjEuTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdBolLmZhbWlseS52MS5MaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRJqChVHZXRGYW1pbHlTZXR0aW5nQnlLZXkSJy5mYW1pbHkudjEuR2V0RmFtaWx5U2V0dGluZ0J5S2V5UmVxdWVzdBooLmZhbWlseS52MS5HZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXNwb25zZRJkChNVcGRhdGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLlVwZGF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLlVwZGF0ZUZhbWlseVNldHRpbmdSZXNwb25zZRJkChNEZWxldGVGYW1pbHlTZXR0aW5nEiUuZmFtaWx5LnYxLkRlbGV0ZUZhbWlseVNldHRpbmdSZXF1ZXN0GiYuZmFtaWx5LnYxLkRlbGV0ZUZhbWlseVNldHRpbmdSZXNwb25zZUIpWidleHBlbnNlcy1iYWNrZW5kL3BrZy9mYW1pbHkvdjE7ZmFtaWx5djFiBnByb3RvMw");
+  fileDesc("ChZmYW1pbHkvdjEvZmFtaWx5LnByb3RvEglmYW1pbHkudjEicQoNRmFtaWx5U2V0dGluZxIKCgJpZBgBIAEoAxITCgtzZXR0aW5nX2tleRgCIAEoCRIaCg1zZXR0aW5nX3ZhbHVlGAMgASgJSACIAQESEQoJZGF0YV90eXBlGAQgASgJQhAKDl9zZXR0aW5nX3ZhbHVlInIKGkNyZWF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EhMKC3NldHRpbmdfa2V5GAEgASgJEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobQ3JlYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciGwoZTGlzdEZhbWlseVNldHRpbmdzUmVxdWVzdCJPChpMaXN0RmFtaWx5U2V0dGluZ3NSZXNwb25zZRIxCg9mYW1pbHlfc2V0dGluZ3MYASADKAsyGC5mYW1pbHkudjEuRmFtaWx5U2V0dGluZyIrChxHZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXF1ZXN0EgsKA2tleRgBIAEoCSJpCh1HZXRGYW1pbHlTZXR0aW5nQnlLZXlSZXNwb25zZRI1Cg5mYW1pbHlfc2V0dGluZxgBIAEoCzIYLmZhbWlseS52MS5GYW1pbHlTZXR0aW5nSACIAQFCEQoPX2ZhbWlseV9zZXR0aW5nImkKGlVwZGF0ZUZhbWlseVNldHRpbmdSZXF1ZXN0EgoKAmlkGAEgASgDEhoKDXNldHRpbmdfdmFsdWUYAiABKAlIAIgBARIRCglkYXRhX3R5cGUYAyABKAlCEAoOX3NldHRpbmdfdmFsdWUiTwobVXBkYXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEjAKDmZhbWlseV9zZXR0aW5nGAEgASgLMhguZmFtaWx5LnYxLkZhbWlseVNldHRpbmciKAoaRGVsZXRlRmFtaWx5U2V0dGluZ1JlcXVlc3QSCgoCaWQYASABKAMiLgobRGVsZXRlRmFtaWx5U2V0dGluZ1Jlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiVAoMSW5jb21lU291cmNlEgwKBG5hbWUYASABKAkSDgoGYW1vdW50GAIgASgBEhMKC2Rlc2NyaXB0aW9uGAMgASgJEhEKCWlzX2FjdGl2ZRgEIAEoCCJjCg1Nb250aGx5SW5jb21lEhQKDHRvdGFsX2Ftb3VudBgBIAEoARIoCgdzb3VyY2VzGAIgAygLMhcuZmFtaWx5LnYxLkluY29tZVNvdXJjZRISCgp1cGRhdGVkX2F0GAMgASgDIhkKF0dldE1vbnRobHlJbmNvbWVSZXF1ZXN0IkwKGEdldE1vbnRobHlJbmNvbWVSZXNwb25zZRIwCg5tb250aGx5X2luY29tZRgBIAEoCzIYLmZhbWlseS52MS5Nb250aGx5SW5jb21lIksKF1NldE1vbnRobHlJbmNvbWVSZXF1ZXN0EjAKDm1vbnRobHlfaW5jb21lGAEgASgLMhguZmFtaWx5LnYxLk1vbnRobHlJbmNvbWUiKwoYU2V0TW9udGhseUluY29tZVJlc3BvbnNlEg8KB3N1Y2Nlc3MYASABKAgiSAoWQWRkSW5jb21lU291cmNlUmVxdWVzdBIuCg1pbmNvbWVfc291cmNlGAEgASgLMhcuZmFtaWx5LnYxLkluY29tZVNvdXJjZSIqChdBZGRJbmNvbWVTb3VyY2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIIjAKGVJlbW92ZUluY29tZVNvdXJjZVJlcXVlc3QSEwoLc291cmNlX25hbWUYASABKAkiLQoaUmVtb3ZlSW5jb21lU291cmNlUmVzcG9uc2USDwoHc3VjY2VzcxgBIAEoCCJhChlVcGRhdGVJbmNvbWVTb3VyY2VSZXF1ZXN0EhMKC3NvdXJjZV9uYW1lGAEgASgJEi8KDnVwZGF0ZWRfc291cmNlGAIgASgLMhcuZmFtaWx5LnYxLkluY29tZVNvdXJjZSItChpVcGRhdGVJbmNvbWVTb3VyY2VSZXNwb25zZRIPCgdzdWNjZXNzGAEgASgIMvIHChVGYW1pbHlTZXR0aW5nc1NlcnZpY2USZAoTQ3JlYXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5DcmVhdGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5DcmVhdGVGYW1pbHlTZXR0aW5nUmVzcG9uc2USYQoSTGlzdEZhbWlseVNldHRpbmdzEiQuZmFtaWx5LnYxLkxpc3RGYW1pbHlTZXR0aW5nc1JlcXVlc3QaJS5mYW1pbHkudjEuTGlzdEZhbWlseVNldHRpbmdzUmVzcG9uc2USagoVR2V0RmFtaWx5U2V0dGluZ0J5S2V5EicuZmFtaWx5LnYxLkdldEZhbWlseVNldHRpbmdCeUtleVJlcXVlc3QaKC5mYW1pbHkudjEuR2V0RmFtaWx5U2V0dGluZ0J5S2V5UmVzcG9uc2USZAoTVXBkYXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5VcGRhdGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5VcGRhdGVGYW1pbHlTZXR0aW5nUmVzcG9uc2USZAoTRGVsZXRlRmFtaWx5U2V0dGluZxIlLmZhbWlseS52MS5EZWxldGVGYW1pbHlTZXR0aW5nUmVxdWVzdBomLmZhbWlseS52MS5EZWxldGVGYW1pbHlTZXR0aW5nUmVzcG9uc2USWwoQR2V0TW9udGhseUluY29tZRIiLmZhbWlseS52MS5HZXRNb250aGx5SW5jb21lUmVxdWVzdBojLmZhbWlseS52MS5HZXRNb250aGx5SW5jb21lUmVzcG9uc2USWwoQU2V0TW9udGhseUluY29tZRIiLmZhbWlseS52MS5TZXRNb250aGx5SW5jb21lUmVxdWVzdBojLmZhbWlseS52MS5TZXRNb250aGx5SW5jb21lUmVzcG9uc2USWAoPQWRkSW5jb21lU291cmNlEiEuZmFtaWx5LnYxLkFkZEluY29tZVNvdXJjZVJlcXVlc3QaIi5mYW1pbHkudjEuQWRkSW5jb21lU291cmNlUmVzcG9uc2USYQoSUmVtb3ZlSW5jb21lU291cmNlEiQuZmFtaWx5LnYxLlJlbW92ZUluY29tZVNvdXJjZVJlcXVlc3QaJS5mYW1pbHkudjEuUmVtb3ZlSW5jb21lU291cmNlUmVzcG9uc2USYQoSVXBkYXRlSW5jb21lU291cmNlEiQuZmFtaWx5LnYxLlVwZGF0ZUluY29tZVNvdXJjZVJlcXVlc3QaJS5mYW1pbHkudjEuVXBkYXRlSW5jb21lU291cmNlUmVzcG9uc2VCKVonZXhwZW5zZXMtYmFja2VuZC9wa2cvZmFtaWx5L3YxO2ZhbWlseXYxYgZwcm90bzM");
 
 /**
  * @generated from message family.v1.FamilySetting
@@ -231,6 +231,240 @@ export const DeleteFamilySettingResponseSchema: GenMessage<DeleteFamilySettingRe
   messageDesc(file_family_v1_family, 10);
 
 /**
+ * @generated from message family.v1.IncomeSource
+ */
+export type IncomeSource = Message<"family.v1.IncomeSource"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: double amount = 2;
+   */
+  amount: number;
+
+  /**
+   * @generated from field: string description = 3;
+   */
+  description: string;
+
+  /**
+   * @generated from field: bool is_active = 4;
+   */
+  isActive: boolean;
+};
+
+/**
+ * Describes the message family.v1.IncomeSource.
+ * Use `create(IncomeSourceSchema)` to create a new message.
+ */
+export const IncomeSourceSchema: GenMessage<IncomeSource> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 11);
+
+/**
+ * @generated from message family.v1.MonthlyIncome
+ */
+export type MonthlyIncome = Message<"family.v1.MonthlyIncome"> & {
+  /**
+   * @generated from field: double total_amount = 1;
+   */
+  totalAmount: number;
+
+  /**
+   * @generated from field: repeated family.v1.IncomeSource sources = 2;
+   */
+  sources: IncomeSource[];
+
+  /**
+   * Unix timestamp
+   *
+   * @generated from field: int64 updated_at = 3;
+   */
+  updatedAt: bigint;
+};
+
+/**
+ * Describes the message family.v1.MonthlyIncome.
+ * Use `create(MonthlyIncomeSchema)` to create a new message.
+ */
+export const MonthlyIncomeSchema: GenMessage<MonthlyIncome> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 12);
+
+/**
+ * Family ID is extracted from auth context
+ *
+ * @generated from message family.v1.GetMonthlyIncomeRequest
+ */
+export type GetMonthlyIncomeRequest = Message<"family.v1.GetMonthlyIncomeRequest"> & {
+};
+
+/**
+ * Describes the message family.v1.GetMonthlyIncomeRequest.
+ * Use `create(GetMonthlyIncomeRequestSchema)` to create a new message.
+ */
+export const GetMonthlyIncomeRequestSchema: GenMessage<GetMonthlyIncomeRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 13);
+
+/**
+ * @generated from message family.v1.GetMonthlyIncomeResponse
+ */
+export type GetMonthlyIncomeResponse = Message<"family.v1.GetMonthlyIncomeResponse"> & {
+  /**
+   * @generated from field: family.v1.MonthlyIncome monthly_income = 1;
+   */
+  monthlyIncome?: MonthlyIncome;
+};
+
+/**
+ * Describes the message family.v1.GetMonthlyIncomeResponse.
+ * Use `create(GetMonthlyIncomeResponseSchema)` to create a new message.
+ */
+export const GetMonthlyIncomeResponseSchema: GenMessage<GetMonthlyIncomeResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 14);
+
+/**
+ * @generated from message family.v1.SetMonthlyIncomeRequest
+ */
+export type SetMonthlyIncomeRequest = Message<"family.v1.SetMonthlyIncomeRequest"> & {
+  /**
+   * @generated from field: family.v1.MonthlyIncome monthly_income = 1;
+   */
+  monthlyIncome?: MonthlyIncome;
+};
+
+/**
+ * Describes the message family.v1.SetMonthlyIncomeRequest.
+ * Use `create(SetMonthlyIncomeRequestSchema)` to create a new message.
+ */
+export const SetMonthlyIncomeRequestSchema: GenMessage<SetMonthlyIncomeRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 15);
+
+/**
+ * @generated from message family.v1.SetMonthlyIncomeResponse
+ */
+export type SetMonthlyIncomeResponse = Message<"family.v1.SetMonthlyIncomeResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message family.v1.SetMonthlyIncomeResponse.
+ * Use `create(SetMonthlyIncomeResponseSchema)` to create a new message.
+ */
+export const SetMonthlyIncomeResponseSchema: GenMessage<SetMonthlyIncomeResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 16);
+
+/**
+ * @generated from message family.v1.AddIncomeSourceRequest
+ */
+export type AddIncomeSourceRequest = Message<"family.v1.AddIncomeSourceRequest"> & {
+  /**
+   * @generated from field: family.v1.IncomeSource income_source = 1;
+   */
+  incomeSource?: IncomeSource;
+};
+
+/**
+ * Describes the message family.v1.AddIncomeSourceRequest.
+ * Use `create(AddIncomeSourceRequestSchema)` to create a new message.
+ */
+export const AddIncomeSourceRequestSchema: GenMessage<AddIncomeSourceRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 17);
+
+/**
+ * @generated from message family.v1.AddIncomeSourceResponse
+ */
+export type AddIncomeSourceResponse = Message<"family.v1.AddIncomeSourceResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message family.v1.AddIncomeSourceResponse.
+ * Use `create(AddIncomeSourceResponseSchema)` to create a new message.
+ */
+export const AddIncomeSourceResponseSchema: GenMessage<AddIncomeSourceResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 18);
+
+/**
+ * @generated from message family.v1.RemoveIncomeSourceRequest
+ */
+export type RemoveIncomeSourceRequest = Message<"family.v1.RemoveIncomeSourceRequest"> & {
+  /**
+   * @generated from field: string source_name = 1;
+   */
+  sourceName: string;
+};
+
+/**
+ * Describes the message family.v1.RemoveIncomeSourceRequest.
+ * Use `create(RemoveIncomeSourceRequestSchema)` to create a new message.
+ */
+export const RemoveIncomeSourceRequestSchema: GenMessage<RemoveIncomeSourceRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 19);
+
+/**
+ * @generated from message family.v1.RemoveIncomeSourceResponse
+ */
+export type RemoveIncomeSourceResponse = Message<"family.v1.RemoveIncomeSourceResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message family.v1.RemoveIncomeSourceResponse.
+ * Use `create(RemoveIncomeSourceResponseSchema)` to create a new message.
+ */
+export const RemoveIncomeSourceResponseSchema: GenMessage<RemoveIncomeSourceResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 20);
+
+/**
+ * @generated from message family.v1.UpdateIncomeSourceRequest
+ */
+export type UpdateIncomeSourceRequest = Message<"family.v1.UpdateIncomeSourceRequest"> & {
+  /**
+   * @generated from field: string source_name = 1;
+   */
+  sourceName: string;
+
+  /**
+   * @generated from field: family.v1.IncomeSource updated_source = 2;
+   */
+  updatedSource?: IncomeSource;
+};
+
+/**
+ * Describes the message family.v1.UpdateIncomeSourceRequest.
+ * Use `create(UpdateIncomeSourceRequestSchema)` to create a new message.
+ */
+export const UpdateIncomeSourceRequestSchema: GenMessage<UpdateIncomeSourceRequest> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 21);
+
+/**
+ * @generated from message family.v1.UpdateIncomeSourceResponse
+ */
+export type UpdateIncomeSourceResponse = Message<"family.v1.UpdateIncomeSourceResponse"> & {
+  /**
+   * @generated from field: bool success = 1;
+   */
+  success: boolean;
+};
+
+/**
+ * Describes the message family.v1.UpdateIncomeSourceResponse.
+ * Use `create(UpdateIncomeSourceResponseSchema)` to create a new message.
+ */
+export const UpdateIncomeSourceResponseSchema: GenMessage<UpdateIncomeSourceResponse> = /*@__PURE__*/
+  messageDesc(file_family_v1_family, 22);
+
+/**
  * @generated from service family.v1.FamilySettingsService
  */
 export const FamilySettingsService: GenService<{
@@ -273,6 +507,48 @@ export const FamilySettingsService: GenService<{
     methodKind: "unary";
     input: typeof DeleteFamilySettingRequestSchema;
     output: typeof DeleteFamilySettingResponseSchema;
+  },
+  /**
+   * Income management endpoints
+   *
+   * @generated from rpc family.v1.FamilySettingsService.GetMonthlyIncome
+   */
+  getMonthlyIncome: {
+    methodKind: "unary";
+    input: typeof GetMonthlyIncomeRequestSchema;
+    output: typeof GetMonthlyIncomeResponseSchema;
+  },
+  /**
+   * @generated from rpc family.v1.FamilySettingsService.SetMonthlyIncome
+   */
+  setMonthlyIncome: {
+    methodKind: "unary";
+    input: typeof SetMonthlyIncomeRequestSchema;
+    output: typeof SetMonthlyIncomeResponseSchema;
+  },
+  /**
+   * @generated from rpc family.v1.FamilySettingsService.AddIncomeSource
+   */
+  addIncomeSource: {
+    methodKind: "unary";
+    input: typeof AddIncomeSourceRequestSchema;
+    output: typeof AddIncomeSourceResponseSchema;
+  },
+  /**
+   * @generated from rpc family.v1.FamilySettingsService.RemoveIncomeSource
+   */
+  removeIncomeSource: {
+    methodKind: "unary";
+    input: typeof RemoveIncomeSourceRequestSchema;
+    output: typeof RemoveIncomeSourceResponseSchema;
+  },
+  /**
+   * @generated from rpc family.v1.FamilySettingsService.UpdateIncomeSource
+   */
+  updateIncomeSource: {
+    methodKind: "unary";
+    input: typeof UpdateIncomeSourceRequestSchema;
+    output: typeof UpdateIncomeSourceResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_family_v1_family, 0);

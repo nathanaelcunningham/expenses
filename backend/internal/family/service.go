@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/rand"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"time"
 
 	"expenses-backend/internal/database"
+	"expenses-backend/internal/database/sql/familydb"
 	"expenses-backend/internal/database/sql/masterdb"
 
 	"expenses-backend/internal/logger"
@@ -478,4 +480,155 @@ func (s *Service) removeMemberFromFamilyDatabase(ctx context.Context, familyID, 
 	query := `UPDATE family_members SET is_active = FALSE WHERE id = ?`
 	_, err = familyDB.ExecContext(ctx, query, userID)
 	return err
+}
+
+// Income management methods
+
+// GetMonthlyIncomeInternal retrieves the family's monthly income
+func (s *Service) GetMonthlyIncomeInternal(ctx context.Context, familyID int) (*MonthlyIncome, error) {
+	familyDB, err := s.dbManager.GetFamilyDB(familyID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get family database: %w", err)
+	}
+
+	familyQueries := familydb.New(familyDB)
+
+	setting, err := familyQueries.GetFamilySettingByKey(ctx, "monthly_income")
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Return empty income if not set
+			return &MonthlyIncome{
+				TotalAmount: 0,
+				Sources:     []IncomeSource{},
+				UpdatedAt:   time.Now(),
+			}, nil
+		}
+		return nil, fmt.Errorf("failed to get monthly income setting: %w", err)
+	}
+
+	var income MonthlyIncome
+	if setting.SettingValue != nil {
+		if err := json.Unmarshal([]byte(*setting.SettingValue), &income); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal income data: %w", err)
+		}
+	}
+
+	return &income, nil
+}
+
+// setMonthlyIncomeInternal sets the family's monthly income
+func (s *Service) setMonthlyIncomeInternal(ctx context.Context, familyID int, income *MonthlyIncome) error {
+	if income == nil {
+		return fmt.Errorf("income cannot be nil")
+	}
+
+	familyDB, err := s.dbManager.GetFamilyDB(familyID)
+	if err != nil {
+		return fmt.Errorf("failed to get family database: %w", err)
+	}
+
+	familyQueries := familydb.New(familyDB)
+
+	// Calculate total amount from sources
+	var totalAmount float64
+	for _, source := range income.Sources {
+		if source.IsActive {
+			totalAmount += source.Amount
+		}
+	}
+	income.TotalAmount = totalAmount
+	income.UpdatedAt = time.Now()
+
+	// Serialize income data
+	incomeJSON, err := json.Marshal(income)
+	if err != nil {
+		return fmt.Errorf("failed to marshal income data: %w", err)
+	}
+
+	// Check if setting exists
+	_, err = familyQueries.GetFamilySettingByKey(ctx, "monthly_income")
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Create new setting
+			incomeValue := string(incomeJSON)
+			_, err = familyQueries.CreateFamilySetting(ctx, familydb.CreateFamilySettingParams{
+				SettingKey:   "monthly_income",
+				SettingValue: &incomeValue,
+				DataType:     "json",
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create monthly income setting: %w", err)
+			}
+		} else {
+			return fmt.Errorf("failed to check existing monthly income setting: %w", err)
+		}
+	} else {
+		// Update existing setting
+		setting, err := familyQueries.GetFamilySettingByKey(ctx, "monthly_income")
+		if err != nil {
+			return fmt.Errorf("failed to get existing setting: %w", err)
+		}
+
+		incomeValue := string(incomeJSON)
+		_, err = familyQueries.UpdateFamilySetting(ctx, familydb.UpdateFamilySettingParams{
+			ID:           setting.ID,
+			SettingValue: &incomeValue,
+			DataType:     "json",
+		})
+		if err != nil {
+			return fmt.Errorf("failed to update monthly income setting: %w", err)
+		}
+	}
+
+	s.logger.Info("Monthly income updated successfully", logger.Int64("family_id", int64(familyID)), logger.Str("total_amount", fmt.Sprintf("%.2f", totalAmount)))
+
+	return nil
+}
+
+// addIncomeSourceInternal adds a new income source to the family
+func (s *Service) addIncomeSourceInternal(ctx context.Context, familyID int, source IncomeSource) error {
+	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	if err != nil {
+		return fmt.Errorf("failed to get current income: %w", err)
+	}
+
+	income.Sources = append(income.Sources, source)
+
+	return s.setMonthlyIncomeInternal(ctx, familyID, income)
+}
+
+// removeIncomeSourceInternal removes an income source from the family
+func (s *Service) removeIncomeSourceInternal(ctx context.Context, familyID int, sourceName string) error {
+	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	if err != nil {
+		return fmt.Errorf("failed to get current income: %w", err)
+	}
+
+	// Find and remove the source
+	for i, source := range income.Sources {
+		if source.Name == sourceName {
+			income.Sources = append(income.Sources[:i], income.Sources[i+1:]...)
+			break
+		}
+	}
+
+	return s.setMonthlyIncomeInternal(ctx, familyID, income)
+}
+
+// updateIncomeSourceInternal updates an existing income source
+func (s *Service) updateIncomeSourceInternal(ctx context.Context, familyID int, sourceName string, updatedSource IncomeSource) error {
+	income, err := s.GetMonthlyIncomeInternal(ctx, familyID)
+	if err != nil {
+		return fmt.Errorf("failed to get current income: %w", err)
+	}
+
+	// Find and update the source
+	for i, source := range income.Sources {
+		if source.Name == sourceName {
+			income.Sources[i] = updatedSource
+			break
+		}
+	}
+
+	return s.setMonthlyIncomeInternal(ctx, familyID, income)
 }

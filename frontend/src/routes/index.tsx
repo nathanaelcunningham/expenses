@@ -36,6 +36,13 @@ function App() {
         } else return <div>Error loading expenses</div>;
     }
 
+    const totalExpenses = data.expenses.reduce((prev, curr) => {
+        const total = curr.expenses.reduce((prev, curr) => {
+            return prev + curr.amount;
+        }, 0);
+        return prev + total;
+    }, 0);
+
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 py-6 max-w-6xl">
@@ -74,7 +81,7 @@ function App() {
                         <ExpenseList expenseList={data.expenses} />
                     </div>
                     <div className="lg:col-span-1">
-                        <Totals total={100} monthly_income={100.0} />
+                        <Totals total_expenses={totalExpenses} />
                     </div>
                 </div>
             </div>

@@ -553,6 +553,574 @@ func (x *DeleteFamilySettingResponse) GetSuccess() bool {
 	return false
 }
 
+type IncomeSource struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Amount        float64                `protobuf:"fixed64,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	IsActive      bool                   `protobuf:"varint,4,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IncomeSource) Reset() {
+	*x = IncomeSource{}
+	mi := &file_family_v1_family_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IncomeSource) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IncomeSource) ProtoMessage() {}
+
+func (x *IncomeSource) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IncomeSource.ProtoReflect.Descriptor instead.
+func (*IncomeSource) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *IncomeSource) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *IncomeSource) GetAmount() float64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *IncomeSource) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *IncomeSource) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
+type MonthlyIncome struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TotalAmount   float64                `protobuf:"fixed64,1,opt,name=total_amount,json=totalAmount,proto3" json:"total_amount,omitempty"`
+	Sources       []*IncomeSource        `protobuf:"bytes,2,rep,name=sources,proto3" json:"sources,omitempty"`
+	UpdatedAt     int64                  `protobuf:"varint,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"` // Unix timestamp
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MonthlyIncome) Reset() {
+	*x = MonthlyIncome{}
+	mi := &file_family_v1_family_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MonthlyIncome) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MonthlyIncome) ProtoMessage() {}
+
+func (x *MonthlyIncome) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MonthlyIncome.ProtoReflect.Descriptor instead.
+func (*MonthlyIncome) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *MonthlyIncome) GetTotalAmount() float64 {
+	if x != nil {
+		return x.TotalAmount
+	}
+	return 0
+}
+
+func (x *MonthlyIncome) GetSources() []*IncomeSource {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+func (x *MonthlyIncome) GetUpdatedAt() int64 {
+	if x != nil {
+		return x.UpdatedAt
+	}
+	return 0
+}
+
+type GetMonthlyIncomeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMonthlyIncomeRequest) Reset() {
+	*x = GetMonthlyIncomeRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMonthlyIncomeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMonthlyIncomeRequest) ProtoMessage() {}
+
+func (x *GetMonthlyIncomeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMonthlyIncomeRequest.ProtoReflect.Descriptor instead.
+func (*GetMonthlyIncomeRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{13}
+}
+
+type GetMonthlyIncomeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MonthlyIncome *MonthlyIncome         `protobuf:"bytes,1,opt,name=monthly_income,json=monthlyIncome,proto3" json:"monthly_income,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMonthlyIncomeResponse) Reset() {
+	*x = GetMonthlyIncomeResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMonthlyIncomeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMonthlyIncomeResponse) ProtoMessage() {}
+
+func (x *GetMonthlyIncomeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMonthlyIncomeResponse.ProtoReflect.Descriptor instead.
+func (*GetMonthlyIncomeResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *GetMonthlyIncomeResponse) GetMonthlyIncome() *MonthlyIncome {
+	if x != nil {
+		return x.MonthlyIncome
+	}
+	return nil
+}
+
+type SetMonthlyIncomeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MonthlyIncome *MonthlyIncome         `protobuf:"bytes,1,opt,name=monthly_income,json=monthlyIncome,proto3" json:"monthly_income,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetMonthlyIncomeRequest) Reset() {
+	*x = SetMonthlyIncomeRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMonthlyIncomeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMonthlyIncomeRequest) ProtoMessage() {}
+
+func (x *SetMonthlyIncomeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMonthlyIncomeRequest.ProtoReflect.Descriptor instead.
+func (*SetMonthlyIncomeRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SetMonthlyIncomeRequest) GetMonthlyIncome() *MonthlyIncome {
+	if x != nil {
+		return x.MonthlyIncome
+	}
+	return nil
+}
+
+type SetMonthlyIncomeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetMonthlyIncomeResponse) Reset() {
+	*x = SetMonthlyIncomeResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMonthlyIncomeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMonthlyIncomeResponse) ProtoMessage() {}
+
+func (x *SetMonthlyIncomeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMonthlyIncomeResponse.ProtoReflect.Descriptor instead.
+func (*SetMonthlyIncomeResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SetMonthlyIncomeResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type AddIncomeSourceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IncomeSource  *IncomeSource          `protobuf:"bytes,1,opt,name=income_source,json=incomeSource,proto3" json:"income_source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddIncomeSourceRequest) Reset() {
+	*x = AddIncomeSourceRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddIncomeSourceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddIncomeSourceRequest) ProtoMessage() {}
+
+func (x *AddIncomeSourceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddIncomeSourceRequest.ProtoReflect.Descriptor instead.
+func (*AddIncomeSourceRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *AddIncomeSourceRequest) GetIncomeSource() *IncomeSource {
+	if x != nil {
+		return x.IncomeSource
+	}
+	return nil
+}
+
+type AddIncomeSourceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddIncomeSourceResponse) Reset() {
+	*x = AddIncomeSourceResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddIncomeSourceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddIncomeSourceResponse) ProtoMessage() {}
+
+func (x *AddIncomeSourceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddIncomeSourceResponse.ProtoReflect.Descriptor instead.
+func (*AddIncomeSourceResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *AddIncomeSourceResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type RemoveIncomeSourceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceName    string                 `protobuf:"bytes,1,opt,name=source_name,json=sourceName,proto3" json:"source_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveIncomeSourceRequest) Reset() {
+	*x = RemoveIncomeSourceRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveIncomeSourceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveIncomeSourceRequest) ProtoMessage() {}
+
+func (x *RemoveIncomeSourceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveIncomeSourceRequest.ProtoReflect.Descriptor instead.
+func (*RemoveIncomeSourceRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *RemoveIncomeSourceRequest) GetSourceName() string {
+	if x != nil {
+		return x.SourceName
+	}
+	return ""
+}
+
+type RemoveIncomeSourceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveIncomeSourceResponse) Reset() {
+	*x = RemoveIncomeSourceResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveIncomeSourceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveIncomeSourceResponse) ProtoMessage() {}
+
+func (x *RemoveIncomeSourceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveIncomeSourceResponse.ProtoReflect.Descriptor instead.
+func (*RemoveIncomeSourceResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *RemoveIncomeSourceResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+type UpdateIncomeSourceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SourceName    string                 `protobuf:"bytes,1,opt,name=source_name,json=sourceName,proto3" json:"source_name,omitempty"`
+	UpdatedSource *IncomeSource          `protobuf:"bytes,2,opt,name=updated_source,json=updatedSource,proto3" json:"updated_source,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateIncomeSourceRequest) Reset() {
+	*x = UpdateIncomeSourceRequest{}
+	mi := &file_family_v1_family_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateIncomeSourceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateIncomeSourceRequest) ProtoMessage() {}
+
+func (x *UpdateIncomeSourceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateIncomeSourceRequest.ProtoReflect.Descriptor instead.
+func (*UpdateIncomeSourceRequest) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *UpdateIncomeSourceRequest) GetSourceName() string {
+	if x != nil {
+		return x.SourceName
+	}
+	return ""
+}
+
+func (x *UpdateIncomeSourceRequest) GetUpdatedSource() *IncomeSource {
+	if x != nil {
+		return x.UpdatedSource
+	}
+	return nil
+}
+
+type UpdateIncomeSourceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateIncomeSourceResponse) Reset() {
+	*x = UpdateIncomeSourceResponse{}
+	mi := &file_family_v1_family_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateIncomeSourceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateIncomeSourceResponse) ProtoMessage() {}
+
+func (x *UpdateIncomeSourceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_family_v1_family_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateIncomeSourceResponse.ProtoReflect.Descriptor instead.
+func (*UpdateIncomeSourceResponse) Descriptor() ([]byte, []int) {
+	return file_family_v1_family_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *UpdateIncomeSourceResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_family_v1_family_proto protoreflect.FileDescriptor
 
 const file_family_v1_family_proto_rawDesc = "" +
@@ -591,13 +1159,50 @@ const file_family_v1_family_proto_rawDesc = "" +
 	"\x1aDeleteFamilySettingRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"7\n" +
 	"\x1bDeleteFamilySettingResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\x98\x04\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"y\n" +
+	"\fIncomeSource\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
+	"\x06amount\x18\x02 \x01(\x01R\x06amount\x12 \n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x1b\n" +
+	"\tis_active\x18\x04 \x01(\bR\bisActive\"\x84\x01\n" +
+	"\rMonthlyIncome\x12!\n" +
+	"\ftotal_amount\x18\x01 \x01(\x01R\vtotalAmount\x121\n" +
+	"\asources\x18\x02 \x03(\v2\x17.family.v1.IncomeSourceR\asources\x12\x1d\n" +
+	"\n" +
+	"updated_at\x18\x03 \x01(\x03R\tupdatedAt\"\x19\n" +
+	"\x17GetMonthlyIncomeRequest\"[\n" +
+	"\x18GetMonthlyIncomeResponse\x12?\n" +
+	"\x0emonthly_income\x18\x01 \x01(\v2\x18.family.v1.MonthlyIncomeR\rmonthlyIncome\"Z\n" +
+	"\x17SetMonthlyIncomeRequest\x12?\n" +
+	"\x0emonthly_income\x18\x01 \x01(\v2\x18.family.v1.MonthlyIncomeR\rmonthlyIncome\"4\n" +
+	"\x18SetMonthlyIncomeResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"V\n" +
+	"\x16AddIncomeSourceRequest\x12<\n" +
+	"\rincome_source\x18\x01 \x01(\v2\x17.family.v1.IncomeSourceR\fincomeSource\"3\n" +
+	"\x17AddIncomeSourceResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"<\n" +
+	"\x19RemoveIncomeSourceRequest\x12\x1f\n" +
+	"\vsource_name\x18\x01 \x01(\tR\n" +
+	"sourceName\"6\n" +
+	"\x1aRemoveIncomeSourceResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"|\n" +
+	"\x19UpdateIncomeSourceRequest\x12\x1f\n" +
+	"\vsource_name\x18\x01 \x01(\tR\n" +
+	"sourceName\x12>\n" +
+	"\x0eupdated_source\x18\x02 \x01(\v2\x17.family.v1.IncomeSourceR\rupdatedSource\"6\n" +
+	"\x1aUpdateIncomeSourceResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xf2\a\n" +
 	"\x15FamilySettingsService\x12d\n" +
 	"\x13CreateFamilySetting\x12%.family.v1.CreateFamilySettingRequest\x1a&.family.v1.CreateFamilySettingResponse\x12a\n" +
 	"\x12ListFamilySettings\x12$.family.v1.ListFamilySettingsRequest\x1a%.family.v1.ListFamilySettingsResponse\x12j\n" +
 	"\x15GetFamilySettingByKey\x12'.family.v1.GetFamilySettingByKeyRequest\x1a(.family.v1.GetFamilySettingByKeyResponse\x12d\n" +
 	"\x13UpdateFamilySetting\x12%.family.v1.UpdateFamilySettingRequest\x1a&.family.v1.UpdateFamilySettingResponse\x12d\n" +
-	"\x13DeleteFamilySetting\x12%.family.v1.DeleteFamilySettingRequest\x1a&.family.v1.DeleteFamilySettingResponseB)Z'expenses-backend/pkg/family/v1;familyv1b\x06proto3"
+	"\x13DeleteFamilySetting\x12%.family.v1.DeleteFamilySettingRequest\x1a&.family.v1.DeleteFamilySettingResponse\x12[\n" +
+	"\x10GetMonthlyIncome\x12\".family.v1.GetMonthlyIncomeRequest\x1a#.family.v1.GetMonthlyIncomeResponse\x12[\n" +
+	"\x10SetMonthlyIncome\x12\".family.v1.SetMonthlyIncomeRequest\x1a#.family.v1.SetMonthlyIncomeResponse\x12X\n" +
+	"\x0fAddIncomeSource\x12!.family.v1.AddIncomeSourceRequest\x1a\".family.v1.AddIncomeSourceResponse\x12a\n" +
+	"\x12RemoveIncomeSource\x12$.family.v1.RemoveIncomeSourceRequest\x1a%.family.v1.RemoveIncomeSourceResponse\x12a\n" +
+	"\x12UpdateIncomeSource\x12$.family.v1.UpdateIncomeSourceRequest\x1a%.family.v1.UpdateIncomeSourceResponseB)Z'expenses-backend/pkg/family/v1;familyv1b\x06proto3"
 
 var (
 	file_family_v1_family_proto_rawDescOnce sync.Once
@@ -611,7 +1216,7 @@ func file_family_v1_family_proto_rawDescGZIP() []byte {
 	return file_family_v1_family_proto_rawDescData
 }
 
-var file_family_v1_family_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_family_v1_family_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_family_v1_family_proto_goTypes = []any{
 	(*FamilySetting)(nil),                 // 0: family.v1.FamilySetting
 	(*CreateFamilySettingRequest)(nil),    // 1: family.v1.CreateFamilySettingRequest
@@ -624,27 +1229,54 @@ var file_family_v1_family_proto_goTypes = []any{
 	(*UpdateFamilySettingResponse)(nil),   // 8: family.v1.UpdateFamilySettingResponse
 	(*DeleteFamilySettingRequest)(nil),    // 9: family.v1.DeleteFamilySettingRequest
 	(*DeleteFamilySettingResponse)(nil),   // 10: family.v1.DeleteFamilySettingResponse
+	(*IncomeSource)(nil),                  // 11: family.v1.IncomeSource
+	(*MonthlyIncome)(nil),                 // 12: family.v1.MonthlyIncome
+	(*GetMonthlyIncomeRequest)(nil),       // 13: family.v1.GetMonthlyIncomeRequest
+	(*GetMonthlyIncomeResponse)(nil),      // 14: family.v1.GetMonthlyIncomeResponse
+	(*SetMonthlyIncomeRequest)(nil),       // 15: family.v1.SetMonthlyIncomeRequest
+	(*SetMonthlyIncomeResponse)(nil),      // 16: family.v1.SetMonthlyIncomeResponse
+	(*AddIncomeSourceRequest)(nil),        // 17: family.v1.AddIncomeSourceRequest
+	(*AddIncomeSourceResponse)(nil),       // 18: family.v1.AddIncomeSourceResponse
+	(*RemoveIncomeSourceRequest)(nil),     // 19: family.v1.RemoveIncomeSourceRequest
+	(*RemoveIncomeSourceResponse)(nil),    // 20: family.v1.RemoveIncomeSourceResponse
+	(*UpdateIncomeSourceRequest)(nil),     // 21: family.v1.UpdateIncomeSourceRequest
+	(*UpdateIncomeSourceResponse)(nil),    // 22: family.v1.UpdateIncomeSourceResponse
 }
 var file_family_v1_family_proto_depIdxs = []int32{
 	0,  // 0: family.v1.CreateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
 	0,  // 1: family.v1.ListFamilySettingsResponse.family_settings:type_name -> family.v1.FamilySetting
 	0,  // 2: family.v1.GetFamilySettingByKeyResponse.family_setting:type_name -> family.v1.FamilySetting
 	0,  // 3: family.v1.UpdateFamilySettingResponse.family_setting:type_name -> family.v1.FamilySetting
-	1,  // 4: family.v1.FamilySettingsService.CreateFamilySetting:input_type -> family.v1.CreateFamilySettingRequest
-	3,  // 5: family.v1.FamilySettingsService.ListFamilySettings:input_type -> family.v1.ListFamilySettingsRequest
-	5,  // 6: family.v1.FamilySettingsService.GetFamilySettingByKey:input_type -> family.v1.GetFamilySettingByKeyRequest
-	7,  // 7: family.v1.FamilySettingsService.UpdateFamilySetting:input_type -> family.v1.UpdateFamilySettingRequest
-	9,  // 8: family.v1.FamilySettingsService.DeleteFamilySetting:input_type -> family.v1.DeleteFamilySettingRequest
-	2,  // 9: family.v1.FamilySettingsService.CreateFamilySetting:output_type -> family.v1.CreateFamilySettingResponse
-	4,  // 10: family.v1.FamilySettingsService.ListFamilySettings:output_type -> family.v1.ListFamilySettingsResponse
-	6,  // 11: family.v1.FamilySettingsService.GetFamilySettingByKey:output_type -> family.v1.GetFamilySettingByKeyResponse
-	8,  // 12: family.v1.FamilySettingsService.UpdateFamilySetting:output_type -> family.v1.UpdateFamilySettingResponse
-	10, // 13: family.v1.FamilySettingsService.DeleteFamilySetting:output_type -> family.v1.DeleteFamilySettingResponse
-	9,  // [9:14] is the sub-list for method output_type
-	4,  // [4:9] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	11, // 4: family.v1.MonthlyIncome.sources:type_name -> family.v1.IncomeSource
+	12, // 5: family.v1.GetMonthlyIncomeResponse.monthly_income:type_name -> family.v1.MonthlyIncome
+	12, // 6: family.v1.SetMonthlyIncomeRequest.monthly_income:type_name -> family.v1.MonthlyIncome
+	11, // 7: family.v1.AddIncomeSourceRequest.income_source:type_name -> family.v1.IncomeSource
+	11, // 8: family.v1.UpdateIncomeSourceRequest.updated_source:type_name -> family.v1.IncomeSource
+	1,  // 9: family.v1.FamilySettingsService.CreateFamilySetting:input_type -> family.v1.CreateFamilySettingRequest
+	3,  // 10: family.v1.FamilySettingsService.ListFamilySettings:input_type -> family.v1.ListFamilySettingsRequest
+	5,  // 11: family.v1.FamilySettingsService.GetFamilySettingByKey:input_type -> family.v1.GetFamilySettingByKeyRequest
+	7,  // 12: family.v1.FamilySettingsService.UpdateFamilySetting:input_type -> family.v1.UpdateFamilySettingRequest
+	9,  // 13: family.v1.FamilySettingsService.DeleteFamilySetting:input_type -> family.v1.DeleteFamilySettingRequest
+	13, // 14: family.v1.FamilySettingsService.GetMonthlyIncome:input_type -> family.v1.GetMonthlyIncomeRequest
+	15, // 15: family.v1.FamilySettingsService.SetMonthlyIncome:input_type -> family.v1.SetMonthlyIncomeRequest
+	17, // 16: family.v1.FamilySettingsService.AddIncomeSource:input_type -> family.v1.AddIncomeSourceRequest
+	19, // 17: family.v1.FamilySettingsService.RemoveIncomeSource:input_type -> family.v1.RemoveIncomeSourceRequest
+	21, // 18: family.v1.FamilySettingsService.UpdateIncomeSource:input_type -> family.v1.UpdateIncomeSourceRequest
+	2,  // 19: family.v1.FamilySettingsService.CreateFamilySetting:output_type -> family.v1.CreateFamilySettingResponse
+	4,  // 20: family.v1.FamilySettingsService.ListFamilySettings:output_type -> family.v1.ListFamilySettingsResponse
+	6,  // 21: family.v1.FamilySettingsService.GetFamilySettingByKey:output_type -> family.v1.GetFamilySettingByKeyResponse
+	8,  // 22: family.v1.FamilySettingsService.UpdateFamilySetting:output_type -> family.v1.UpdateFamilySettingResponse
+	10, // 23: family.v1.FamilySettingsService.DeleteFamilySetting:output_type -> family.v1.DeleteFamilySettingResponse
+	14, // 24: family.v1.FamilySettingsService.GetMonthlyIncome:output_type -> family.v1.GetMonthlyIncomeResponse
+	16, // 25: family.v1.FamilySettingsService.SetMonthlyIncome:output_type -> family.v1.SetMonthlyIncomeResponse
+	18, // 26: family.v1.FamilySettingsService.AddIncomeSource:output_type -> family.v1.AddIncomeSourceResponse
+	20, // 27: family.v1.FamilySettingsService.RemoveIncomeSource:output_type -> family.v1.RemoveIncomeSourceResponse
+	22, // 28: family.v1.FamilySettingsService.UpdateIncomeSource:output_type -> family.v1.UpdateIncomeSourceResponse
+	19, // [19:29] is the sub-list for method output_type
+	9,  // [9:19] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_family_v1_family_proto_init() }
@@ -662,7 +1294,7 @@ func file_family_v1_family_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_family_v1_family_proto_rawDesc), len(file_family_v1_family_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
